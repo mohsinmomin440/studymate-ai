@@ -226,8 +226,6 @@ This project is for educational purposes as part of BCA final year submission.
 ## 👥 Contributors
 
 - **Mohsin Momin** — Project Owner & Developer
-- **Claude Code** — AI Development Assistant
-
 ---
 
 **Made with ❤️ by BCA Final Year Student**
