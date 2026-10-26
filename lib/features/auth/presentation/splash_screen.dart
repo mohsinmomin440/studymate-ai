@@ -64,34 +64,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               const Spacer(flex: 3),
               // App Logo with glowing box
               Container(
-                width: 100,
-                height: 100,
+                width: 108,
+                height: 108,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.neonPurple.withOpacity(0.15)
-                      : Colors.white.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isDark
-                        ? AppColors.neonPurple.withOpacity(0.5)
-                        : Colors.white.withOpacity(0.3),
-                    width: 2,
-                  ),
+                  borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
                       color: isDark
                           ? AppColors.neonPurple.withOpacity(0.4)
-                          : Colors.black.withOpacity(0.15),
+                          : Colors.black.withOpacity(0.2),
                       blurRadius: 30,
                       spreadRadius: 2,
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.school_rounded,
-                    size: 54,
-                    color: isDark ? AppColors.neonPurple : Colors.white,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(26),
+                  child: Image.asset(
+                    'assets/images/app_logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: isDark ? AppColors.neonPurple : Colors.white,
+                      child: const Icon(Icons.school_rounded, size: 54, color: AppColors.primaryPurple),
+                    ),
                   ),
                 ),
               ),

@@ -20,7 +20,7 @@ class DashboardScreen extends ConsumerWidget {
 
     final userName = authState.user?.displayName.isNotEmpty == true
         ? authState.user!.displayName
-        : 'Rahul';
+        : 'Student';
 
     return Scaffold(
       body: SafeArea(
@@ -250,7 +250,105 @@ class DashboardScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, _) => const SizedBox.shrink(),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 18),
+
+              // Quick Actions (Focus Timer & AI Tutor)
+              Row(
+                children: [
+                  Expanded(
+                    child: AppCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      onTap: () => context.push('/focus-timer'),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: (isDark ? AppColors.neonPurple : AppColors.primaryPurple).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.timer_rounded,
+                              size: 20,
+                              color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Focus Timer',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  'Start session',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      onTap: () => context.push('/ai-tutor'),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.blue.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.psychology_rounded,
+                              size: 20,
+                              color: AppColors.blue,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'AI Tutor',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  'Quiz & Summary',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
 
               // Upcoming Exams Header
               Row(

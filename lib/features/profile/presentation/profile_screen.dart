@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../auth/presentation/auth_view_model.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -13,8 +14,13 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final prefs = ref.watch(sharedPreferencesProvider);
-    final userEmail = prefs.getString(AppConstants.userAuthKey) ?? 'rahul@gmail.com';
-    final displayName = userEmail.contains('@') ? userEmail.split('@').first : 'Student';
+    final authUser = ref.watch(authProvider).user;
+    final userEmail = authUser?.email.isNotEmpty == true
+        ? authUser!.email
+        : (prefs.getString(AppConstants.userAuthKey) ?? 'student@studymate.ai');
+    final displayName = authUser?.displayName.isNotEmpty == true
+        ? authUser!.displayName
+        : (userEmail.contains('@') ? userEmail.split('@').first : 'Student');
     final capitalizedName = displayName.isNotEmpty
         ? displayName[0].toUpperCase() + displayName.substring(1)
         : 'Student';
@@ -331,8 +337,7 @@ class ProfileScreen extends ConsumerWidget {
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.crimsonRed),
             onPressed: () async {
               Navigator.pop(ctx);
-              final prefs = ref.read(sharedPreferencesProvider);
-              await prefs.remove(AppConstants.userAuthKey);
+              await ref.read(authProvider.notifier).signOut();
               if (context.mounted) {
                 context.go('/login');
               }

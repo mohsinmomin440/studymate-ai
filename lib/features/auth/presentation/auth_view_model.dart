@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../data/auth_repository.dart';
@@ -52,7 +53,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _formatErrorMessage(e.toString()),
+        errorMessage: _formatErrorMessage(e),
       );
       return false;
     }
@@ -76,7 +77,28 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _formatErrorMessage(e.toString()),
+        errorMessage: _formatErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> signInWithGoogle() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final user = await repo.signInWithGoogle();
+      if (user == null) {
+        // User cancelled the Google sign-in dialog
+        state = state.copyWith(isLoading: false);
+        return false;
+      }
+      state = state.copyWith(isLoading: false, user: user);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _formatErrorMessage(e),
       );
       return false;
     }
@@ -92,7 +114,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _formatErrorMessage(e.toString()),
+        errorMessage: _formatErrorMessage(e),
       );
       return false;
     }
@@ -105,12 +127,42 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthState();
   }
 
-  String _formatErrorMessage(String raw) {
-    if (raw.contains('user-not-found')) return 'No user found with this email.';
-    if (raw.contains('wrong-password')) return 'Incorrect password entered.';
-    if (raw.contains('email-already-in-use')) return 'This email is already registered.';
-    if (raw.contains('invalid-email')) return 'Please enter a valid email address.';
-    if (raw.contains('weak-password')) return 'Password should be at least 6 characters.';
+  String _formatErrorMessage(Object error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'user-not-found':
+          return 'No user found with this email. Please sign up first.';
+        case 'wrong-password':
+        case 'invalid-credential':
+          return 'Invalid email or password. Please verify your credentials.';
+        case 'email-already-in-use':
+          return 'This email is already registered. Please log in instead.';
+        case 'invalid-email':
+          return 'Please enter a valid email address.';
+        case 'weak-password':
+          return 'Password should be at least 6 characters.';
+        case 'user-disabled':
+          return 'This user account has been disabled.';
+        case 'operation-not-allowed':
+          return 'This sign-in method is not enabled in Firebase Console.';
+        case 'network-request-failed':
+          return 'Network error. Please check your internet connection.';
+        case 'too-many-requests':
+          return 'Too many attempts. Please try again after a few moments.';
+        case 'account-exists-with-different-credential':
+          return 'An account already exists with the same email using a different sign-in method.';
+        default:
+          return error.message ?? 'Authentication error (${error.code}).';
+      }
+    }
+
+    final raw = error.toString();
+    if (raw.contains('12500') || raw.contains('ApiException: 10')) {
+      return 'Google Sign-In configuration error: Please verify SHA-1 key in Firebase Console.';
+    }
+    if (raw.contains('network') || raw.contains('SocketException')) {
+      return 'Network connection error. Please verify your internet connection.';
+    }
     return raw.replaceAll('Exception:', '').trim();
   }
 }

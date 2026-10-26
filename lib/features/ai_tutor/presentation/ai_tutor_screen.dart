@@ -20,6 +20,7 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
   );
   bool _isLoading = false;
   AiSummaryResult? _summaryResult;
+  String? _askAiAnswer;
 
   @override
   void dispose() {
@@ -27,27 +28,73 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
     super.dispose();
   }
 
+  void _onTabChanged(int index) {
+    setState(() {
+      _selectedTabIndex = index;
+      _summaryResult = null;
+      _askAiAnswer = null;
+
+      if (index == 0) {
+        _textController.text =
+            'A Queue is a linear data structure that follows the First In First Out (FIFO) principle. '
+            'The element inserted first is the one to be removed first. Operations include enqueue, dequeue, peek, and isEmpty.';
+      } else if (index == 1) {
+        _textController.text = 'Data Structures and Algorithms';
+      } else {
+        _textController.text = 'Explain the difference between Process and Thread with an example.';
+      }
+    });
+  }
+
   Future<void> _handleGenerate() async {
-    if (_textController.text.trim().isEmpty) {
+    final input = _textController.text.trim();
+    if (input.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please paste some study material first.')),
+        const SnackBar(content: Text('Please enter your text or question first.')),
       );
       return;
     }
 
     if (_selectedTabIndex == 1) {
       // Quiz Generation
-      context.push('/quiz');
+      context.push('/quiz', extra: {'topic': input});
       return;
     }
 
-    // Summarize Generation
+    if (_selectedTabIndex == 2) {
+      // Ask AI
+      setState(() {
+        _isLoading = true;
+        _askAiAnswer = null;
+      });
+
+      try {
+        final answer = await AiService.askAi(input);
+        setState(() {
+          _askAiAnswer = answer;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('AI Tutor error: $e')),
+          );
+        }
+      }
+      return;
+    }
+
+    // Summarize Generation (Tab 0)
     setState(() {
       _isLoading = true;
+      _summaryResult = null;
     });
 
     try {
-      final res = await AiService.generateSummary(_textController.text);
+      final res = await AiService.generateSummary(input);
       setState(() {
         _summaryResult = res;
         _isLoading = false;
@@ -69,6 +116,28 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark ? AppColors.neonPurple : AppColors.primaryPurple;
 
+    String sectionTitle;
+    String sectionSubtitle;
+    String hintText;
+    String buttonText;
+
+    if (_selectedTabIndex == 0) {
+      sectionTitle = 'Upload or Paste Study Material';
+      sectionSubtitle = 'Paste lecture notes or textbook material to generate instant AI summary.';
+      hintText = 'Paste your study material here...';
+      buttonText = 'Generate AI Summary';
+    } else if (_selectedTabIndex == 1) {
+      sectionTitle = 'Practice Quiz Topic';
+      sectionSubtitle = 'Enter any subject, chapter, or topic to generate a 5-question test.';
+      hintText = 'e.g. Operating Systems Paging, DBMS SQL Queries, Java OOP...';
+      buttonText = 'Start Quiz Practice';
+    } else {
+      sectionTitle = 'Ask AI Tutor Any Question';
+      sectionSubtitle = 'Get clear conceptual explanations, code snippets, and study guidance.';
+      hintText = 'Type your doubt or question here...';
+      buttonText = 'Ask Gemini AI';
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Tutor'),
@@ -88,11 +157,7 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
 
                   return Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedTabIndex = idx;
-                        });
-                      },
+                      onTap: () => _onTabChanged(idx),
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -125,9 +190,9 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Upload Study Material Section
+              // Section Header
               Text(
-                'Upload Study Material',
+                sectionTitle,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -136,7 +201,7 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Upload PDF, image or paste text to get AI powered summary and quiz.',
+                sectionSubtitle,
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
@@ -144,101 +209,74 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Dashed Box Mock
-              InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('File selection simulated. Material loaded into text area.')),
-                  );
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 28),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.darkSurfaceVariant.withOpacity(0.5)
-                        : AppColors.lightSurfaceVariant.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                      style: BorderStyle.solid,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.file_upload_outlined, color: primaryColor, size: 28),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Choose File',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'PDF, DOC, TXT, JPG',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Or paste text here
-              Text(
-                'Or paste text here',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                ),
-              ),
-              const SizedBox(height: 10),
+              // Text Area
               TextFormField(
                 controller: _textController,
-                maxLines: 5,
+                maxLines: _selectedTabIndex == 1 ? 2 : 5,
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                 ),
-                decoration: const InputDecoration(
-                  hintText: 'Paste your study material...',
+                decoration: InputDecoration(
+                  hintText: hintText,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-              // Generate Button
+              // Action Button
               CustomButton(
-                text: _selectedTabIndex == 1 ? 'Start Quiz Practice' : 'Generate',
+                text: buttonText,
                 isLoading: _isLoading,
                 onPressed: _handleGenerate,
               ),
               const SizedBox(height: 24),
 
+              // Ask AI Output Display
+              if (_askAiAnswer != null) ...[
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: primaryColor, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'AI Tutor Response',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                AppCard(
+                  padding: const EdgeInsets.all(18),
+                  child: SelectableText(
+                    _askAiAnswer!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
               // Generated Summary Output Display
               if (_summaryResult != null) ...[
-                Text(
-                  'Generated Summary',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                  ),
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: primaryColor, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Generated Summary',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 AppCard(
@@ -296,32 +334,54 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.neonPurple.withOpacity(0.12)
-                              : AppColors.primaryPurple.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.lightbulb_outline_rounded, color: primaryColor, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Exam Tip: Draw queue pointer diagrams showing head and tail updates.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                      if (_summaryResult!.examTips.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.neonPurple.withOpacity(0.12)
+                                : AppColors.primaryPurple.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.lightbulb_outline_rounded, color: primaryColor, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Exam Tips:',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    ..._summaryResult!.examTips.map(
+                                      (tip) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 2),
+                                        child: Text(
+                                          '• $tip',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

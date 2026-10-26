@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/google_logo.dart';
 import 'auth_view_model.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -16,8 +17,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'rahul@gmail.com');
-  final _passwordController = TextEditingController(text: 'password123');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
@@ -57,21 +58,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.neonPurple.withOpacity(0.2)
-                              : AppColors.primaryPurple.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.school_rounded,
-                          size: 28,
-                          color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/app_logo.png',
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.school_rounded, size: 28, color: Colors.white),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Text(
                         AppConstants.appName,
                         style: TextStyle(
@@ -253,20 +257,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   CustomButton(
                     variant: ButtonVariant.outline,
                     text: 'Continue with Google',
-                    icon: Image.network(
-                      'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                      width: 20,
-                      height: 20,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.g_mobiledata_rounded,
-                        size: 26,
-                        color: AppColors.crimsonRed,
-                      ),
-                    ),
-                    onPressed: () {
-                      _emailController.text = 'student.google@gmail.com';
-                      _passwordController.text = 'googlePass123';
-                      _submitLogin();
+                    icon: const GoogleLogo(size: 20),
+                    onPressed: () async {
+                      final success = await ref.read(authProvider.notifier).signInWithGoogle();
+                      if (success && mounted) {
+                        if (!context.mounted) return;
+                        context.go('/dashboard');
+                      }
                     },
                   ),
                   const SizedBox(height: 32),

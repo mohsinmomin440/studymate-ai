@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/google_logo.dart';
 import 'auth_view_model.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -60,21 +61,24 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.neonPurple.withOpacity(0.2)
-                              : AppColors.primaryPurple.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.school_rounded,
-                          size: 28,
-                          color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/app_logo.png',
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.neonPurple : AppColors.primaryPurple,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.school_rounded, size: 28, color: Colors.white),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Text(
                         AppConstants.appName,
                         style: TextStyle(
@@ -280,16 +284,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   CustomButton(
                     variant: ButtonVariant.outline,
                     text: 'Continue with Google',
-                    icon: const Icon(
-                      Icons.g_mobiledata_rounded,
-                      size: 26,
-                      color: AppColors.crimsonRed,
-                    ),
-                    onPressed: () {
-                      _nameController.text = 'Rahul Sharma';
-                      _emailController.text = 'rahul@gmail.com';
-                      _passwordController.text = 'securePass123';
-                      _submitSignup();
+                    icon: const GoogleLogo(size: 20),
+                    onPressed: () async {
+                      final success = await ref.read(authProvider.notifier).signInWithGoogle();
+                      if (success && mounted) {
+                        if (!context.mounted) return;
+                        context.go('/dashboard');
+                      }
                     },
                   ),
                   const SizedBox(height: 24),

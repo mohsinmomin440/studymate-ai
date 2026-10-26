@@ -13,6 +13,7 @@ import '../features/profile/presentation/app_settings_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/quizzes/presentation/quiz_result_screen.dart';
 import '../features/quizzes/presentation/quiz_screen.dart';
+import '../features/study_sessions/presentation/focus_timer_screen.dart';
 import '../features/subjects/presentation/add_subject_screen.dart';
 import '../features/subjects/presentation/subjects_screen.dart';
 import '../features/tasks/presentation/add_task_screen.dart';
@@ -119,7 +120,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/quiz',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const QuizScreen(),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final topic = extra?['topic'] as String?;
+        return QuizScreen(topic: topic);
+      },
     ),
     GoRoute(
       path: '/quiz/result',
@@ -130,6 +135,11 @@ final appRouter = GoRouter(
         final total = extra?['total'] as int? ?? 5;
         return QuizResultScreen(score: score, total: total);
       },
+    ),
+    GoRoute(
+      path: '/focus-timer',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const FocusTimerScreen(),
     ),
     GoRoute(
       path: '/profile',

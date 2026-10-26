@@ -6,16 +6,17 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../services/ai_service.dart';
 
 class QuizScreen extends StatefulWidget {
-  const QuizScreen({super.key});
+  final String? topic;
+  const QuizScreen({super.key, this.topic});
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  int _currentIndex = 1; // start at 1 (question 2/5 as in showcase) or 0
+  int _currentIndex = 0;
   int? _selectedOptionIndex;
-  int _score = 3;
+  int _score = 0;
   List<QuizQuestion> _questions = [];
   bool _isLoading = true;
 
@@ -26,13 +27,16 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<void> _loadQuestions() async {
-    final list = await AiService.generateQuiz('Data Structures');
+    final topic = widget.topic?.trim().isNotEmpty == true
+        ? widget.topic!.trim()
+        : 'Data Structures and Algorithms';
+    final list = await AiService.generateQuiz(topic);
+    if (!mounted) return;
     setState(() {
       _questions = list;
       _isLoading = false;
-      // Preselect question 1 to match the showcase where Q2 is shown with Queue selected
-      _currentIndex = 1;
-      _selectedOptionIndex = 1; // Queue
+      _currentIndex = 0;
+      _selectedOptionIndex = null;
     });
   }
 
