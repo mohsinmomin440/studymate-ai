@@ -219,6 +219,14 @@ This project is for educational purposes as part of BCA final year submission.
 - Built with [Flutter](https://flutter.dev)
 - Backend powered by [Firebase](https://firebase.google.com)
 - State management using [Riverpod](https://riverpod.dev)
+- AI assistance by [Claude Code](https://claude.com/code) (Anthropic)
+
+---
+
+## 👥 Contributors
+
+- **Mohsin Momin** — Project Owner & Developer
+- **Claude Code** — AI Development Assistant
 
 ---
 
