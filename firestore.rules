@@ -1,0 +1,55 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User document and nested subcollections
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // Subjects Subcollection
+      match /subjects/{subjectId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Tasks Subcollection
+      match /tasks/{taskId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Study Plans Subcollection
+      match /study_plans/{planId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Study Sessions Subcollection
+      match /study_sessions/{sessionId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Quiz Sets Subcollection
+      match /quiz_sets/{quizId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Quiz Attempts Subcollection
+      match /quiz_attempts/{attemptId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Study Materials Subcollection
+      match /study_materials/{materialId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+  }
+}
