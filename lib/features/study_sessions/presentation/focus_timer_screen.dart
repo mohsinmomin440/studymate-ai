@@ -70,8 +70,9 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
   }
 
   Future<void> _completeSession() async {
-    final studiedMinutes = (_targetMinutes * 60 - _secondsRemaining) ~/ 60;
-    final minutesToAdd = studiedMinutes > 0 ? studiedMinutes : _targetMinutes;
+    final totalTargetSeconds = _targetMinutes * 60;
+    final studiedSeconds = totalTargetSeconds - _secondsRemaining;
+    final minutesToAdd = studiedSeconds > 0 ? studiedSeconds ~/ 60 : _targetMinutes;
 
     if (_selectedSubjectId != null) {
       final subjectRepo = ref.read(subjectRepositoryProvider);
@@ -141,7 +142,12 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
               subjectsAsync.when(
                 data: (subjects) {
                   if (subjects.isNotEmpty && _selectedSubjectId == null) {
-                    _selectedSubjectId = subjects.first.id;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted) return;
+                      setState(() {
+                        _selectedSubjectId = subjects.first.id;
+                      });
+                    });
                   }
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),

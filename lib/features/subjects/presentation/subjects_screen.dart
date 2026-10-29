@@ -150,30 +150,24 @@ class SubjectsScreen extends ConsumerWidget {
 
   void _showSubjectDetailsDialog(
       BuildContext context, WidgetRef ref, Subject subject) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: Text(subject.name),
+        content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                subject.name,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 8),
               if (subject.description.isNotEmpty) ...[
                 Text(
                   subject.description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDark
+                    color: Theme.of(context).brightness == Brightness.dark
                         ? AppColors.darkTextSecondary
                         : AppColors.lightTextSecondary,
                   ),
@@ -204,8 +198,8 @@ class SubjectsScreen extends ConsumerWidget {
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

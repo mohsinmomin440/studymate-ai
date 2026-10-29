@@ -31,7 +31,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           children: [
             // Segmented Pills
             Row(
-              children: ['Study Time', 'Performance', 'Subjects'].map((tab) {
+              children: ['Study Time', 'Performance', 'Subjects'].asMap().entries.map((entry) {
+                final tab = entry.value;
                 final isSelected = _selectedTab == tab;
                 final activeColor = isDark ? AppColors.neonPurple : AppColors.primaryPurple;
 

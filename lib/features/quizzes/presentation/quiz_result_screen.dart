@@ -144,9 +144,13 @@ class QuizResultScreen extends StatelessWidget {
                           Text('• Incorrect Answers: ${total - score}'),
                           Text('• Accuracy: $percentage%'),
                           const SizedBox(height: 12),
-                          const Text(
-                            'Great job! You have strong understanding of FIFO queue and BST traversal principles.',
-                            style: TextStyle(fontSize: 13),
+                          Text(
+                            percentage >= 80
+                                ? 'Excellent! You have a strong grasp of this topic.'
+                                : percentage >= 50
+                                    ? 'Good progress! Review the topics you missed to improve.'
+                                    : 'Keep studying! Practice will help reinforce these concepts.',
+                            style: const TextStyle(fontSize: 13),
                           ),
                         ],
                       ),

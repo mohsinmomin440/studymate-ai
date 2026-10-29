@@ -14,11 +14,12 @@ class PlannerScreen extends ConsumerStatefulWidget {
   ConsumerState<PlannerScreen> createState() => _PlannerScreenState();
 }
 
-class _PlannerScreenState extends ConsumerState<PlannerScreen> {
+class _PlannerScreenState extends ConsumerState<PlannerScreen> with SingleTickerProviderStateMixin {
   late DateTime _weekStart;
   int _selectedDayIndex = 0;
   List<ScheduledSession> _sessions = [];
   bool _isGenerated = false;
+  late AnimationController _regenController;
 
   @override
   void initState() {
@@ -26,9 +27,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final now = DateTime.now();
     // Monday of current week
     _weekStart = now.subtract(Duration(days: now.weekday - 1));
+    _regenController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
   }
 
-  void _generateScheduleIfNeeded() {
+  @override
+  void dispose() {
+    _regenController.dispose();
+    super.dispose();
+  }
+
+  void _refreshScheduleIfNeeded() {
     final tasks = ref.read(tasksStreamProvider).value ?? [];
     final subjects = ref.read(subjectsStreamProvider).value ?? [];
 
@@ -43,6 +51,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshScheduleIfNeeded();
+  }
+
   void _regenerate() {
     final tasks = ref.read(tasksStreamProvider).value ?? [];
     final subjects = ref.read(subjectsStreamProvider).value ?? [];
@@ -55,6 +69,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       );
       _isGenerated = true;
     });
+    _regenController.forward(from: 0);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Study schedule generated and optimized!')),
     );
@@ -63,7 +78,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    _generateScheduleIfNeeded();
 
     final weekEnd = _weekStart.add(const Duration(days: 6));
     final weekRangeText =

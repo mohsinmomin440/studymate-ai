@@ -33,7 +33,8 @@ class QuizQuestion {
 class AiService {
   AiService._();
 
-  static const String _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY'); // Set via --dart-define or env var
+  static const String _envApiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static String get _geminiApiKey => _envApiKey;
   static const String _primaryModel = 'gemini-3.5-flash';
   static const String _fallbackModel = 'gemini-flash-lite-latest';
 

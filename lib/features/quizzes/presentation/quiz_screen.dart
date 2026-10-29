@@ -91,7 +91,7 @@ class _QuizScreenState extends State<QuizScreen> {
           children: [
             const Text('Quiz'),
             Text(
-              'Data Structures',
+              widget.topic?.isNotEmpty == true ? widget.topic! : 'Data Structures',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
@@ -155,17 +155,11 @@ class _QuizScreenState extends State<QuizScreen> {
                   itemCount: question.options.length,
                   itemBuilder: (context, index) {
                     final isSelected = _selectedOptionIndex == index;
-                    final isCorrectInShowcase = index == 1 && _currentIndex == 1;
 
                     Color cardBorderColor;
                     Color cardBgColor;
 
-                    if (isCorrectInShowcase) {
-                      cardBorderColor = AppColors.emeraldGreen;
-                      cardBgColor = isDark
-                          ? AppColors.darkSuccessBackground.withOpacity(0.3)
-                          : AppColors.lightSuccessBackground;
-                    } else if (isSelected) {
+                    if (isSelected) {
                       cardBorderColor = primaryColor;
                       cardBgColor = isDark
                           ? primaryColor.withOpacity(0.12)
@@ -180,7 +174,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       child: AppCard(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         color: cardBgColor,
-                        border: Border.all(color: cardBorderColor, width: isSelected || isCorrectInShowcase ? 2 : 1),
+                        border: Border.all(color: cardBorderColor, width: isSelected ? 2 : 1),
                         onTap: () {
                           setState(() {
                             _selectedOptionIndex = index;
@@ -193,21 +187,17 @@ class _QuizScreenState extends State<QuizScreen> {
                               height: 24,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isCorrectInShowcase
-                                    ? AppColors.emeraldGreen
-                                    : (isSelected ? primaryColor : Colors.transparent),
+                                color: isSelected ? primaryColor : Colors.transparent,
                                 border: Border.all(
-                                  color: isCorrectInShowcase
-                                      ? AppColors.emeraldGreen
-                                      : (isSelected
-                                          ? primaryColor
-                                          : (isDark
-                                              ? AppColors.darkBorder
-                                              : AppColors.lightBorder)),
+                                  color: isSelected
+                                      ? primaryColor
+                                      : (isDark
+                                          ? AppColors.darkBorder
+                                          : AppColors.lightBorder),
                                   width: 2,
                                 ),
                               ),
-                              child: isCorrectInShowcase || isSelected
+                              child: isSelected
                                   ? const Icon(Icons.check, size: 16, color: Colors.white)
                                   : null,
                             ),
@@ -218,7 +208,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
-                                  color: isCorrectInShowcase
+                                  color: isSelected
                                       ? (isDark
                                           ? AppColors.darkSuccessText
                                           : AppColors.lightSuccessText)

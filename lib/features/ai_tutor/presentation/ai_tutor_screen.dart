@@ -33,16 +33,6 @@ class _AiTutorScreenState extends State<AiTutorScreen> {
       _selectedTabIndex = index;
       _summaryResult = null;
       _askAiAnswer = null;
-
-      if (index == 0) {
-        _textController.text =
-            'A Queue is a linear data structure that follows the First In First Out (FIFO) principle. '
-            'The element inserted first is the one to be removed first. Operations include enqueue, dequeue, peek, and isEmpty.';
-      } else if (index == 1) {
-        _textController.text = 'Data Structures and Algorithms';
-      } else {
-        _textController.text = 'Explain the difference between Process and Thread with an example.';
-      }
     });
   }
 

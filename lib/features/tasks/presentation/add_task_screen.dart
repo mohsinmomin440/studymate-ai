@@ -133,7 +133,12 @@ class _AddTaskScreenState extends ConsumerState<AddTaskScreen> {
                 subjectsAsync.when(
                   data: (subjects) {
                     if (subjects.isNotEmpty && _selectedSubjectId == null) {
-                      _selectedSubjectId = subjects.first.id;
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        setState(() {
+                          _selectedSubjectId = subjects.first.id;
+                        });
+                      });
                     }
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),

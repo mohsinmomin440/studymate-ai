@@ -52,3 +52,5 @@ firebase_options.dart
 android/app/google-services.json
 
 StudyMate_AI_Release.apk
+StudyMate_AI_Latest_Release.apk
+*.apk
