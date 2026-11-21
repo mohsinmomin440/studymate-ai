@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../shared/widgets/gap.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/app_text_field.dart';
+import '../../shared/widgets/app_chip.dart';
 
 /// App route paths
 class AppRoutes {
@@ -653,8 +657,56 @@ class _OnboardingPage extends StatelessWidget {
   }
 }
 
-class AuthScreen extends StatelessWidget {
+class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
+
+  @override
+  ConsumerState<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends ConsumerState<AuthScreen> {
+  bool _isLoading = false;
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        if (!mounted) return;
+        context.go(AppRoutes.profileSetup);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google sign in failed: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInAsGuest() async {
+    setState(() => _isLoading = true);
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+      if (!mounted) return;
+      context.go(AppRoutes.home);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Guest sign in failed: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -685,30 +737,37 @@ class AuthScreen extends StatelessWidget {
               ),
               const Gap(40),
               FilledButton(
-                onPressed: () {
-                  // Google Sign In - will be implemented in Phase 2
-                },
+                onPressed: _isLoading ? null : _signInWithGoogle,
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.login, size: 24),
-                    const Gap(12),
-                    Text('Sign in with Google',
-                        style: theme.textTheme.labelLarge),
-                  ],
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.login, size: 24),
+                          const Gap(12),
+                          Text('Sign in with Google',
+                              style: theme.textTheme.labelLarge),
+                        ],
+                      ),
               ),
               const Gap(16),
               OutlinedButton(
-                onPressed: () {
-                  // Email sign in - will be implemented in Phase 2
-                },
+                onPressed: _isLoading
+                    ? null
+                    : () => showDialog(
+                          context: context,
+                          builder: (context) => const EmailSignInDialog(),
+                        ),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -733,9 +792,7 @@ class AuthScreen extends StatelessWidget {
               ),
               const Gap(16),
               OutlinedButton.icon(
-                onPressed: () {
-                  // Guest mode - will be implemented in Phase 2
-                },
+                onPressed: _isLoading ? null : _signInAsGuest,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -766,11 +823,277 @@ class AuthScreen extends StatelessWidget {
   }
 }
 
-class ProfileSetupScreen extends StatelessWidget {
-  const ProfileSetupScreen({super.key});
+class EmailSignInDialog extends StatefulWidget {
+  const EmailSignInDialog({super.key});
+
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Profile Setup')));
+  State<EmailSignInDialog> createState() => _EmailSignInDialogState();
+}
+
+class _EmailSignInDialogState extends State<EmailSignInDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isSignUp = false;
+  bool _isLoading = false;
+
+  void _toggleMode() {
+    setState(() => _isSignUp = !_isSignUp);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      if (_isSignUp) {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      } else {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      }
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      context.go(AppRoutes.profileSetup);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Authentication failed: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(_isSignUp ? 'Create Account' : 'Sign In'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Email required';
+                if (!value.contains('@')) return 'Enter valid email';
+                return null;
+              },
+            ),
+            const Gap(16),
+            TextFormField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Password'),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Password required';
+                if (value.length < 6) return 'Min 6 characters';
+                return null;
+              },
+            ),
+            const Gap(8),
+            TextButton(
+              onPressed: _isLoading ? null : _toggleMode,
+              child: Text(_isSignUp
+                  ? 'Have an account? Sign In'
+                  : 'Don\'t have an account? Sign Up'),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel')),
+        TextButton(
+          onPressed: _isLoading ? null : _submit,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(_isSignUp ? 'Sign Up' : 'Sign In'),
+        ),
+      ],
+    );
+  }
+}
+
+class ProfileSetupScreen extends ConsumerStatefulWidget {
+  const ProfileSetupScreen({super.key});
+
+  @override
+  ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
+}
+
+class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _gradeController = TextEditingController();
+  final _dailyGoalController = TextEditingController(text: '60');
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _gradeController.dispose();
+    _dailyGoalController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final name = _nameController.text.trim();
+    final grade = _gradeController.text.trim();
+    final dailyGoal = int.tryParse(_dailyGoalController.text) ?? 60;
+
+    await user.updateDisplayName(name);
+
+    // Save to Firestore user document
+    final firestore = FirebaseFirestore.instance;
+    await firestore.collection('users').doc(user.uid).set({
+      'name': name,
+      'grade': grade,
+      'dailyGoalMin': dailyGoal,
+      'lastStudyDate': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    if (!mounted) return;
+    context.go(AppRoutes.home);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile Setup')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Complete Your Profile',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Gap(8),
+                Text(
+                  'Tell us about yourself to personalize your experience',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const Gap(32),
+                AppTextField(
+                  label: 'Full Name',
+                  hint: 'Enter your name',
+                  controller: _nameController,
+                  textCapitalization: TextCapitalization.words,
+                ),
+                const Gap(16),
+                AppTextField(
+                  label: 'Class/Grade',
+                  hint: 'e.g., 12th Grade, Computer Science',
+                  controller: _gradeController,
+                  textCapitalization: TextCapitalization.words,
+                ),
+                const Gap(16),
+                SizedBox(
+                  height: 200,
+                  child: ListView(
+                    children: [
+                      Text(
+                        'Subjects of Interest',
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const Gap(8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: const [
+                          AppChip(label: 'Mathematics'),
+                          AppChip(label: 'Physics'),
+                          AppChip(label: 'Chemistry'),
+                          AppChip(label: 'Biology'),
+                          AppChip(label: 'English'),
+                          AppChip(label: 'Gujarati'),
+                          AppChip(label: 'Hindi'),
+                          AppChip(label: 'Computer Science'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const Gap(16),
+                AppTextField(
+                  label: 'Daily Study Goal (minutes)',
+                  hint: 'e.g., 60',
+                  controller: _dailyGoalController,
+                  keyboardType: TextInputType.number,
+                ),
+                const Gap(16),
+                SizedBox(
+                  height: 200,
+                  child: ListView(
+                    children: [
+                      Text(
+                        'Preferred Language',
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const Gap(8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: const [
+                          AppChip(label: 'English'),
+                          AppChip(label: 'Gujarati'),
+                          AppChip(label: 'Hindi'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const Gap(32),
+                FilledButton(
+                  onPressed: () {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      _saveProfile();
+                    }
+                  },
+                  child: const Text('Continue'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class HomeScreen extends StatelessWidget {

@@ -22,15 +22,17 @@
 - [ ] HomeScreen needs implementation
 - [ ] ProfileSetupScreen needs implementation
 
-## Phase 2 — Auth & onboarding ✅ IN PROGRESS
+## Phase 2 — Auth & onboarding ✅ COMPLETE
 - [x] Splash screen (animated with logo transition)
 - [x] 3-screen onboarding (animated page view)
 - [x] Auth screen UI (Google, Email, Guest sign-in)
 - [x] "Get Started" and "Skip" buttons with navigation
 - [ ] Forgot password flow
-- [ ] Profile setup screen
+- [x] Profile setup screen
 - [ ] Guest account linking
-- [ ] Firestore user doc creation
+- [x] Firestore user doc creation (in auth_service.dart)
+- [x] Email sign-in dialog with sign up toggle
+- [x] AuthRepository with proper Firestore integration
 
 ## Phase 3 — AiService + Chat
 - [ ] AiService with streaming/retry/error mapping
