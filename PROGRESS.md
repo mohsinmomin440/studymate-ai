@@ -10,7 +10,7 @@
 - [x] Android core library desugaring enabled
 - [x] Commit: "chore: project setup"
 
-## Phase 1 — Design system & shell ✅ MOSTLY COMPLETE
+## Phase 1 — Design system & shell ✅ COMPLETE
 - [x] Theme (light/dark), tokens, fonts
 - [x] Reusable widgets (Gap, GlassCard, AppTextField, AppChip, SectionHeader)
 - [x] StatTile, ProgressRing, ShimmerBox, EmptyState, ErrorState
@@ -18,18 +18,18 @@
 - [x] TypingIndicator (exists in ai_message_bubble.dart)
 - [x] go_router setup with auth guard
 - [x] Bottom nav shell with placeholder screens
-- [ ] Design preview screen (needs implementation)
-- [ ] HomeScreen needs implementation
-- [ ] ProfileSetupScreen needs implementation
+- [x] Design preview screen (DesignPreviewScreen)
+- [x] HomeScreen implemented (placeholder)
+- [x] ProfileSetupScreen implemented
 
 ## Phase 2 — Auth & onboarding ✅ COMPLETE
 - [x] Splash screen (animated with logo transition)
 - [x] 3-screen onboarding (animated page view)
 - [x] Auth screen UI (Google, Email, Guest sign-in)
 - [x] "Get Started" and "Skip" buttons with navigation
-- [ ] Forgot password flow
+- [x] Forgot password flow
 - [x] Profile setup screen
-- [ ] Guest account linking
+- [x] Guest account linking (Google + Email)
 - [x] Firestore user doc creation (in auth_service.dart)
 - [x] Email sign-in dialog with sign up toggle
 - [x] AuthRepository with proper Firestore integration

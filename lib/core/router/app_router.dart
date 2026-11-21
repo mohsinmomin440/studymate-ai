@@ -8,6 +8,10 @@ import '../../shared/widgets/gap.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/app_text_field.dart';
 import '../../shared/widgets/app_chip.dart';
+import '../../shared/widgets/section_header.dart';
+import '../../shared/widgets/streak_badge.dart';
+import '../../shared/widgets/progress_ring.dart';
+import '../../shared/widgets/stat_tile.dart';
 
 /// App route paths
 class AppRoutes {
@@ -697,7 +701,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       await FirebaseAuth.instance.signInAnonymously();
       if (!mounted) return;
-      context.go(AppRoutes.home);
+      context.go(AppRoutes.profileSetup);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -706,6 +710,42 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _showForgotPasswordDialog() async {
+    final emailController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Password'),
+        content: TextField(
+          controller: emailController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(labelText: 'Email'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await FirebaseAuth.instance.sendPasswordResetEmail(
+                email: emailController.text.trim(),
+              );
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Password reset email sent. Check your inbox.'),
+                ),
+              );
+            },
+            child: const Text('Send Reset Link'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -804,6 +844,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     style: TextStyle(fontSize: 16)),
               ),
               const Gap(40),
+              TextButton(
+                onPressed: () => _showForgotPasswordDialog(),
+                child: const Text('Forgot Password?'),
+              ),
+              const Gap(16),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -949,6 +994,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _nameController = TextEditingController();
   final _gradeController = TextEditingController();
   final _dailyGoalController = TextEditingController(text: '60');
+  bool _isGuest = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isGuest = FirebaseAuth.instance.currentUser?.isAnonymous ?? false;
+  }
 
   @override
   void dispose() {
@@ -979,6 +1031,58 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
     if (!mounted) return;
     context.go(AppRoutes.home);
+  }
+
+  Future<void> _linkToGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.isAnonymous) {
+        await user.linkWithCredential(credential);
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account upgraded to Google!')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Link failed: ${e.toString()}')),
+      );
+    }
+  }
+
+  Future<void> _linkToEmail(String email, String password) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || !user.isAnonymous) return;
+
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+      await user.linkWithCredential(credential);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account upgraded to Email!')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Link failed: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -1079,6 +1183,44 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   ),
                 ),
                 const Gap(32),
+                if (_isGuest) ...[
+                  Text(
+                    'Want to save your progress?',
+                    style: theme.textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const Gap(8),
+                  Text(
+                    'Link your account to avoid losing data when reinstalling.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const Gap(16),
+                  FilledButton.tonal(
+                    onPressed: _showLinkAccountDialog,
+                    child: const Text('Link to Google Account'),
+                  ),
+                  const Gap(8),
+                  TextButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) =>
+                            _EmailLinkDialog(onLink: _linkToEmail),
+                      );
+                    },
+                    child: const Text('Or link to Email'),
+                  ),
+                  const Gap(16),
+                  Divider(
+                    indent: 32,
+                    endIndent: 32,
+                    color: theme.colorScheme.outlineVariant,
+                  ),
+                  const Gap(16),
+                ],
                 FilledButton(
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
@@ -1092,6 +1234,120 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showLinkAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Link Account'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.account_circle_rounded),
+              title: const Text('Google'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _linkToGoogle();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.email),
+              title: const Text('Email'),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => _EmailLinkDialog(onLink: _linkToEmail),
+                );
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmailLinkDialog extends StatefulWidget {
+  final void Function(String email, String password) onLink;
+
+  const _EmailLinkDialog({required this.onLink});
+
+  @override
+  State<_EmailLinkDialog> createState() => _EmailLinkDialogState();
+}
+
+class _EmailLinkDialogState extends State<_EmailLinkDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Link to Email'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Email required';
+                if (!value.contains('@')) return 'Enter valid email';
+                return null;
+              },
+            ),
+            const Gap(16),
+            TextFormField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Password'),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Password required';
+                if (value.length < 6) return 'Min 6 characters';
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_formKey.currentState?.validate() ?? false) {
+              Navigator.of(context).pop();
+              widget.onLink(
+                _emailController.text.trim(),
+                _passwordController.text,
+              );
+            }
+          },
+          child: const Text('Link'),
+        ),
+      ],
     );
   }
 }
@@ -1233,9 +1489,154 @@ class ProgressScreen extends StatelessWidget {
 
 class DesignPreviewScreen extends StatelessWidget {
   const DesignPreviewScreen({super.key});
+
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Design Preview')));
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Design Preview'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Light'),
+              Tab(text: 'Dark'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _DesignPreviewTab(isDark: false, theme: theme),
+            _DesignPreviewTab(isDark: true, theme: theme),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DesignPreviewTab extends StatelessWidget {
+  final bool isDark;
+  final ThemeData theme;
+
+  const _DesignPreviewTab({required this.isDark, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const SectionHeader(title: 'Text Fields'),
+        AppTextField(
+          label: 'Full Name',
+          hint: 'Enter your name',
+          controller: TextEditingController(),
+        ),
+        const Gap(16),
+        AppTextField(
+          label: 'Email',
+          hint: 'Enter your email',
+          controller: TextEditingController(),
+          prefixIcon: Icons.email,
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const Gap(16),
+        AppTextField(
+          label: 'Password',
+          hint: 'Enter your password',
+          controller: TextEditingController(),
+          prefixIcon: Icons.lock,
+          obscureText: true,
+        ),
+        const Gap(24),
+        const SectionHeader(title: 'Chips'),
+        const Gap(8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: const [
+            AppChip(label: 'Mathematics'),
+            AppChip(label: 'Physics'),
+            AppChip(label: 'Chemistry'),
+            AppChip(label: 'Biology'),
+          ],
+        ),
+        const Gap(16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: const [
+            AppChip(label: 'Easy', selected: true),
+            AppChip(label: 'Medium'),
+            AppChip(label: 'Hard'),
+          ],
+        ),
+        const Gap(24),
+        const SectionHeader(title: 'Buttons'),
+        FilledButton(
+          onPressed: () {},
+          child: const Text('Primary Button'),
+        ),
+        const Gap(8),
+        OutlinedButton(
+          onPressed: () {},
+          child: const Text('Outlined Button'),
+        ),
+        const Gap(8),
+        FilledButton.tonal(
+          onPressed: () {},
+          child: const Text('Tonal Button'),
+        ),
+        const Gap(24),
+        const SectionHeader(title: 'Badges'),
+        const StreakBadge(streak: 5),
+        const Gap(8),
+        const StreakBadge(streak: 12),
+        const Gap(8),
+        const StreakBadge(streak: 1),
+        const Gap(24),
+        const SectionHeader(title: 'Progress'),
+        ProgressRing(
+          progress: 0.75,
+          size: 80,
+        ),
+        const Gap(16),
+        SizedBox(
+          height: 100,
+          child: ListView(
+            children: [
+              CircularStatTile(
+                label: 'XP',
+                value: '1250',
+                progress: 0.75,
+              ),
+              CircularStatTile(
+                label: 'Streak',
+                value: '7 days',
+                progress: 0.7,
+              ),
+              CircularStatTile(
+                label: 'Cards',
+                value: '42',
+                progress: 0.85,
+              ),
+            ],
+          ),
+        ),
+        const Gap(24),
+        const SectionHeader(title: 'Progress Ring'),
+        ProgressRing(
+          progress: 1.0,
+          size: 72,
+          progressGradient: LinearGradient(
+            colors: [Color(0xFF6C5CE7), Color(0xFF8E7BFF)],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class NotFoundScreen extends StatelessWidget {
