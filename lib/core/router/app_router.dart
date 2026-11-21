@@ -12,6 +12,7 @@ import '../../shared/widgets/section_header.dart';
 import '../../shared/widgets/streak_badge.dart';
 import '../../shared/widgets/progress_ring.dart';
 import '../../shared/widgets/stat_tile.dart';
+import '../../features/chat/chat_feature.dart';
 
 /// App route paths
 class AppRoutes {
@@ -1359,19 +1360,11 @@ class HomeScreen extends StatelessWidget {
       const Scaffold(body: Center(child: Text('Home')));
 }
 
-class ChatListScreen extends StatelessWidget {
-  const ChatListScreen({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
   @override
   Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Chat List')));
-}
-
-class ChatDetailScreen extends StatelessWidget {
-  final String chatId;
-  const ChatDetailScreen({super.key, required this.chatId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Chat: $chatId')));
+      const Scaffold(body: Center(child: Text('Settings')));
 }
 
 class ScannerScreen extends StatelessWidget {
@@ -1394,13 +1387,6 @@ class PlanDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Scaffold(body: Center(child: Text('Plan: $planId')));
-}
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Settings')));
 }
 
 class NotesScreen extends StatelessWidget {

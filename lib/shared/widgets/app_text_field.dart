@@ -28,6 +28,7 @@ class AppTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final String? semanticLabel;
+  final ValueChanged<String>? onSubmitted;
 
   const AppTextField({
     super.key,
@@ -54,6 +55,7 @@ class AppTextField extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.semanticLabel,
+    this.onSubmitted,
   });
 
   @override
@@ -123,6 +125,7 @@ class _AppTextFieldState extends State<AppTextField> {
           textCapitalization: widget.textCapitalization,
           onChanged: widget.onChanged,
           onTap: widget.onTap,
+          onFieldSubmitted: widget.onSubmitted,
           validator: widget.validator,
           inputFormatters: widget.inputFormatters,
           autofocus: widget.autofocus,

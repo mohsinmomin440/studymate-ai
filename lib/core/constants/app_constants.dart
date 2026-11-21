@@ -22,9 +22,9 @@ class AppConstants {
   static const String firestoreDailyStatsCollection = 'dailyStats';
   static const String firestoreBadgesCollection = 'badges';
 
-  // AI
-  static const String defaultChatModel = 'gemini-1.5-flash';
-  static const String defaultCheapModel = 'gemini-1.5-flash-8b';
+  // AI - Gemini models (current Firebase AI Logic model names)
+  static const String defaultChatModel = 'gemini-3.5-flash';
+  static const String defaultCheapModel = 'gemini-3.5-flash-lite';
   static const int maxChatHistoryMessages = 10;
   static const int maxOutputTokensChat = 2048;
   static const int maxOutputTokensJSON = 4096;

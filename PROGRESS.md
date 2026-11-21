@@ -34,12 +34,15 @@
 - [x] Email sign-in dialog with sign up toggle
 - [x] AuthRepository with proper Firestore integration
 
-## Phase 3 — AiService + Chat
-- [ ] AiService with streaming/retry/error mapping
-- [ ] Chat UI
-- [ ] Modes, subjects
-- [ ] Chat history
-- [ ] Markdown rendering
+## Phase 3 — AiService + Chat ✅ COMPLETE
+- [x] AiService with Firebase AI Logic integration
+- [x] Streaming responses with retry/backoff
+- [x] Error mapping (AIFailure, ServerFailure, etc.)
+- [x] Chat UI (ChatListScreen, ChatDetailScreen)
+- [x] Modes (Explain Simply, Step-by-Step, Exam Answer, Quick Summary, Teach Me Like I'm 10)
+- [x] Subjects dropdown
+- [x] Chat history with Firestore streaming
+- [x] Markdown rendering (via ai_message_bubble.dart)
 
 ## Phase 4 — Notes + Doubt Scanner
 - [ ] Notes CRUD/search/tags
