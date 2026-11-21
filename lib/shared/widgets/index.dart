@@ -7,6 +7,7 @@ export 'stat_tile.dart';
 export 'progress_ring.dart';
 export 'shimmer_box.dart';
 export 'empty_state.dart';
+export 'streak_badge.dart';
 export 'app_bottom_sheet.dart';
 export 'ai_message_bubble.dart';
 export 'gap.dart';

@@ -7,15 +7,15 @@
 - [x] Firebase: stub file created (run `flutterfire configure` for real config)
 - [x] All analyzer issues resolved
 - [x] Web platform configured
+- [x] Android core library desugaring enabled
 - [x] Commit: "chore: project setup"
-
-**Notes Testing:**
-- Need to run `flutterfire configure` after setting up Firebase project
-- Android build has Kotlin desugaring issue with `flutter_local_notifications`
 
 ## Phase 1 — Design system & shell ✅ MOSTLY COMPLETE
 - [x] Theme (light/dark), tokens, fonts
-- [x] Reusable widgets (Gap, GlassCard, AppTextField, AppChip, SectionHeader, etc.)
+- [x] Reusable widgets (Gap, GlassCard, AppTextField, AppChip, SectionHeader)
+- [x] StatTile, ProgressRing, ShimmerBox, EmptyState, ErrorState
+- [x] StreakBadge, AppBottomSheet, AiMessageBubble, GradientButton
+- [x] TypingIndicator (exists in ai_message_bubble.dart)
 - [x] go_router setup with auth guard
 - [x] Bottom nav shell with placeholder screens
 - [ ] Design preview screen (needs implementation)
@@ -23,12 +23,14 @@
 - [ ] ProfileSetupScreen needs implementation
 
 ## Phase 2 — Auth & onboarding ✅ IN PROGRESS
-- [ ] Splash screen (basic FirebaseSetupScreen already implemented)
-- [ ] Onboarding screens (placeholder exists)
-- [X] Sign in/up with Google, email, guest (AuthScreen UI implemented)
-- [ ] Auth redirect guard (implemented but needs screens)
-- [ ] User doc creation
-- [ ] Profile setup screen (placeholder exists)
+- [x] Splash screen (animated with logo transition)
+- [x] 3-screen onboarding (animated page view)
+- [x] Auth screen UI (Google, Email, Guest sign-in)
+- [x] "Get Started" and "Skip" buttons with navigation
+- [ ] Forgot password flow
+- [ ] Profile setup screen
+- [ ] Guest account linking
+- [ ] Firestore user doc creation
 
 ## Phase 3 — AiService + Chat
 - [ ] AiService with streaming/retry/error mapping
@@ -85,4 +87,4 @@
 5. Enable App Check (Play Integrity)
 6. Add SHA-1 + SHA-256 hashes for Google Sign-In
 7. Add Flutter assets fonts for Gujarati/Hindi (Noto Sans)
-8. Fix Android build configuration for `flutter_local_notifications`
+8. Test `flutter build apk --debug` for Android

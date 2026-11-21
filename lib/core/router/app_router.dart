@@ -435,19 +435,222 @@ class _CenterFAB extends StatelessWidget {
   }
 }
 
-// Placeholder screens - to be implemented in features
-class SplashScreen extends StatelessWidget {
+// Splash screen - animated logo transition
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Splash')));
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class OnboardingScreen extends StatelessWidget {
-  const OnboardingScreen({super.key});
+class _SplashScreenState extends State<SplashScreen> {
+  double _scale = 0;
+
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Onboarding')));
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      setState(() => _scale = 1.0);
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        context.go(AppRoutes.onboarding);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              scale: _scale,
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutBack,
+              child: const Icon(
+                Icons.school_rounded,
+                size: 80,
+                color: Color(0xFF6C5CE7),
+              ),
+            ),
+            const Gap(32),
+            Text(
+              'StudyMate AI',
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Gap(16),
+            Text(
+              'Learn smarter with AI',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Onboarding screens
+class OnboardingScreen extends ConsumerStatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  int _currentPage = 0;
+  final int _totalPages = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final pages = [
+      _OnboardingPage(
+        title: 'Learn Smarter',
+        message:
+            'Ask AI to explain difficult topics, generate notes, flashcards, and quizzes.',
+        icon: Icons.auto_awesome,
+      ),
+      _OnboardingPage(
+        title: 'Track Progress',
+        message:
+            'Set daily goals, earn XP, track streaks, and level up your learning journey.',
+        icon: Icons.bar_chart,
+      ),
+      _OnboardingPage(
+        title: 'Study Anywhere',
+        message: 'Offline mode, cloud sync, and multi-language support.',
+        icon: Icons.download,
+      ),
+    ];
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                itemCount: _totalPages,
+                onPageChanged: (page) => setState(() => _currentPage = page),
+                itemBuilder: (context, index) {
+                  return pages[index < pages.length ? index : 0];
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_totalPages, (index) {
+                      return Container(
+                        width: 8,
+                        height: 8,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _currentPage == index
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.outlineVariant,
+                        ),
+                      );
+                    }),
+                  ),
+                  const Gap(24),
+                  FilledButton(
+                    onPressed: () {
+                      // Check if user is already authenticated
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user != null) {
+                        context.go(AppRoutes.home);
+                      } else {
+                        context.go(AppRoutes.auth);
+                      }
+                    },
+                    child: const Text('Get Started'),
+                  ),
+                  const Gap(12),
+                  TextButton(
+                    onPressed: () {
+                      // Skip onboarding
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user != null) {
+                        context.go(AppRoutes.home);
+                      } else {
+                        context.go(AppRoutes.auth);
+                      }
+                    },
+                    child: const Text('Skip'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OnboardingPage extends StatelessWidget {
+  final String title;
+  final String message;
+  final IconData icon;
+
+  const _OnboardingPage({
+    required this.title,
+    required this.message,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(
+              icon,
+              size: 120,
+              color: theme.colorScheme.primary,
+            ),
+            const Gap(32),
+            Text(
+              title,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const Gap(16),
+            Text(
+              message,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class AuthScreen extends StatelessWidget {
