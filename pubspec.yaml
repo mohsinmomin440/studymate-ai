@@ -59,6 +59,9 @@ dependencies:
   collection: ^1.18.0
   shared_preferences: ^2.3.2
 
+  # Animations
+  confetti: ^0.8.0
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:

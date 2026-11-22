@@ -168,10 +168,10 @@ class FlashcardRepository {
     });
   }
 
-  /// Create cards from AI-generated data
+  /// Create cards from AI-generated data (list of maps with 'front' and 'back' keys)
   Future<List<String>> createCardsFromData({
     required String deckId,
-    required List<FlashcardData> cardsData,
+    required List<Map<String, dynamic>> cardsData,
   }) async {
     final cardIds = <String>[];
     final batch = _firestore.batch();
@@ -180,8 +180,8 @@ class FlashcardRepository {
       final card = Flashcard(
         id: _uuid.v4(),
         deckId: deckId,
-        front: cardData.front,
-        back: cardData.back,
+        front: cardData['front'] as String,
+        back: cardData['back'] as String,
         dueAt: DateTime.now(),
       );
       batch.set(getDeckCards(deckId).doc(card.id), card.toJson());

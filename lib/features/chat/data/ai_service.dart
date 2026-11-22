@@ -229,8 +229,8 @@ class AiService {
     }
   }
 
-  /// Generate quiz
-  Future<List<QuizQuestion>> generateQuiz({
+  /// Generate quiz - returns list of maps for quiz repository
+  Future<List<Map<String, dynamic>>> generateQuiz({
     required String topic,
     required int count,
     required String difficulty,
@@ -249,9 +249,7 @@ class AiService {
       prompt: prompt,
       fromJson: (json) {
         final list = json['questions'] as List? ?? json as List;
-        return list
-            .map((e) => QuizQuestion.fromJson(e as Map<String, dynamic>))
-            .toList();
+        return list.map((e) => (e as Map<String, dynamic>)).toList();
       },
       useCheapModel: true,
     );

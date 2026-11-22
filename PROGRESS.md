@@ -71,14 +71,15 @@
 - [x] Quiz result screen (QuizResultScreen with score and detailed feedback)
 - [x] "Retry wrong questions" button (shows attempt history)
 - [x] Optional timer support in quiz
-- [x] Confetti animation on score screen (ready to implement)
+- [x] Confetti animation on score screen (implemented with confetti package)
 - [x] Quiz attempt history and analytics
 - [x] Routes wired (flashcards, quiz at /flashcards and /quiz)
 - [x] Due cards count displayed in deck stats
 - [x] JSON retry validation (parse, validate, retry once on failure)
-- [x] All tests pass (29/29)
+- [x] All tests pass (38/38)
 - [x] Debug APK builds successfully
 - [x] Study hub screen implemented in study_routes.dart
+- [x] Quiz JSON parser unit tests added
 
 ## Phase 6 — Planner + Focus timer
 - [ ] AI study plan
