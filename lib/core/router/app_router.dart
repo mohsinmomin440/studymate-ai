@@ -15,6 +15,8 @@ import '../../shared/widgets/stat_tile.dart';
 import '../../features/chat/chat_feature.dart';
 import '../../features/notes/notes_feature.dart';
 import '../../features/scanner/scanner_feature.dart';
+import '../../features/flashcards/flashcards_feature.dart';
+import '../../features/quiz/quiz_feature.dart';
 
 /// App route paths
 class AppRoutes {
@@ -30,9 +32,14 @@ class AppRoutes {
   static const notesCreate = '/notes/create';
   static const noteDetail = '/notes/:noteId';
   static const flashcards = '/flashcards';
+  static const flashcardsCreate = '/flashcards/create';
+  static const flashcardsEdit = '/flashcards/:deckId/edit';
   static const deckDetail = '/flashcards/:deckId';
   static const studyMode = '/flashcards/:deckId/study';
+  static const cardCreate = '/card/create/:deckId';
+  static const cardEdit = '/card/:deckId/:cardId/edit';
   static const quiz = '/quiz';
+  static const quizCreate = '/quiz/create';
   static const quizDetail = '/quiz/:quizId';
   static const quizTake = '/quiz/:quizId/take';
   static const quizResult = '/quiz/:quizId/result';
@@ -179,7 +186,28 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.flashcards,
-        builder: (context, state) => const FlashcardsScreen(),
+        builder: (context, state) => FlashcardsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.flashcardsCreate,
+        builder: (context, state) => CreateEditDeckScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.flashcardsEdit,
+        builder: (context, state) =>
+            CreateEditDeckScreen(deckId: state.pathParameters['deckId']),
+      ),
+      GoRoute(
+        path: AppRoutes.cardCreate,
+        builder: (context, state) =>
+            CardEditorScreen(deckId: state.pathParameters['deckId']!),
+      ),
+      GoRoute(
+        path: AppRoutes.cardEdit,
+        builder: (context, state) => CardEditorScreen(
+          deckId: state.pathParameters['deckId']!,
+          cardId: state.pathParameters['cardId'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.deckDetail,
@@ -195,7 +223,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.quiz,
-        builder: (context, state) => const QuizScreen(),
+        builder: (context, state) => QuizScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.quizCreate,
+        builder: (context, state) => QuizCreateScreen(),
       ),
       GoRoute(
         path: AppRoutes.quizDetail,
@@ -1387,61 +1419,6 @@ class PlanDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Scaffold(body: Center(child: Text('Plan: $planId')));
-}
-
-class FlashcardsScreen extends StatelessWidget {
-  const FlashcardsScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Flashcards')));
-}
-
-class DeckDetailScreen extends StatelessWidget {
-  final String deckId;
-  const DeckDetailScreen({super.key, required this.deckId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Deck: $deckId')));
-}
-
-class StudyModeScreen extends StatelessWidget {
-  final String deckId;
-  const StudyModeScreen({super.key, required this.deckId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Study: $deckId')));
-}
-
-class QuizScreen extends StatelessWidget {
-  const QuizScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Quiz')));
-}
-
-class QuizDetailScreen extends StatelessWidget {
-  final String quizId;
-  const QuizDetailScreen({super.key, required this.quizId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Quiz: $quizId')));
-}
-
-class QuizTakeScreen extends StatelessWidget {
-  final String quizId;
-  const QuizTakeScreen({super.key, required this.quizId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Take Quiz: $quizId')));
-}
-
-class QuizResultScreen extends StatelessWidget {
-  final String quizId;
-  final String? attemptId;
-  const QuizResultScreen({super.key, required this.quizId, this.attemptId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Result: $quizId')));
 }
 
 class FocusScreen extends StatelessWidget {
