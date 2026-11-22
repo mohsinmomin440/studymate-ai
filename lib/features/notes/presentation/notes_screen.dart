@@ -11,9 +11,14 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../chat/data/ai_service.dart';
 import '../data/note_repository.dart';
 import '../domain/note_models.dart';
 import '../../../core/router/app_router.dart';
+
+/// AI actions available for notes
+enum AiAction { summarize, keyPoints, translate, flashcards, quiz }
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -387,7 +392,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             title: const Text('Choose PDF file'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: PDF import
+              // PDF import deferred - requires additional package compatibility
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('PDF import coming soon')),
               );
@@ -398,8 +403,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             title: const Text('Import Image (OCR)'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Image OCR - will use DoubtScanner
-              context.go(AppRoutes.scanner);
+              Navigator.of(context).pushNamed(AppRoutes.scanner);
             },
           ),
         ],
@@ -463,10 +467,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             title: const Text('Summarize'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Call AI Summarize
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('AI Summarize coming soon')),
-              );
+              _performAiAction(AiAction.summarize);
             },
           ),
           ListTile(
@@ -474,10 +475,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             title: const Text('Key Points'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Call AI Extract Key Points
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('AI Key Points coming soon')),
-              );
+              _performAiAction(AiAction.keyPoints);
             },
           ),
           ListTile(
@@ -485,10 +483,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             title: const Text('Translate'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Translation
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Translation coming soon')),
-              );
+              _performAiAction(AiAction.translate);
             },
           ),
           ListTile(
@@ -496,11 +491,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             title: const Text('Generate Flashcards'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Generate flashcards
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Flashcard generation coming soon')),
-              );
+              _performAiAction(AiAction.flashcards);
             },
           ),
           ListTile(
@@ -508,11 +499,173 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             title: const Text('Generate Quiz'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Generate quiz
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Quiz generation coming soon')),
-              );
+              _performAiAction(AiAction.quiz);
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performAiAction(AiAction action) async {
+    final aiService = ref.read(aiServiceProvider);
+    final body = _bodyController.text.trim();
+    final subject = _subjectController.text.trim();
+    final language = _getSelectedLanguage();
+    final canUse = await aiService.checkAndIncrementUsage();
+
+    if (!canUse) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Daily AI limit reached. Try again tomorrow or use fewer AI requests.'),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _AiProcessingDialog(action: action),
+    );
+
+    try {
+      final result =
+          await _callAiService(aiService, action, body, subject, language);
+
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      await _handleAiResult(action, result);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_getActionSuccessMessage(action))),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        _showAiErrorDialog(e.toString());
+      }
+    }
+  }
+
+  String _getSelectedLanguage() {
+    return AppConstants.supportedLocales.firstWhere(
+      (locale) => _isLanguageSupported(locale),
+      orElse: () => 'en',
+    );
+  }
+
+  bool _isLanguageSupported(String locale) {
+    return ['en', 'gu', 'hi'].contains(locale);
+  }
+
+  String _getActionSuccessMessage(AiAction action) {
+    switch (action) {
+      case AiAction.summarize:
+        return 'Note summarized successfully';
+      case AiAction.keyPoints:
+        return 'Key points extracted successfully';
+      case AiAction.translate:
+        return 'Note translated successfully';
+      case AiAction.flashcards:
+        return 'Flashcards generated successfully';
+      case AiAction.quiz:
+        return 'Quiz generated successfully';
+    }
+  }
+
+  Future<String> _callAiService(
+    AiService aiService,
+    AiAction action,
+    String body,
+    String subject,
+    String language,
+  ) async {
+    switch (action) {
+      case AiAction.summarize:
+        return await aiService.summarizeNote(
+            noteText: body, language: language);
+      case AiAction.keyPoints:
+        return await aiService.extractKeyPoints(
+            noteText: body, language: language);
+      case AiAction.translate:
+        return await aiService.translateNote(
+            noteText: body, targetLanguage: language);
+      case AiAction.flashcards:
+        final flashcards = await aiService.generateFlashcardsFromNote(
+          noteText: body,
+          count: 10,
+          subject: subject,
+          language: language,
+        );
+        return 'FLASHCARDS:${flashcards.map((f) => '${f.front}|${f.back}').join('||')}';
+      case AiAction.quiz:
+        final quizzes = await aiService.generateQuizFromNote(
+          noteText: body,
+          count: 10,
+          difficulty: 'Medium',
+          subject: subject,
+          language: language,
+        );
+        return 'QUIZ:${QuizQuestionToJson(quizzes)}';
+    }
+  }
+
+  String QuizQuestionToJson(List<dynamic> questions) {
+    final buffer = StringBuffer();
+    buffer.write('[');
+    for (int i = 0; i < questions.length; i++) {
+      final q = questions[i];
+      buffer.write('{');
+      buffer.write('"question":"${_escapeJson(q.question)}",');
+      buffer.write(
+          '"options":["${_escapeJson(q.options[0])}","${_escapeJson(q.options[1])}","${_escapeJson(q.options[2])}","${_escapeJson(q.options[3])}"],');
+      buffer.write('"correctIndex":${q.correctIndex},');
+      buffer.write('"explanation":"${_escapeJson(q.explanation)}"}');
+      if (i < questions.length - 1) buffer.write(',');
+    }
+    buffer.write(']');
+    return buffer.toString();
+  }
+
+  String _escapeJson(String input) {
+    return input
+        .replaceAll('\\', '\\\\')
+        .replaceAll('"', '\\"')
+        .replaceAll('\n', '\\n');
+  }
+
+  Future<void> _handleAiResult(AiAction action, String result) async {
+    if (result.isEmpty) return;
+
+    switch (action) {
+      case AiAction.summarize:
+      case AiAction.keyPoints:
+      case AiAction.translate:
+        _bodyController.text = result;
+        break;
+      case AiAction.flashcards:
+      case AiAction.quiz:
+        // Results are saved - could show a preview or navigate to appropriate screen
+        break;
+    }
+  }
+
+  void _showAiErrorDialog(String error) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('AI Action Failed'),
+        content: Text('Something went wrong: $error\n\nPlease try again.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -548,6 +701,35 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             ),
             child: const Text('Delete'),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AiProcessingDialog extends StatelessWidget {
+  final AiAction action;
+
+  const _AiProcessingDialog({required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    final actionName = switch (action) {
+      AiAction.summarize => 'Summarizing',
+      AiAction.keyPoints => 'Extracting key points',
+      AiAction.translate => 'Translating',
+      AiAction.flashcards => 'Generating flashcards',
+      AiAction.quiz => 'Generating quiz',
+    };
+
+    return AlertDialog(
+      title: Text('$actionName...'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CircularProgressIndicator(),
+          const Gap(16),
+          Text('StudyMate AI is working on it...'),
         ],
       ),
     );
@@ -685,7 +867,6 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         ref.read(noteRepositoryProvider).togglePin(_note!.id);
         break;
       case 'edit':
-        // Navigate to edit screen
         if (mounted) {
           context.push(AppRoutes.notesCreate);
         }

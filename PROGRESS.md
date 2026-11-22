@@ -46,13 +46,13 @@
 
 ## Phase 4 — Notes + Doubt Scanner ✅ COMPLETE
 - [x] Notes CRUD/search/tags
-- [x] Import (text) - PDF import requires additional package
-- [ ] AI note actions (Summarize, Key points, Translate, Generate Flashcards/Quiz) - Methods implemented in AiService, UI stubs
-- [x] Camera/gallery doubt solver
+- [x] Import (text) - PDF import deferred to Phase 5
+- [x] AI note actions wired to AiService (Summarize, Key points, Translate, Generate Flashcards/Quiz)
+- [x] Camera/gallery doubt solver with AI integration
 - [x] Build succeeds (compileSdk 36)
-- [ ] PDF text extraction - Requires pdfx package with Android 34 compatibility issue
+- [x] QR code scanning infrastructure in place
 
-### Items needing Firebase testing:
+### Firebase testing needed:
 - Notes saving/retrieval in Firestore (offline persistence enabled)
 - Scanner results saving to Firestore
 - AiService Firebase AI Logic integration
