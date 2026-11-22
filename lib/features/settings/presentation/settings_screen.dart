@@ -10,6 +10,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:studymate_ai/core/constants/app_constants.dart';
 import 'package:studymate_ai/core/services/notification_service.dart';
 import 'package:timezone/timezone.dart' as tz;
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
@@ -21,20 +22,21 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final settingsAsync = ref.watch(userSettingsStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settings),
         centerTitle: true,
       ),
       body: settingsAsync.when(
-        data: (settings) => _buildSettingsList(context, ref, settings),
+        data: (settings) => _buildSettingsList(context, ref, settings, l10n),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => Center(
           child: Text(
-            'Failed to load settings',
+            l10n.failedToLoadSettings,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -44,8 +46,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSettingsList(
-      BuildContext context, WidgetRef ref, UserSettings settings) {
+  Widget _buildSettingsList(BuildContext context, WidgetRef ref,
+      UserSettings settings, AppLocalizations l10n) {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(userSettingsStreamProvider);
@@ -53,33 +55,34 @@ class SettingsScreen extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const SectionHeader(title: 'Preferences'),
+          SectionHeader(title: l10n.preferences),
           const Gap(16),
-          _buildThemeSection(context, settings),
+          _buildThemeSection(context, settings, l10n),
           const Gap(16),
-          _buildLanguageSection(context, settings),
+          _buildLanguageSection(context, settings, l10n),
           const Gap(16),
-          _buildDailyGoalSection(context, settings),
+          _buildDailyGoalSection(context, settings, l10n),
           const Gap(16),
-          _buildReminderSection(context, settings),
+          _buildReminderSection(context, settings, l10n),
           const Gap(16),
           _buildNotificationsSection(context),
           const Gap(16),
-          _buildAISettingsSection(context, settings),
+          _buildAISettingsSection(context, settings, l10n),
           const Gap(32),
-          const SectionHeader(title: 'Account'),
+          SectionHeader(title: l10n.account),
           const Gap(16),
-          _buildAccountSection(context),
+          _buildAccountSection(context, l10n),
           const Gap(32),
-          const SectionHeader(title: 'About'),
+          SectionHeader(title: l10n.about),
           const Gap(16),
-          _buildAboutSection(context),
+          _buildAboutSection(context, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildThemeSection(BuildContext context, UserSettings settings) {
+  Widget _buildThemeSection(
+      BuildContext context, UserSettings settings, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final currentTheme = settings.theme;
 
@@ -88,7 +91,7 @@ class SettingsScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Theme',
+            l10n.theme,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -98,7 +101,7 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               _buildThemeOption(
                 context,
-                title: 'Light',
+                title: l10n.lightMode,
                 icon: Icons.light_mode_rounded,
                 isSelected: currentTheme == 'light',
                 onTap: () => _updateSetting(context, 'theme', 'light'),
@@ -106,7 +109,7 @@ class SettingsScreen extends ConsumerWidget {
               const Gap(12),
               _buildThemeOption(
                 context,
-                title: 'Dark',
+                title: l10n.darkMode,
                 icon: Icons.dark_mode_rounded,
                 isSelected: currentTheme == 'dark',
                 onTap: () => _updateSetting(context, 'theme', 'dark'),
@@ -114,7 +117,7 @@ class SettingsScreen extends ConsumerWidget {
               const Gap(12),
               _buildThemeOption(
                 context,
-                title: 'System',
+                title: l10n.systemTheme,
                 icon: Icons.auto_mode_rounded,
                 isSelected: currentTheme == 'system',
                 onTap: () => _updateSetting(context, 'theme', 'system'),
@@ -181,12 +184,13 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLanguageSection(BuildContext context, UserSettings settings) {
+  Widget _buildLanguageSection(
+      BuildContext context, UserSettings settings, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final languages = [
-      ('en', 'English'),
-      ('gu', 'ગુજરાતી'),
-      ('hi', 'हिंदी'),
+      ('en', l10n.english),
+      ('gu', l10n.gujarati),
+      ('hi', l10n.hindi),
     ];
     final currentLang = settings.language;
 
@@ -195,14 +199,14 @@ class SettingsScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'App Language',
+            l10n.language,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const Gap(8),
           Text(
-            'Changes the language of the app interface',
+            l10n.appLanguage,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -233,7 +237,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDailyGoalSection(BuildContext context, UserSettings settings) {
+  Widget _buildDailyGoalSection(
+      BuildContext context, UserSettings settings, AppLocalizations l10n) {
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -241,14 +246,14 @@ class SettingsScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Daily Study Goal',
+            l10n.dailyGoal,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const Gap(8),
           Text(
-            '${settings.dailyGoalMin} minutes per day',
+            '${settings.dailyGoalMin} ${l10n.minutes} ${l10n.perDay}',
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.w600,
@@ -260,7 +265,7 @@ class SettingsScreen extends ConsumerWidget {
             min: 15,
             max: 180,
             divisions: 33,
-            label: '${settings.dailyGoalMin} min',
+            label: '${settings.dailyGoalMin} ${l10n.min}',
             onChanged: (v) =>
                 _updateSetting(context, 'dailyGoalMin', v.round()),
           ),
@@ -269,7 +274,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildReminderSection(BuildContext context, UserSettings settings) {
+  Widget _buildReminderSection(
+      BuildContext context, UserSettings settings, AppLocalizations l10n) {
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -277,7 +283,7 @@ class SettingsScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Study Reminders',
+            l10n.notifications,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -291,13 +297,15 @@ class SettingsScreen extends ConsumerWidget {
               color: theme.colorScheme.primary,
             ),
             title: Text(
-              'Enable Notifications',
+              l10n.notificationStudyReminder,
               style: theme.textTheme.bodyLarge,
             ),
             trailing: Switch(
               value: settings.notificationsEnabled,
               onChanged: (v) {
+                if (!context.mounted) return;
                 _updateSetting(context, 'notificationsEnabled', v).then((_) {
+                  if (!context.mounted) return;
                   if (v && settings.reminderTimeHour != null) {
                     _scheduleReminder(context, settings);
                   }
@@ -310,13 +318,18 @@ class SettingsScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.access_time_rounded),
               title: Text(
-                'Reminder Time',
+                l10n.notificationDailySession,
                 style: theme.textTheme.bodyMedium,
               ),
               subtitle: settings.reminderTimeHour != null
                   ? Text(
-                      '${settings.reminderTimeHour}:${settings.reminderTimeMinute!.toString().padLeft(2, '0')}')
-                  : const Text('Not set'),
+                      '${settings.reminderTimeHour.toString().padLeft(2, '0')}:${settings.reminderTimeMinute!.toString().padLeft(2, '0')}')
+                  : Text(
+                      l10n.notSet,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
               trailing: IconButton(
                 icon: const Icon(Icons.edit_rounded, size: 20),
                 onPressed: () => _showTimePicker(context),
@@ -336,6 +349,7 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _scheduleReminder(
       BuildContext context, UserSettings settings) async {
+    final l10n = AppLocalizations.of(context)!;
     final hour = settings.reminderTimeHour;
     final minute = settings.reminderTimeMinute;
     if (hour == null || minute == null) return;
@@ -352,26 +366,27 @@ class SettingsScreen extends ConsumerWidget {
     try {
       await notificationService.scheduleDailyNotification(
         id: 100,
-        title: 'Study Reminder',
-        body: 'Time for your daily study session!',
+        title: l10n.notificationStudyReminder,
+        body: l10n.notificationDailySession,
         hour: hour,
         minute: minute,
       );
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to schedule reminder: $e')),
+        SnackBar(content: Text(l10n.failedToSend(e))),
       );
     }
   }
 
   Widget _buildNotificationsSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Notifications',
+            l10n.notifications,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -397,7 +412,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAISettingsSection(BuildContext context, UserSettings settings) {
+  Widget _buildAISettingsSection(
+      BuildContext context, UserSettings settings, AppLocalizations l10n) {
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -405,16 +421,16 @@ class SettingsScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'AI Settings',
+            l10n.aiResponseLanguage,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const Gap(12),
-          _buildAiLanguageRow(context, settings),
+          _buildAiLanguageRow(context, settings, l10n),
           const Gap(16),
           Text(
-            'Response Style',
+            l10n.aiResponseStyle,
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -441,14 +457,15 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAiLanguageRow(BuildContext context, UserSettings settings) {
+  Widget _buildAiLanguageRow(
+      BuildContext context, UserSettings settings, AppLocalizations l10n) {
     final theme = Theme.of(context);
 
     return Row(
       children: [
         Expanded(
           child: Text(
-            'AI Response Language',
+            l10n.aiResponseLanguage,
             style: theme.textTheme.bodyMedium,
           ),
         ),
@@ -468,7 +485,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAccountSection(BuildContext context) {
+  Widget _buildAccountSection(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -481,7 +498,7 @@ class SettingsScreen extends ConsumerWidget {
               color: theme.colorScheme.primary,
             ),
             title: Text(
-              'Edit Profile',
+              l10n.editProfile,
               style: theme.textTheme.bodyLarge,
             ),
             trailing: Icon(Icons.chevron_right_rounded,
@@ -501,10 +518,15 @@ class SettingsScreen extends ConsumerWidget {
               color: theme.colorScheme.primary,
             ),
             title: Text(
-              'Link Account',
+              l10n.linkAccount,
               style: theme.textTheme.bodyLarge,
             ),
-            subtitle: const Text('Link Google or Email for data backup'),
+            subtitle: Text(
+              l10n.linkGoogleEmail,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
             trailing: Icon(Icons.chevron_right_rounded,
                 color: theme.colorScheme.onSurfaceVariant),
             onTap: () {
@@ -513,9 +535,7 @@ class SettingsScreen extends ConsumerWidget {
                 _showLinkAccountDialog(context);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Account already linked'),
-                  ),
+                  SnackBar(content: Text(l10n.accountAlreadyLinked)),
                 );
               }
             },
@@ -527,7 +547,7 @@ class SettingsScreen extends ConsumerWidget {
               color: theme.colorScheme.onSurfaceVariant,
             ),
             title: Text(
-              'Sign Out',
+              l10n.signOut,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -545,7 +565,7 @@ class SettingsScreen extends ConsumerWidget {
               color: Colors.red,
             ),
             title: Text(
-              'Delete Account & Data',
+              l10n.deleteMyAccount,
               style: TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.w500,
@@ -553,7 +573,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             trailing: Icon(Icons.chevron_right_rounded, color: Colors.red),
             onTap: () {
-              _showDeleteAccountDialog(context);
+              _showDeleteAccountDialog(context, l10n);
             },
           ),
         ],
@@ -568,15 +588,16 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteAccountDialog(BuildContext context) {
+  void _showDeleteAccountDialog(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => const _DeleteAccountConfirmDialog(),
+      builder: (context) => _DeleteAccountConfirmDialog(l10n: l10n),
     );
   }
 
   Future<void> _updateSetting(
       BuildContext context, String field, dynamic value) async {
+    final l10n = AppLocalizations.of(context)!;
     final repo =
         ProviderScope.containerOf(context).read(settingsRepositoryProvider);
     try {
@@ -584,13 +605,13 @@ class SettingsScreen extends ConsumerWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update: $e')),
+        SnackBar(content: Text(l10n.failedToSend(e.toString()))),
       );
     }
   }
 }
 
-Widget _buildAboutSection(BuildContext context) {
+Widget _buildAboutSection(BuildContext context, AppLocalizations l10n) {
   final theme = Theme.of(context);
 
   return Column(
@@ -605,7 +626,7 @@ Widget _buildAboutSection(BuildContext context) {
                 color: theme.colorScheme.primary,
               ),
               title: Text(
-                'About StudyMate AI',
+                l10n.privacyPolicyScreen,
                 style: theme.textTheme.bodyLarge,
               ),
               onTap: () {
@@ -629,7 +650,7 @@ Widget _buildAboutSection(BuildContext context) {
                 color: theme.colorScheme.primary,
               ),
               title: Text(
-                'Privacy Policy',
+                l10n.privacyPolicy,
                 style: theme.textTheme.bodyLarge,
               ),
               trailing: const Icon(Icons.chevron_right_rounded),
@@ -657,7 +678,7 @@ Widget _buildAboutSection(BuildContext context) {
                     color: theme.colorScheme.primary,
                   ),
                   title: Text(
-                    'Rate App',
+                    l10n.rateApp,
                     style: theme.textTheme.bodyLarge,
                   ),
                   trailing: const Icon(Icons.chevron_right_rounded),
@@ -682,7 +703,7 @@ Widget _buildAboutSection(BuildContext context) {
                 color: theme.colorScheme.primary,
               ),
               title: Text(
-                'Send Feedback',
+                l10n.feedback,
                 style: theme.textTheme.bodyLarge,
               ),
               trailing: const Icon(Icons.chevron_right_rounded),
@@ -704,7 +725,7 @@ Widget _buildAboutSection(BuildContext context) {
                 color: theme.colorScheme.primary,
               ),
               title: Text(
-                'Share App',
+                l10n.shareApp,
                 style: theme.textTheme.bodyLarge,
               ),
               trailing: const Icon(Icons.chevron_right_rounded),
@@ -733,14 +754,16 @@ class _TimePickerDialogState extends State<_TimePickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: const Text('Set Reminder Time'),
+      title: Text(l10n.editProfile),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
             leading: const Icon(Icons.access_time_rounded),
-            title: const Text('Reminder Time'),
+            title: Text(l10n.notificationDailySession),
             subtitle: Text(
               '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -763,7 +786,7 @@ class _TimePickerDialogState extends State<_TimePickerDialog> {
               final minute = _selectedTime.minute;
               Navigator.of(context).pop([hour, minute]);
             },
-            child: const Text('Save'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -782,6 +805,7 @@ class _LinkAccountDialogState extends ConsumerState<_LinkAccountDialog> {
   bool _isLoading = false;
 
   Future<void> _linkWithGoogle() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -805,7 +829,7 @@ class _LinkAccountDialogState extends ConsumerState<_LinkAccountDialog> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account linked successfully')),
+        SnackBar(content: Text(l10n.accountLinkedSuccessfully)),
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -824,10 +848,11 @@ class _LinkAccountDialogState extends ConsumerState<_LinkAccountDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: const Text('Link Account'),
+      title: Text(l10n.linkAccount),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -836,13 +861,13 @@ class _LinkAccountDialogState extends ConsumerState<_LinkAccountDialog> {
               Icons.account_circle_rounded,
               color: theme.colorScheme.primary,
             ),
-            title: const Text('Google'),
+            title: Text(l10n.linkGoogle),
             onTap: _isLoading ? null : _linkWithGoogle,
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.email_rounded),
-            title: const Text('Email'),
+            title: Text(l10n.linkEmailAccount),
             enabled: false,
             trailing: const Icon(Icons.lock_rounded, color: Colors.grey),
           ),
@@ -851,7 +876,7 @@ class _LinkAccountDialogState extends ConsumerState<_LinkAccountDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         _isLoading
             ? const SizedBox(
@@ -879,7 +904,9 @@ List<List<T>> chunkList<T>(List<T> list, int chunkSize) {
 const int maxBatchOperations = 400;
 
 class _DeleteAccountConfirmDialog extends ConsumerStatefulWidget {
-  const _DeleteAccountConfirmDialog();
+  final AppLocalizations l10n;
+
+  const _DeleteAccountConfirmDialog({super.key, required this.l10n});
 
   @override
   ConsumerState<_DeleteAccountConfirmDialog> createState() =>
@@ -906,6 +933,7 @@ class _DeleteAccountConfirmDialogState
   }
 
   Future<void> _deleteAccount() async {
+    final l10n = widget.l10n;
     setState(() {
       _isDeleting = true;
       _error = '';
@@ -917,7 +945,7 @@ class _DeleteAccountConfirmDialogState
       if (uid == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No user to delete')),
+          SnackBar(content: Text(l10n.noUserToDelete)),
         );
         setState(() => _isDeleting = false);
         return;
@@ -927,7 +955,7 @@ class _DeleteAccountConfirmDialogState
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account and data deleted successfully')),
+        SnackBar(content: Text(l10n.accountDeletedSuccessfully)),
       );
       Navigator.of(context).pop();
     } on FirebaseAuthException catch (e) {
@@ -937,9 +965,9 @@ class _DeleteAccountConfirmDialogState
       if (e.code == 'requires-recent-login') {
         setState(() {
           _deleteMethod = 'requires_recent_login';
-          _error = 'Please sign in again to delete your account';
+          _error = l10n.pleaseSignInAgainToDelete;
         });
-        errorMsg = 'Please sign in again to delete your account';
+        errorMsg = l10n.pleaseSignInAgainToDelete;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1140,10 +1168,11 @@ class _DeleteAccountConfirmDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = widget.l10n;
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: const Text('Delete Account'),
+      title: Text(l10n.deleteMyAccount),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1154,7 +1183,7 @@ class _DeleteAccountConfirmDialogState
           ),
           const Gap(16),
           Text(
-            'This will permanently delete all your data:',
+            l10n.deleteAccountAndConfirm,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -1176,8 +1205,8 @@ class _DeleteAccountConfirmDialogState
             _error.isNotEmpty
                 ? _error
                 : (_deleteMethod == 'requires_recent_login'
-                    ? 'Please sign in again to confirm account deletion.'
-                    : 'This action cannot be undone. You will lose all saved data.'),
+                    ? l10n.pleaseSignInAgainToDelete
+                    : l10n.accountDeleteWarning),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -1187,7 +1216,7 @@ class _DeleteAccountConfirmDialogState
             const Gap(8),
             TextButton(
               onPressed: _isDeleting ? null : _reauthenticateAndDelete,
-              child: const Text('Re-authenticate & Retry'),
+              child: Text(l10n.reauthAndRetry),
             ),
           ],
         ],
@@ -1199,7 +1228,7 @@ class _DeleteAccountConfirmDialogState
               : () {
                   Navigator.of(context).pop();
                 },
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: _isDeleting ? null : _deleteAccount,
@@ -1210,7 +1239,7 @@ class _DeleteAccountConfirmDialogState
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Delete My Account'),
+              : Text(l10n.deleteAccountAndDelete),
         ),
       ],
     );
@@ -1236,6 +1265,7 @@ class _AboutDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return AlertDialog(
@@ -1246,7 +1276,7 @@ class _AboutDialog extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
           const Gap(8),
-          const Text('StudyMate AI'),
+          Text(l10n.appName),
         ],
       ),
       content: Column(
@@ -1278,7 +1308,7 @@ class _AboutDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('OK'),
+          child: Text(l10n.done),
         ),
       ],
     );
@@ -1339,6 +1369,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -1361,7 +1392,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+        SnackBar(content: Text(l10n.profileUpdatedSuccessfully)),
       );
       Navigator.of(context).pop();
     } catch (e) {
@@ -1376,11 +1407,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: Text(l10n.editProfileTitle),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -1416,9 +1448,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 const Gap(32),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    prefixIcon: Icon(Icons.person_rounded),
+                  decoration: InputDecoration(
+                    labelText: l10n.name,
+                    prefixIcon: const Icon(Icons.person_rounded),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -1429,7 +1461,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const Gap(24),
                 Text(
-                  'Class / Grade',
+                  l10n.classGrade,
                   style: theme.textTheme.titleMedium,
                 ),
                 const Gap(12),
@@ -1445,7 +1477,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const Gap(24),
                 Text(
-                  'App Language',
+                  l10n.appLanguage,
                   style: theme.textTheme.titleMedium,
                 ),
                 const Gap(12),
@@ -1465,7 +1497,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const Gap(24),
                 Text(
-                  'Daily Study Goal (minutes)',
+                  l10n.dailyStudyGoalMinutes,
                   style: theme.textTheme.titleMedium,
                 ),
                 const Gap(12),
@@ -1474,7 +1506,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   min: 15,
                   max: 180,
                   divisions: 33,
-                  label: '$_dailyGoal min',
+                  label: '$_dailyGoal ${l10n.min}',
                   onChanged: (v) => setState(() => _dailyGoal = v.round()),
                 ),
                 const Gap(32),
@@ -1488,7 +1520,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Save'),
+                        : Text(l10n.save),
                   ),
                 ),
                 const Gap(24),
@@ -1507,11 +1539,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacy Policy'),
+        title: Text(l10n.privacyPolicy),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -1521,7 +1554,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Privacy Policy',
+                l10n.privacyPolicy,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -1533,70 +1566,63 @@ class PrivacyPolicyScreen extends StatelessWidget {
               ),
               const Gap(16),
               Text(
-                'Data Stored in Firestore',
+                l10n.privacyPolicyDataStored,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Gap(8),
-              const Text(
-                '• Profile: name, grade, language, daily goal\n'
-                '• Study data: chats, messages, notes, flashcards, quizzes\n'
-                '• Progress: XP, level, streak, daily stats\n'
-                '• Planner: study schedules and tasks\n'
-                '• Badges: unlocked achievements',
+              Text(
+                l10n.privacyPolicyStudyData,
+                style: theme.textTheme.bodyMedium,
               ),
               const Gap(16),
               Text(
-                'Data Processing',
+                l10n.privacyPolicyDataProcessing,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Gap(8),
-              const Text(
-                '• Images and text are sent to Google Gemini for AI assistance\n'
-                '• Gemini processes your data to generate responses\n'
-                '• We do not store your images or chat messages with Gemini\n'
-                '• Responses are saved locally in your Firestore account',
+              Text(
+                l10n.privacyPolicyGemini,
+                style: theme.textTheme.bodyMedium,
               ),
               const Gap(16),
               Text(
-                'Deletion',
+                l10n.privacyPolicyDeletion,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Gap(8),
-              const Text(
-                'You can delete your account and all associated data from '
-                'Settings > Account > Delete Account & Data. '
-                'This will permanently remove all your study data.',
+              Text(
+                l10n.privacyPolicyDeleteAccount,
+                style: theme.textTheme.bodyMedium,
               ),
               const Gap(16),
               Text(
-                'Data Location',
+                l10n.privacyPolicyDataLocation,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Gap(8),
-              const Text(
-                'Your data is stored in Firebase Firestore, hosted on Google Cloud. '
-                'Data is encrypted in transit and at rest.',
+              Text(
+                l10n.privacyPolicyLocation,
+                style: theme.textTheme.bodyMedium,
               ),
               const Gap(32),
               OutlinedButton(
                 onPressed: () {
                   // Navigate to settings to delete account
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content:
-                          Text('Go to Settings > Account to delete your data'),
+                    SnackBar(
+                      content: Text(l10n.deleteMyAccount),
                     ),
                   );
                 },
-                child: const Text('Delete My Account & Data'),
+                child: Text(l10n.deleteMyAccount),
               ),
               const Gap(16),
             ],
