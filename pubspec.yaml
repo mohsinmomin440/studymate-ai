@@ -48,9 +48,6 @@ dependencies:
   url_launcher: ^6.3.0
   timezone: ^0.10.1
 
-  # PDF text extraction
-  pdfx: ^2.6.0
-
   # Models / serialization
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0

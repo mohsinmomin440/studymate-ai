@@ -13,6 +13,8 @@ import '../../shared/widgets/streak_badge.dart';
 import '../../shared/widgets/progress_ring.dart';
 import '../../shared/widgets/stat_tile.dart';
 import '../../features/chat/chat_feature.dart';
+import '../../features/notes/notes_feature.dart';
+import '../../features/scanner/scanner_feature.dart';
 
 /// App route paths
 class AppRoutes {
@@ -25,6 +27,7 @@ class AppRoutes {
   static const chatDetail = '/chat/:chatId';
   static const scanner = '/scanner';
   static const notes = '/notes';
+  static const notesCreate = '/notes/create';
   static const noteDetail = '/notes/:noteId';
   static const flashcards = '/flashcards';
   static const deckDetail = '/flashcards/:deckId';
@@ -163,6 +166,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.notes,
         builder: (context, state) => const NotesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notesCreate,
+        builder: (context, state) => const CreateEditNoteScreen(),
       ),
       GoRoute(
         path: AppRoutes.noteDetail,
@@ -1367,13 +1374,6 @@ class SettingsScreen extends StatelessWidget {
       const Scaffold(body: Center(child: Text('Settings')));
 }
 
-class ScannerScreen extends StatelessWidget {
-  const ScannerScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Scanner')));
-}
-
 class PlannerScreen extends StatelessWidget {
   const PlannerScreen({super.key});
   @override
@@ -1387,21 +1387,6 @@ class PlanDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Scaffold(body: Center(child: Text('Plan: $planId')));
-}
-
-class NotesScreen extends StatelessWidget {
-  const NotesScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Notes')));
-}
-
-class NoteDetailScreen extends StatelessWidget {
-  final String noteId;
-  const NoteDetailScreen({super.key, required this.noteId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Note: $noteId')));
 }
 
 class FlashcardsScreen extends StatelessWidget {

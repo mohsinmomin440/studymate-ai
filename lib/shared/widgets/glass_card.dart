@@ -15,7 +15,7 @@ class GlassCard extends StatelessWidget {
   final Color? borderColor;
   final double borderWidth;
   final List<BoxShadow>? shadows;
-  final bool animate;
+  final bool enableAnimation;
   final Duration animationDuration;
   final VoidCallback? onTap;
 
@@ -30,7 +30,7 @@ class GlassCard extends StatelessWidget {
     this.borderColor,
     this.borderWidth = 1,
     this.shadows,
-    this.animate = true,
+    this.enableAnimation = true,
     this.animationDuration = const Duration(milliseconds: 300),
     this.onTap,
   });
@@ -120,7 +120,7 @@ class GlassCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: radius,
-          child: animate
+          child: enableAnimation
               ? card
                   .animate()
                   .fadeIn(duration: 200.ms)
@@ -130,7 +130,7 @@ class GlassCard extends StatelessWidget {
       );
     }
 
-    return animate
+    return enableAnimation
         ? card.animate().fadeIn(duration: 200.ms).slideY(begin: 0.1, end: 0)
         : card;
   }
