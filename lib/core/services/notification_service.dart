@@ -102,12 +102,12 @@ class NotificationService {
     );
   }
 
-  /// Schedule notification for later
+  /// Schedule notification for later (accepts TZDateTime for proper timezone handling)
   Future<void> scheduleNotification({
     required int id,
     required String title,
     required String body,
-    required DateTime scheduledDate,
+    required tz.TZDateTime scheduledDate,
     String? payload,
     bool allowWhileIdle = true,
   }) async {
@@ -115,7 +115,7 @@ class NotificationService {
       id,
       title,
       body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
+      scheduledDate,
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.channelId,

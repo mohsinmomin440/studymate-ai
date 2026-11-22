@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
+import 'package:timezone/timezone.dart' as tz;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/notification_service.dart';
@@ -395,11 +396,15 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
 
     for (final day in plan.days) {
       if (day.date.isAfter(now)) {
+        final scheduledDate = tz.TZDateTime.from(
+          day.date,
+          tz.local,
+        );
         await notificationService.scheduleNotification(
           id: 1000 + plan.days.indexOf(day),
           title: 'Study Session Today',
           body: '${day.tasks.length} tasks waiting. Let\'s get started!',
-          scheduledDate: day.date,
+          scheduledDate: scheduledDate,
         );
       }
     }

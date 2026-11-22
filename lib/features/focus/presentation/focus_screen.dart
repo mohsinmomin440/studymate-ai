@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/timezone.dart' as tz;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../shared/widgets/gap.dart';
@@ -55,15 +56,16 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
   Timer? _timer;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  static const int _notificationId = 1004;
 
   FocusSessionNotifier()
       : super(FocusSessionState(
-            remainingSeconds: AppConstants.defaultFocusMinutes * 60,
-            totalSeconds: AppConstants.defaultFocusMinutes * 60,
-            isRunning: false,
-            sessionCount: 0,
-            totalFocusMinutes: 0,
-          ));
+          remainingSeconds: AppConstants.defaultFocusMinutes * 60,
+          totalSeconds: AppConstants.defaultFocusMinutes * 60,
+          isRunning: false,
+          sessionCount: 0,
+          totalFocusMinutes: 0,
+        ));
 
   String get _uid => _auth.currentUser?.uid ?? '';
 
@@ -94,6 +96,29 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     }
   }
 
+  /// Schedule the end notification using zonedSchedule
+  Future<void> _scheduleEndNotification(int durationMinutes) async {
+    final notificationService = NotificationService();
+    final dueTime = tz.TZDateTime.from(
+      DateTime.now().add(Duration(minutes: durationMinutes)),
+      tz.local,
+    );
+    await notificationService.scheduleNotification(
+      id: _notificationId,
+      title: 'Focus Session Complete! ✅',
+      body:
+          'Great job! You focused for $durationMinutes minutes. Take a break!',
+      scheduledDate: dueTime,
+      payload: 'focus_complete',
+    );
+  }
+
+  /// Cancel the scheduled end notification
+  Future<void> _cancelEndNotification() async {
+    final notificationService = NotificationService();
+    await notificationService.cancelNotification(_notificationId);
+  }
+
   void startTimer() {
     if (state.remainingSeconds <= 0) {
       final completedMinutes = state.totalSeconds ~/ 60;
@@ -112,9 +137,11 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
     state = state.copyWith(isRunning: true);
 
+    // Schedule the end notification
+    _scheduleEndNotification(state.totalSeconds ~/ 60);
+
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      // Use read to get current state inside the timer callback
       final remaining = state.remainingSeconds;
       if (remaining > 0) {
         state = state.copyWith(remainingSeconds: remaining - 1);
@@ -137,11 +164,13 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
   void pauseTimer() {
     _timer?.cancel();
+    _cancelEndNotification();
     state = state.copyWith(isRunning: false);
   }
 
   void resetTimer() {
     _timer?.cancel();
+    _cancelEndNotification();
     state = state.copyWith(
       remainingSeconds: state.totalSeconds,
       isRunning: false,
@@ -150,6 +179,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
   void setDuration(int minutes) {
     _timer?.cancel();
+    _cancelEndNotification();
     state = state.copyWith(
       totalSeconds: minutes * 60,
       remainingSeconds: minutes * 60,
@@ -165,6 +195,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
   @override
   void dispose() {
     _timer?.cancel();
+    _cancelEndNotification();
     super.dispose();
   }
 }
@@ -207,7 +238,21 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(focusSessionProvider);
     final notifier = ref.read(focusSessionProvider.notifier);
-    final theme = Theme.of(context);
+
+    // Force dark theme colors for ambient focus environment
+    const darkBg = Color(0xFF0B0D17);
+    const darkSurface = Color(0xFF141828);
+    const darkText = Color(0xFFF4F6FF);
+    const darkTextSecondary = Color(0xFFA3A9C7);
+    const primaryColor = Color(0xFF6C5CE7);
+    const accentColor = Color(0xFF00D4C8);
+    final backgroundColor = darkBg;
+    final surfaceColor = darkSurface;
+    final borderColor = darkSurface.withOpacity(0.5);
+    final gradientColors = [
+      primaryColor.withValues(alpha: 0.15),
+      accentColor.withValues(alpha: 0.1),
+    ];
 
     final progress = state.totalSeconds > 0
         ? 1.0 - (state.remainingSeconds / state.totalSeconds)
@@ -216,165 +261,173 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     final seconds = state.remainingSeconds % 60;
     final durationText = '$minutes:${seconds.toString().padLeft(2, '0')}';
 
-    // Use Material 3 surface container
-    final backgroundColor = theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3);
+    final theme = Theme.of(context);
 
-    // Dark mode gradient styling
-    final gradientColors = [
-      theme.colorScheme.primary.withValues(alpha: 0.15),
-      theme.colorScheme.secondary.withValues(alpha: 0.1),
-    ];
-
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      appBar: AppBar(
-        title: const Text('Focus Timer'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => _DurationSelector(
-                  currentMinutes: state.totalSeconds ~/ 60,
-                  onSelected: (minutes) {
-                    Navigator.pop(context);
-                    notifier.setDuration(minutes);
-                  },
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () => _showNotificationSettings(),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            GlassCard(
-              child: Column(
-                children: [
-                  Text(
-                    'Focus Session',
-                    style: theme.textTheme.titleMedium,
+    return Material(
+      color: backgroundColor,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: surfaceColor,
+          foregroundColor: darkText,
+          title: const Text('Focus Timer'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => _DurationSelector(
+                    currentMinutes: state.totalSeconds ~/ 60,
+                    onSelected: (minutes) {
+                      Navigator.pop(context);
+                      notifier.setDuration(minutes);
+                    },
                   ),
-                  const Gap(24),
-                  SizedBox(
-                    height: 200,
-                    width: 200,
-                    child: Stack(
-                      alignment: Alignment.center,
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () => _showNotificationSettings(),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              GlassCard(
+                child: Column(
+                  children: [
+                    Text(
+                      'Focus Session',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: darkText,
+                          ),
+                    ),
+                    const Gap(24),
+                    SizedBox(
+                      height: 200,
+                      width: 200,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Dark ambient focus screen styling
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: state.isRunning
+                                  ? LinearGradient(colors: gradientColors)
+                                  : null,
+                              border: Border.all(
+                                color: borderColor,
+                                width: 2,
+                              ),
+                            ),
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 8,
+                              backgroundColor: surfaceColor.withOpacity(0.3),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(primaryColor),
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                durationText,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: darkText,
+                                    ),
+                              ),
+                              Text(
+                                state.isRunning ? 'Running' : 'Ready',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: darkTextSecondary,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Gap(24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Dark focus screen styling
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: state.isRunning
-                                ? LinearGradient(
-                                    colors: gradientColors,
-                                  )
-                                : null,
-                            border: Border.all(
-                              color: backgroundColor,
-                              width: 2,
+                        IconButton(
+                          iconSize: 48,
+                          icon: CircleAvatar(
+                            radius: 28,
+                            backgroundColor: state.isRunning
+                                ? accentColor.withOpacity(0.2)
+                                : primaryColor.withOpacity(0.2),
+                            child: Icon(
+                              state.isRunning ? Icons.pause : Icons.play_arrow,
+                              color:
+                                  state.isRunning ? accentColor : primaryColor,
                             ),
                           ),
-                          child: CircularProgressIndicator(
-                            value: progress,
-                            strokeWidth: 8,
-                            backgroundColor: backgroundColor,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(theme.primaryColor),
-                          ),
+                          onPressed: state.isRunning
+                              ? notifier.pauseTimer
+                              : notifier.startTimer,
                         ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              durationText,
-                              style: theme.textTheme.headlineLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              state.isRunning ? 'Running' : 'Ready',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+                        const Gap(16),
+                        ElevatedButton(
+                          onPressed: notifier.resetTimer,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(16),
+                          ),
+                          child: const Icon(Icons.refresh),
                         ),
                       ],
                     ),
-                  ),
-                  const Gap(24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        iconSize: 48,
-                        icon: CircleAvatar(
-                          radius: 28,
-                          backgroundColor: state.isRunning
-                              ? theme.colorScheme.secondary.withValues(alpha: 0.2)
-                              : theme.colorScheme.primary.withValues(alpha: 0.2),
-                          child: Icon(
-                            state.isRunning ? Icons.pause : Icons.play_arrow,
-                            color: state.isRunning
-                                ? theme.colorScheme.secondary
-                                : theme.colorScheme.primary,
+                    const Gap(16),
+                    Text(
+                      'Sessions: ${state.sessionCount}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: darkText,
                           ),
-                        ),
-                        onPressed: state.isRunning
-                            ? notifier.pauseTimer
-                            : notifier.startTimer,
-                      ),
-                      const Gap(16),
-                      ElevatedButton(
-                        onPressed: notifier.resetTimer,
-                        style: ElevatedButton.styleFrom(
-                          shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(16),
-                        ),
-                        child: const Icon(Icons.refresh),
-                      ),
-                    ],
-                  ),
-                  const Gap(16),
-                  Text(
-                    'Sessions: ${state.sessionCount}',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-            const Gap(24),
-            const SectionHeader(title: 'Session History'),
-            const Gap(16),
-            GlassCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Today: ${state.totalFocusMinutes} minutes',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const Gap(8),
-                  Text(
-                    'Target: ${AppConstants.defaultFocusMinutes} minutes',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              const Gap(24),
+              const SectionHeader(title: 'Session History'),
+              const Gap(16),
+              GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Today: ${state.totalFocusMinutes} minutes',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: darkText,
+                          ),
+                    ),
+                    const Gap(8),
+                    Text(
+                      'Target: ${AppConstants.defaultFocusMinutes} minutes',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: darkTextSecondary,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -389,7 +442,8 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             FutureBuilder<bool>(
-              future: _permissionStatusFuture ??= _isNotificationPermissionGranted(),
+              future: _permissionStatusFuture ??=
+                  _isNotificationPermissionGranted(),
               builder: (context, snapshot) {
                 final isGranted = snapshot.data ?? false;
                 return ListTile(
