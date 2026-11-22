@@ -143,29 +143,77 @@ class PlannerRepository {
     });
   }
 
-  /// Reschedule missed tasks to the next available day
+  /// Reschedule missed tasks to the next available days
   Future<void> rescheduleMissedTasks(String planId) async {
     final plan = await getPlan(planId);
     if (plan == null) return;
 
-    final missedTasks = <StudyTask>[];
+    // Find all missed tasks and their original scheduled days
+    final missedItems = <Map<String, dynamic>>[];
 
-    for (final day in plan.days) {
-      for (final task in day.tasks) {
+    for (int dayIndex = 0; dayIndex < plan.days.length; dayIndex++) {
+      final day = plan.days[dayIndex];
+      for (int taskIndex = 0; taskIndex < day.tasks.length; taskIndex++) {
+        final task = day.tasks[taskIndex];
         if (!task.done) {
-          missedTasks.add(task.copyWith(done: true));
+          missedItems.add({
+            'task': task,
+            'originalDayIndex': dayIndex,
+            'taskIndex': taskIndex,
+          });
         }
       }
     }
 
-    if (missedTasks.isEmpty) return;
+    if (missedItems.isEmpty) return;
 
-    // Add missed tasks to the first day
-    final firstDay = plan.days.first;
-    final updatedTasks = [...firstDay.tasks, ...missedTasks];
-    final updatedFirstDay = StudyDay(date: firstDay.date, tasks: updatedTasks);
+    // Find today's date for comparison (start of day for proper comparison)
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final todayDate = DateTime.parse(today);
 
-    await _updateDay(planId, 0, updatedFirstDay);
+    // Build a map of available days (today and future days only)
+    final availableDays = <int, StudyDay>{};
+    for (int i = 0; i < plan.days.length; i++) {
+      final day = plan.days[i];
+      // Only include today and future days
+      if (!day.date.isBefore(todayDate)) {
+        availableDays[i] = day;
+      }
+    }
+
+    if (availableDays.isEmpty) return;
+
+    // Distribute missed tasks across available days
+    final updatedDays = Map<int, List<StudyTask>>.from(
+      Map.fromEntries(availableDays.entries
+          .map((e) => MapEntry(e.key, e.value.tasks.toList()))),
+    );
+
+    // Add missed tasks to available days (spread across them)
+    final availableDayIndices = availableDays.keys.toList()..sort();
+    for (int i = 0; i < missedItems.length; i++) {
+      final item = missedItems[i];
+      final task = item['task'] as StudyTask;
+      final targetDayIndex =
+          availableDayIndices[i % availableDayIndices.length];
+
+      // Add task to the target day (keeping it as not done)
+      updatedDays[targetDayIndex]!.add(task);
+    }
+
+    // Apply updates to all days
+    final allDays = List<StudyDay>.from(plan.days);
+
+    for (int i = 0; i < availableDayIndices.length; i++) {
+      final dayIndex = availableDayIndices[i];
+      final day = plan.days[dayIndex];
+      final tasks = updatedDays[dayIndex];
+      allDays[dayIndex] = StudyDay(date: day.date, tasks: tasks ?? day.tasks);
+    }
+
+    await _plansCollection.doc(planId).update({
+      'days': allDays.map((d) => d.toJson()).toList(),
+    });
   }
 
   /// Get statistics for a plan

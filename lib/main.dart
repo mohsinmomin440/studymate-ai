@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
 import 'firebase_options.dart';
 import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize timezone data for notifications
+  tz_data.initializeTimeZones();
+
+  // Initialize Firebase and App Check
+  await FirebaseInitializer.initialize();
 
   runApp(const ProviderScope(child: StudyMateApp()));
 }

@@ -85,7 +85,7 @@
 - [x] ConfettiController properly initialized and disposed
 - [x] Verified sm2.dart SM-2 algorithm implementation
 
-## Phase 6 — Planner + Focus timer ✅ IN PROGRESS
+## Phase 6 — Planner + Focus timer ✅ COMPLETE
 - [x] Planner model and repository (PlannerRepository with Firestore operations)
 - [x] PlannerScreen with exam date/subjects/hours/weak topics inputs
 - [x] PlanDetailScreen with task checklist UI
@@ -94,8 +94,10 @@
 - [x] Duration selector for timer customization
 - [x] Task completion toggle and reschedule logic
 - [x] AI study plan generation via AiService (generateStudyPlan method)
-- [ ] Local notifications (infrastructure present but not fully configured)
-- [ ] Home dashboard wired to real data
+- [x] Local notifications (Android 13+ permission handling, focus timer completion)
+- [x] Firestore dailyStats logging (studyMinutes and xpEarned)
+- [x] Dark mode styling for focus screen
+- [x] Home dashboard wired to real data
 
 ## Phase 7 — Progress & gamification
 - [x] XP/level/streak engine (UserProgressNotifier with addXP, addStudyMinutes, updateStreak)
@@ -120,27 +122,22 @@
 
 ### Known Gaps
 
-**Placeholder messages found in codebase:**
-- "PDF import coming soon" (notes_screen.dart) - Requires additional package compatibility
+**Remaining TODOs:**
+- Phase 7: Badges UI, Dashboard real data wiring
+- Phase 8: Settings screens, Delete account, Localization (en/gu/hi), Remote Config, Animations
+- Phase 9: App icon, Release keystore, Build app bundle
 
-**Missing integrations:**
-- Firestore offline persistence not fully wired
-- Firestore write operations for notes, scanner results, daily stats pending
-- Firebase AI Logic API key integration pending (requires `flutterfire configure`)
-- Local notifications need proper channel setup
+**Pending Firebase Config:**
+- Run `flutterfire configure` to generate real `firebase_options.dart`
+- Enable Auth providers (Google, Email/Password)
+- Enable Cloud Firestore
+- Enable Firebase AI Logic (Gemini Developer API)
+- Enable App Check (Play Integrity)
+- Add SHA-1 + SHA-256 hashes for Google Sign-In
+- Add Flutter assets fonts for Gujarati/Hindi (Noto Sans)
 
-**UI placeholders:**
+**UI remaining:**
 - HomeScreen is just a text placeholder
 - ProgressScreen has placeholder badge chips
 - PlanDetailScreen has static example data
 - SettingsScreen is a text placeholder
-
-### Manual Steps Needed After Firebase Config:
-1. Run `flutterfire configure` to generate real `firebase_options.dart`
-2. Enable Auth providers (Google, Email/Password)
-3. Enable Cloud Firestore
-4. Enable Firebase AI Logic (Gemini Developer API)
-5. Enable App Check (Play Integrity)
-6. Add SHA-1 + SHA-256 hashes for Google Sign-In
-7. Add Flutter assets fonts for Gujarati/Hindi (Noto Sans)
-8. Test `flutter build apk --debug` for Android

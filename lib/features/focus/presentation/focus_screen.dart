@@ -2,8 +2,11 @@
 
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../shared/widgets/gap.dart';
@@ -50,26 +53,60 @@ class FocusSessionState {
 // Focus session notifier
 class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
   Timer? _timer;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   FocusSessionNotifier()
       : super(FocusSessionState(
-          remainingSeconds: AppConstants.defaultFocusMinutes * 60,
-          totalSeconds: AppConstants.defaultFocusMinutes * 60,
-          isRunning: false,
-          sessionCount: 0,
-          totalFocusMinutes: 0,
-        ));
+            remainingSeconds: AppConstants.defaultFocusMinutes * 60,
+            totalSeconds: AppConstants.defaultFocusMinutes * 60,
+            isRunning: false,
+            sessionCount: 0,
+            totalFocusMinutes: 0,
+          ));
+
+  String get _uid => _auth.currentUser?.uid ?? '';
+
+  String _getTodayDate() {
+    return DateTime.now().toIso8601String().split('T')[0];
+  }
+
+  /// Log focus minutes to Firestore daily stats
+  Future<void> _logFocusMinutes(int minutes) async {
+    if (_uid.isEmpty) return;
+
+    final today = _getTodayDate();
+    final docRef = _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(_uid)
+        .collection(AppConstants.firestoreDailyStatsCollection)
+        .doc(today);
+
+    try {
+      await docRef.set({
+        'studyMinutes': FieldValue.increment(minutes),
+        'xpEarned':
+            FieldValue.increment(minutes * AppConstants.xpPerFocusMinute),
+        'lastUpdated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      // Silently fail - offline persistence will handle it
+    }
+  }
 
   void startTimer() {
     if (state.remainingSeconds <= 0) {
-      // Reset for new session completion
+      final completedMinutes = state.totalSeconds ~/ 60;
+
       state = state.copyWith(
         remainingSeconds: state.totalSeconds,
         isRunning: false,
         sessionCount: state.sessionCount + 1,
-        totalFocusMinutes: state.totalFocusMinutes + (state.totalSeconds ~/ 60),
+        totalFocusMinutes: state.totalFocusMinutes + completedMinutes,
         lastSessionStart: DateTime.now(),
       );
+
+      _logFocusMinutes(completedMinutes);
       return;
     }
 
@@ -77,18 +114,23 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (state.remainingSeconds > 0) {
-        state = state.copyWith(remainingSeconds: state.remainingSeconds - 1);
+      // Use read to get current state inside the timer callback
+      final remaining = state.remainingSeconds;
+      if (remaining > 0) {
+        state = state.copyWith(remainingSeconds: remaining - 1);
       } else {
         timer.cancel();
+        final completedMinutes = state.totalSeconds ~/ 60;
+
         state = state.copyWith(
             isRunning: false,
             remainingSeconds: state.totalSeconds,
             sessionCount: state.sessionCount + 1,
-            totalFocusMinutes:
-                state.totalFocusMinutes + (state.totalSeconds ~/ 60),
+            totalFocusMinutes: state.totalFocusMinutes + completedMinutes,
             lastSessionStart: DateTime.now());
+
         _showCompletionNotification();
+        _logFocusMinutes(completedMinutes);
       }
     });
   }
@@ -132,11 +174,37 @@ final focusSessionProvider =
   return FocusSessionNotifier();
 });
 
-class FocusScreen extends ConsumerWidget {
+class FocusScreen extends ConsumerStatefulWidget {
   const FocusScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FocusScreen> createState() => _FocusScreenState();
+}
+
+class _FocusScreenState extends ConsumerState<FocusScreen> {
+  Future<bool>? _permissionStatusFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+    setState(() {
+      _permissionStatusFuture = _isNotificationPermissionGranted();
+    });
+  }
+
+  Future<bool> _isNotificationPermissionGranted() async {
+    final status = await Permission.notification.status;
+    return status.isGranted;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(focusSessionProvider);
     final notifier = ref.read(focusSessionProvider.notifier);
     final theme = Theme.of(context);
@@ -148,7 +216,17 @@ class FocusScreen extends ConsumerWidget {
     final seconds = state.remainingSeconds % 60;
     final durationText = '$minutes:${seconds.toString().padLeft(2, '0')}';
 
+    // Use Material 3 surface container
+    final backgroundColor = theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3);
+
+    // Dark mode gradient styling
+    final gradientColors = [
+      theme.colorScheme.primary.withValues(alpha: 0.15),
+      theme.colorScheme.secondary.withValues(alpha: 0.1),
+    ];
+
     return Scaffold(
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
         title: const Text('Focus Timer'),
         actions: [
@@ -159,10 +237,17 @@ class FocusScreen extends ConsumerWidget {
                 context: context,
                 builder: (context) => _DurationSelector(
                   currentMinutes: state.totalSeconds ~/ 60,
-                  onSelected: (minutes) => notifier.setDuration(minutes),
+                  onSelected: (minutes) {
+                    Navigator.pop(context);
+                    notifier.setDuration(minutes);
+                  },
                 ),
               );
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () => _showNotificationSettings(),
           ),
         ],
       ),
@@ -184,13 +269,27 @@ class FocusScreen extends ConsumerWidget {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 8,
-                          backgroundColor:
-                              theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(theme.primaryColor),
+                        // Dark focus screen styling
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: state.isRunning
+                                ? LinearGradient(
+                                    colors: gradientColors,
+                                  )
+                                : null,
+                            border: Border.all(
+                              color: backgroundColor,
+                              width: 2,
+                            ),
+                          ),
+                          child: CircularProgressIndicator(
+                            value: progress,
+                            strokeWidth: 8,
+                            backgroundColor: backgroundColor,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(theme.primaryColor),
+                          ),
                         ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -199,6 +298,7 @@ class FocusScreen extends ConsumerWidget {
                               durationText,
                               style: theme.textTheme.headlineLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface,
                               ),
                             ),
                             Text(
@@ -221,8 +321,8 @@ class FocusScreen extends ConsumerWidget {
                         icon: CircleAvatar(
                           radius: 28,
                           backgroundColor: state.isRunning
-                              ? theme.colorScheme.secondary.withOpacity(0.2)
-                              : theme.colorScheme.primary.withOpacity(0.2),
+                              ? theme.colorScheme.secondary.withValues(alpha: 0.2)
+                              : theme.colorScheme.primary.withValues(alpha: 0.2),
                           child: Icon(
                             state.isRunning ? Icons.pause : Icons.play_arrow,
                             color: state.isRunning
@@ -276,6 +376,53 @@ class FocusScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showNotificationSettings() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Notification Settings'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FutureBuilder<bool>(
+              future: _permissionStatusFuture ??= _isNotificationPermissionGranted(),
+              builder: (context, snapshot) {
+                final isGranted = snapshot.data ?? false;
+                return ListTile(
+                  leading: const Icon(Icons.notifications),
+                  title: const Text('Allow Notifications'),
+                  trailing: Switch(
+                    value: isGranted,
+                    onChanged: (val) async {
+                      if (val) {
+                        await Permission.notification.request();
+                      }
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                      _showNotificationSettings();
+                    },
+                  ),
+                );
+              },
+            ),
+            const ListTile(
+              leading: Icon(Icons.alarm),
+              title: Text('Focus timer completion'),
+              subtitle: Text('Gets notified when session ends'),
+              trailing: Icon(Icons.check_circle, color: Colors.green),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
