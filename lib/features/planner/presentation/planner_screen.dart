@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/notification_utils.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -18,70 +18,47 @@ import '../../chat/data/ai_service.dart' as ai_service;
 import '../data/planner_repository.dart';
 import '../domain/planner_models.dart';
 
-/// Utility function to generate deterministic 32-bit notification ID
-/// Format: hash(planId + date + reminderHour) fits in 32-bit int range
-int generateNotificationId(String planId, DateTime dayDate, int reminderHour) {
-  final dateStr = dayDate.toIso8601String().split('T')[0];
-  final key = '$planId|$dateStr|$reminderHour';
-
-  // Simple deterministic hash that fits in 32-bit signed integer range
-  // We use modulo to ensure it fits in the positive range
-  int hash = 0;
-  for (int i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.codeUnitAt(i)) % 2147483647;
-  }
-  return hash;
-}
-
-/// Read reminder time from user settings with fallback to 08:00
 Future<tz.TZDateTime> _parseReminderTime({
-  required String planId,
   required DateTime dayDate,
   int defaultHour = 8,
   int defaultMinute = 0,
 }) async {
-  // Read from user settings with fallback
   final firestore = FirebaseFirestore.instance;
   final uid = FirebaseAuth.instance.currentUser?.uid;
 
+  tz.TZDateTime result;
   if (uid == null) {
-    return _makeReminderDateTime(dayDate, defaultHour, defaultMinute);
-  }
+    result = tz.TZDateTime(tz.local, dayDate.year, dayDate.month, dayDate.day,
+        defaultHour, defaultMinute);
+  } else {
+    result = tz.TZDateTime(tz.local, dayDate.year, dayDate.month, dayDate.day,
+        defaultHour, defaultMinute);
 
-  try {
-    final doc = await firestore
-        .collection(AppConstants.firestoreUsersCollection)
-        .doc(uid)
-        .get();
+    try {
+      final doc = await firestore
+          .collection(AppConstants.firestoreUsersCollection)
+          .doc(uid)
+          .get();
 
-    final data = doc.data() ?? {};
-    final settings = data['settings'] as Map<String, dynamic>? ?? {};
-    final reminderTimeStr = settings['reminderTime'] as String?;
+      final data = doc.data() ?? {};
+      final settings = data['settings'] as Map<String, dynamic>? ?? {};
+      final reminderTimeStr = settings['reminderTime'] as String?;
 
-    if (reminderTimeStr != null) {
-      final parts = reminderTimeStr.split(':');
-      if (parts.length == 2) {
-        final hour = int.parse(parts[0]).clamp(0, 23);
-        final minute = int.parse(parts[1]).clamp(0, 59);
-        return _makeReminderDateTime(dayDate, hour, minute);
+      if (reminderTimeStr != null) {
+        final parts = reminderTimeStr.split(':');
+        if (parts.length == 2) {
+          final hour = int.parse(parts[0]).clamp(0, 23);
+          final minute = int.parse(parts[1]).clamp(0, 59);
+          result = tz.TZDateTime(
+              tz.local, dayDate.year, dayDate.month, dayDate.day, hour, minute);
+        }
       }
+    } catch (e) {
+      // Fall through to default
     }
-  } catch (e) {
-    // Fall through to default
   }
 
-  return _makeReminderDateTime(dayDate, defaultHour, defaultMinute);
-}
-
-tz.TZDateTime _makeReminderDateTime(DateTime dayDate, int hour, int minute) {
-  return tz.TZDateTime(
-    tz.local,
-    dayDate.year,
-    dayDate.month,
-    dayDate.day,
-    hour,
-    minute,
-  );
+  return result;
 }
 
 class PlannerScreen extends ConsumerStatefulWidget {
@@ -191,7 +168,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       if (!day.date.isBefore(now)) {
         // Get reminder time from user settings with fallback to 08:00
         final scheduledDate = await _parseReminderTime(
-          planId: plan.id,
           dayDate: day.date,
           defaultHour: 8,
           defaultMinute: 0,
@@ -490,19 +466,6 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     setState(() => _isLoading = false);
   }
 
-  Future<void> _cancelAllNotifications() async {
-    final notificationService = NotificationService();
-    final now = DateTime.now();
-
-    for (final day in _plan!.days) {
-      if (!day.date.isBefore(now)) {
-        final notificationId =
-            generateNotificationId(widget.planId, day.date, 8); // 8 AM default
-        await notificationService.cancelNotification(notificationId);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -574,7 +537,6 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
       if (!day.date.isBefore(now)) {
         // Get reminder time from user settings with fallback to 08:00
         final scheduledDate = await _parseReminderTime(
-          planId: plan.id,
           dayDate: day.date,
           defaultHour: 8,
           defaultMinute: 0,

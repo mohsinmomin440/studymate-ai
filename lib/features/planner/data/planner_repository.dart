@@ -35,28 +35,6 @@ class PlannerRepository {
     }
   }
 
-  /// Cancel and optionally reschedule notification for a specific day
-  Future<void> _updateDayNotification({
-    required String planId,
-    required DateTime dayDate,
-    required int undoneCount,
-    required String title,
-  }) async {
-    final notificationId = generateNotificationId(planId, dayDate, 8);
-    await _notificationService.cancelNotification(notificationId);
-
-    // Only reschedule if there are undone tasks
-    if (undoneCount > 0) {
-      final scheduledDate = makeReminderDateTime(dayDate, 8, 0);
-      await _notificationService.scheduleNotification(
-        id: notificationId,
-        title: 'Study Session Today',
-        body: '$undoneCount tasks waiting. Let\'s get started!',
-        scheduledDate: scheduledDate,
-      );
-    }
-  }
-
   /// Create a new study plan from AI-generated data
   Future<String> createPlan({
     required String title,
@@ -168,13 +146,22 @@ class PlannerRepository {
     // Update the specific day
     await _updateDay(planId, dayIndex, updatedDay);
 
-    // Cancel old notification and reschedule based on undone count
-    await _updateDayNotification(
-      planId: planId,
-      dayDate: day.date,
-      undoneCount: undoneCount,
-      title: 'Study Session Today',
-    );
+    // Update notification: cancel only when ALL tasks become done,
+    // otherwise reschedule with updated undone count
+    final notificationId = generateNotificationId(planId, day.date, 8);
+    await _notificationService.cancelNotification(notificationId);
+
+    if (undoneCount > 0) {
+      // There are still undone tasks - reschedule notification
+      final scheduledDate = makeReminderDateTime(day.date, 8, 0);
+      await _notificationService.scheduleNotification(
+        id: notificationId,
+        title: 'Study Session Today',
+        body: '$undoneCount tasks waiting. Let\'s get started!',
+        scheduledDate: scheduledDate,
+      );
+    }
+    // If undoneCount == 0 (all done), notification stays canceled
   }
 
   /// Update task in a day
