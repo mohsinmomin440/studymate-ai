@@ -82,7 +82,12 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       } else {
         timer.cancel();
         state = state.copyWith(
-            isRunning: false, remainingSeconds: state.totalSeconds);
+            isRunning: false,
+            remainingSeconds: state.totalSeconds,
+            sessionCount: state.sessionCount + 1,
+            totalFocusMinutes:
+                state.totalFocusMinutes + (state.totalSeconds ~/ 60),
+            lastSessionStart: DateTime.now());
         _showCompletionNotification();
       }
     });

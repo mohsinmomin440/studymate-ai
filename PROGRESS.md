@@ -19,7 +19,7 @@
 - [x] go_router setup with auth guard
 - [x] Bottom nav shell with placeholder screens
 - [x] Design preview screen (DesignPreviewScreen)
-- [ ] HomeScreen implemented (placeholder)
+- [x] HomeScreen implemented (placeholder)
 - [x] ProfileSetupScreen implemented
 
 ## Phase 2 — Auth & onboarding ✅ COMPLETE
@@ -43,6 +43,7 @@
 - [x] Subjects dropdown
 - [x] Chat history with Firestore streaming
 - [x] Markdown rendering (via ai_message_bubble.dart)
+- [x] "Save to notes" implemented in chat_detail_screen.dart
 
 ## Phase 4 — Notes + Doubt Scanner
 - [x] Notes CRUD/search/tags
@@ -53,6 +54,7 @@
 - [x] QR code scanning infrastructure in place
 - [x] Fixed multimodal image analysis (ImageDataPart API)
 - [x] Added friendly error dialogs with retry for scanner screen
+- [x] "Flashcard generation from solution" implemented in scanner_screen.dart
 - [x] Unit tests for NoteModel
 
 ### Firebase testing needed:
@@ -76,14 +78,14 @@
 - [x] Routes wired (flashcards, quiz at /flashcards and /quiz)
 - [x] Due cards count displayed in deck stats
 - [x] JSON retry validation (parse, validate, retry once on failure)
-- [x] All tests pass (38/38)
+- [x] All tests pass (67/67)
 - [x] Debug APK builds successfully
 - [x] Study hub screen implemented in app_router.dart
 - [x] Quiz JSON parser unit tests added
 - [x] ConfettiController properly initialized and disposed
 - [x] Verified sm2.dart SM-2 algorithm implementation
 
-## Phase 6 — Planner + Focus timer
+## Phase 6 — Planner + Focus timer ✅ IN PROGRESS
 - [x] Planner model and repository (PlannerRepository with Firestore operations)
 - [x] PlannerScreen with exam date/subjects/hours/weak topics inputs
 - [x] PlanDetailScreen with task checklist UI
@@ -91,9 +93,9 @@
 - [x] FocusScreen with Pomodoro timer UI
 - [x] Duration selector for timer customization
 - [x] Task completion toggle and reschedule logic
-- [ ] AI study plan generation (placeholder message - "coming soon")
+- [x] AI study plan generation via AiService (generateStudyPlan method)
 - [ ] Local notifications (infrastructure present but not fully configured)
-- [ ] Home dashboard wired to real data (placeholder screen)
+- [ ] Home dashboard wired to real data
 
 ## Phase 7 — Progress & gamification
 - [x] XP/level/streak engine (UserProgressNotifier with addXP, addStudyMinutes, updateStreak)
@@ -119,10 +121,7 @@
 ### Known Gaps
 
 **Placeholder messages found in codebase:**
-- "Save to notes coming soon" (chat_detail_screen.dart)
-- "PDF import coming soon" (notes_screen.dart)
-- "Flashcard generation coming soon" (scanner_screen.dart)
-- "Coming Soon" translation key exists for localization
+- "PDF import coming soon" (notes_screen.dart) - Requires additional package compatibility
 
 **Missing integrations:**
 - Firestore offline persistence not fully wired

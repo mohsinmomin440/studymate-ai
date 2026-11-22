@@ -1,7 +1,5 @@
 // Doubt Scanner Screen - Camera/Gallery to solve math/scientific problems
 
-library;
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,12 +9,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
-import '../../../shared/widgets/gradient_button.dart';
 import '../../../shared/widgets/section_header.dart';
-import '../../chat/data/ai_service.dart';
-import '../data/scanner_repository.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/errors/failures.dart';
+import '../../chat/data/ai_service.dart';
+import '../data/scanner_repository.dart';
+import '../../flashcards/data/flashcard_repository.dart';
 
 class ScannerScreen extends ConsumerStatefulWidget {
   const ScannerScreen({super.key});
@@ -95,7 +94,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
 
     return GlassCard(
       child: DropdownButtonFormField<String>(
-        value: _selectedSubject,
+        initialValue: _selectedSubject,
         items: subjects
             .map((subject) => DropdownMenuItem(
                   value: subject,
@@ -171,9 +170,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
   }
 
   Widget _buildProcessButton() {
-    return GradientButton(
+    return OutlinedButton.icon(
+      icon: const Icon(Icons.code_rounded, size: 20),
+      label: const Text('Solve Question'),
       onPressed: _isProcessing ? null : _processImage,
-      child: const Text('Solve Question'),
     );
   }
 
@@ -183,7 +183,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(title: 'Solution'),
+        const SectionHeader(title: 'Solution'),
         const Gap(8),
         GlassCard(
           child: Column(
@@ -209,8 +209,8 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                   ),
                   const Gap(12),
                   OutlinedButton.icon(
-                    icon: const Icon(Icons.flash_on_rounded, size: 20),
-                    label: const Text('Flashcards'),
+                    icon: const Icon(Icons.auto_awesome_rounded, size: 20),
+                    label: const Text('AI Flashcards'),
                     onPressed: () => _generateFlashcards(),
                   ),
                 ],
@@ -317,10 +317,9 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
 
       final failure = AIFailure.fromException(e);
       _showAiErrorDialog(failure);
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
+    }
+    if (mounted) {
+      setState(() => _isProcessing = false);
     }
   }
 
@@ -409,12 +408,75 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     }
   }
 
-  void _generateFlashcards() {
+  Future<void> _generateFlashcards() async {
     if (_solution == null) return;
-    // Navigate to flashcard creation
-    if (mounted) {
+
+    final canUse = await ref.read(aiServiceProvider).checkAndIncrementUsage();
+    if (!canUse) {
+      if (!mounted) return;
+      _showErrorDialog(
+        title: 'Daily limit reached',
+        message:
+            'You\'ve used your daily AI quota. Try again tomorrow or use fewer AI requests.',
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      );
+      return;
+    }
+
+    try {
+      final aiFlashcardData =
+          await ref.read(aiServiceProvider).generateFlashcardsFromNote(
+                noteText: _solution!,
+                count: 5,
+                subject: _selectedSubject,
+                language: AppConstants.defaultLocale,
+              );
+
+      if (!mounted) return;
+
+      final repository = ref.read(flashcardRepositoryProvider);
+
+      // Create deck first
+      final deckTitle = 'Doubt: $_selectedSubject';
+      final deckId = await repository.createDeck(
+        title: deckTitle,
+        subject: _selectedSubject,
+        initialCards: null,
+      );
+
+      // Create cards from AI data
+      final cardsData = aiFlashcardData
+          .map((f) => {'front': f.front, 'back': f.back})
+          .toList();
+
+      await repository.createCardsFromData(
+        deckId: deckId,
+        cardsData: cardsData,
+      );
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Flashcard generation coming soon')),
+        const SnackBar(content: Text('Generated flashcards successfully!')),
+      );
+
+      context.go('${AppRoutes.flashcardsEdit}/$deckId');
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorDialog(
+        title: 'Failed to generate flashcards',
+        message: e.toString(),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
       );
     }
   }

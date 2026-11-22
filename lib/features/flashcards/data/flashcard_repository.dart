@@ -31,6 +31,7 @@ class FlashcardRepository {
   Future<String> createDeck({
     required String title,
     required String subject,
+    List<FlashcardData>? initialCards,
   }) async {
     final deck = FlashcardDeck(
       id: _uuid.v4(),
@@ -39,7 +40,33 @@ class FlashcardRepository {
       createdAt: DateTime.now(),
     );
 
-    await _decksCollection.doc(deck.id).set(deck.toJson());
+    final deckRef = _decksCollection.doc(deck.id);
+
+    if (initialCards != null && initialCards.isNotEmpty) {
+      // Create deck first
+      await deckRef.set(deck.toJson());
+
+      // Add cards in batch
+      final batch = _firestore.batch();
+      for (final card in initialCards) {
+        final cardDoc = getDeckCards(deck.id).doc();
+        final flashcard = Flashcard(
+          id: cardDoc.id,
+          deckId: deck.id,
+          front: card.front,
+          back: card.back,
+          dueAt: DateTime.now(),
+        );
+        batch.set(cardDoc, flashcard.toJson());
+      }
+      await batch.commit();
+
+      // Update card count
+      await deckRef.update({'cardCount': initialCards.length});
+    } else {
+      await deckRef.set(deck.toJson());
+    }
+
     return deck.id;
   }
 

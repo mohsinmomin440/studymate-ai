@@ -20,6 +20,8 @@ import '../../chat/data/ai_service.dart';
 import '../../chat/data/chat_repository.dart';
 import '../../chat/domain/chat_models.dart';
 import '../../chat/ai_prompts.dart';
+import '../../notes/data/note_repository.dart';
+import '../../notes/domain/note_models.dart';
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -210,10 +212,32 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   Future<void> _saveToNotes(String text) async {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Save to notes coming soon')),
+    try {
+      final repository = ref.read(noteRepositoryProvider);
+
+      final note = NoteModel(
+        id: '',
+        title: 'Chat Note',
+        body: text,
+        subject: _chat?.subject ?? 'General',
+        tags: ['ai-chat'],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
+
+      await repository.createNote(note);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Saved to notes!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving: ${e.toString()}')),
+        );
+      }
     }
   }
 

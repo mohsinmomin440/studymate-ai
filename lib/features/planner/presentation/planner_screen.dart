@@ -3,10 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+import 'dart:async';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/router/app_router.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../chat/data/ai_service.dart' as ai_service;
+import '../data/planner_repository.dart';
+import '../domain/planner_models.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -87,8 +94,31 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     setState(() => _weakTopics.remove(topic));
   }
 
+  List<StudyDay> _convertAIdaysToStudyDays(List<ai_service.StudyDay> aiDays) {
+    return aiDays.map((day) {
+      return StudyDay(
+        date: day.date,
+        tasks: day.tasks.map((task) {
+          return StudyTask(
+            title: task.title,
+            subject: task.subject,
+            estimatedMinutes: task.estimatedMinutes,
+            type: task.type,
+            done: false,
+          );
+        }).toList(),
+      );
+    }).toList();
+  }
+
   Future<void> _generatePlan() async {
-    if (_examDate == null || _selectedSubjects.isEmpty) {
+    final planDate = _examDate;
+    final selectedSubjectList = [..._selectedSubjects];
+    final weakTopicList = [..._weakTopics];
+    final hoursPerDay = int.parse(_hoursPerDayController.text);
+
+    if (planDate == null || selectedSubjectList.isEmpty) {
+      if (!mounted) return;
       setState(() =>
           _errorMessage = 'Please select exam date and at least one subject');
       return;
@@ -99,14 +129,55 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       _errorMessage = null;
     });
 
-    if (!mounted) return;
+    try {
+      final aiService = ref.read(ai_service.aiServiceProvider);
+      final canUse = await aiService.checkAndIncrementUsage();
+      if (!canUse) {
+        if (!mounted) return;
+        setState(() {
+          _isGenerating = false;
+          _errorMessage = 'Daily AI limit reached. Try again tomorrow.';
+        });
+        return;
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text(
-              'Study plan generation coming soon! AI integration pending.')),
-    );
+      final planData = await aiService.generateStudyPlan(
+        examDate: planDate,
+        subjects: selectedSubjectList,
+        hoursPerDay: hoursPerDay,
+        weakTopics: weakTopicList,
+        language: AppConstants.defaultLocale,
+      );
 
+      if (!mounted) return;
+
+      final convertedDays = _convertAIdaysToStudyDays(planData.days);
+
+      final repository = ref.read(plannerRepositoryProvider);
+      final planTitle = 'Exam: ${planDate.toLocal().toString().split('.')[0]}';
+      final planId = await repository.createPlan(
+        title: planTitle,
+        examDate: planDate,
+        subjects: selectedSubjectList,
+        hoursPerDay: hoursPerDay,
+        weakTopics: weakTopicList,
+        days: convertedDays,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Study plan generated successfully!')),
+      );
+
+      context.go('${AppRoutes.planDetail}/$planId');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isGenerating = false;
+        _errorMessage = 'Failed to generate plan: ${e.toString()}';
+      });
+    }
     if (mounted) {
       setState(() => _isGenerating = false);
     }
@@ -114,8 +185,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Study Planner'),
@@ -152,7 +221,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               children: [
                 Text(
                   'Exam Date',
-                  style: theme.textTheme.titleSmall,
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const Gap(8),
                 ListTile(
@@ -168,7 +237,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           const Gap(16),
           Text(
             'Subjects to Study',
-            style: theme.textTheme.titleSmall,
+            style: Theme.of(context).textTheme.titleSmall,
           ),
           const Gap(8),
           Wrap(
@@ -193,15 +262,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           const Gap(16),
           Text(
             'Weak Topics (Optional)',
-            style: theme.textTheme.titleSmall,
+            style: Theme.of(context).textTheme.titleSmall,
           ),
           const Gap(8),
           if (_weakTopics.isEmpty)
             Text(
               'Add topics you struggle with',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             )
           else
             Wrap(
@@ -241,21 +310,116 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           const Gap(32),
           const SectionHeader(title: 'My Plans'),
           const Gap(16),
+          _buildPlansList(),
         ],
       ),
     );
   }
+
+  Widget _buildPlansList() {
+    return Consumer(builder: (context, ref, _) {
+      final plansAsync = ref.watch(plansStreamProvider);
+
+      return plansAsync.when(
+        data: (plans) {
+          if (plans.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text('No plans yet. Generate your first plan above!'),
+              ),
+            );
+          }
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: plans.length,
+            itemBuilder: (context, index) {
+              final plan = plans[index];
+              return GlassCard(
+                onTap: () => context.go('${AppRoutes.planDetail}/${plan.id}'),
+                child: ListTile(
+                  title: Text(plan.title),
+                  subtitle: Text(
+                    'Exam: ${plan.examDate.toLocal().toString().split('.')[0]}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                ),
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Text('Error loading plans: ${error.toString()}'),
+        ),
+      );
+    });
+  }
 }
 
+final plansStreamProvider = StreamProvider.autoDispose<List<StudyPlan>>((ref) {
+  final repository = ref.watch(plannerRepositoryProvider);
+  return repository.getPlans();
+});
+
 // Plan detail screen
-class PlanDetailScreen extends StatelessWidget {
+class PlanDetailScreen extends ConsumerStatefulWidget {
   final String planId;
 
   const PlanDetailScreen({super.key, required this.planId});
 
   @override
+  ConsumerState<PlanDetailScreen> createState() => _PlanDetailScreenState();
+}
+
+class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
+  late StudyPlan? _plan;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlan();
+  }
+
+  Future<void> _loadPlan() async {
+    final repository = ref.read(plannerRepositoryProvider);
+    _plan = await repository.getPlan(widget.planId);
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _scheduleDailyReminders(StudyPlan plan) async {
+    final notificationService = NotificationService();
+    final now = DateTime.now();
+
+    for (final day in plan.days) {
+      if (day.date.isAfter(now)) {
+        await notificationService.scheduleNotification(
+          id: 1000 + plan.days.indexOf(day),
+          title: 'Study Session Today',
+          body: '${day.tasks.length} tasks waiting. Let\'s get started!',
+          scheduledDate: day.date,
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_plan == null) {
+      return const Scaffold(
+        body: Center(child: Text('Plan not found')),
+      );
+    }
+
+    final plan = _plan!;
 
     return Scaffold(
       appBar: AppBar(
@@ -263,107 +427,135 @@ class PlanDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.check_circle_outline),
-            onPressed: () {},
+            onPressed: () => _markAllDone(plan),
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () => _scheduleDailyReminders(plan),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          GlassCard(
-            child: Column(
-              children: [
-                Text(
-                  'Day 1 - Jan 15, 2026',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+          Text(
+            plan.title,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-                const Gap(16),
-                _buildTaskItem(
-                  context: context,
-                  title: 'Mathematics - Algebra Basics',
-                  duration: 60,
-                  subject: 'Mathematics',
-                  type: 'study',
-                  done: false,
+          ),
+          const Gap(8),
+          Text(
+            'Exam: ${plan.examDate.toLocal().toString().split('.')[0]}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                const Gap(12),
-                _buildTaskItem(
-                  context: context,
-                  title: 'Review - Flashcards',
-                  duration: 25,
-                  subject: 'Mathematics',
-                  type: 'review',
-                  done: false,
-                ),
-                const Gap(12),
-                _buildTaskItem(
-                  context: context,
-                  title: 'Break',
-                  duration: 15,
-                  subject: 'Break',
-                  type: 'break',
-                  done: false,
-                ),
-              ],
-            ),
           ),
           const Gap(16),
-          GlassCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Day 2 - Jan 16, 2026',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Gap(16),
-                _buildTaskItem(
-                  context: context,
-                  title: 'Physics - Mechanics',
-                  duration: 90,
-                  subject: 'Physics',
-                  type: 'study',
-                  done: false,
-                ),
-              ],
-            ),
+          Text(
+            'Subjects: ${plan.subjects.join(', ')}',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
+          const Gap(24),
+          ..._buildDaysList(plan),
         ],
       ),
     );
   }
 
-  Widget _buildTaskItem({
-    required BuildContext context,
-    required String title,
-    required int duration,
-    required String subject,
-    required String type,
-    required bool done,
-  }) {
+  List<Widget> _buildDaysList(StudyPlan plan) {
+    final days = plan.days;
+    if (days.isEmpty) {
+      return [
+        const Gap(16),
+        const Text('No tasks scheduled. Add tasks to your plan.'),
+      ];
+    }
+
+    return List.generate(days.length, (index) {
+      final day = days[index];
+      return GlassCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${day.date.toLocal().toString().split('.')[0]} (Day ${index + 1})',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const Gap(12),
+            ...day.tasks.map((task) => _buildTaskItem(task, day, index)),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildTaskItem(StudyTask task, StudyDay day, int dayIndex) {
     final theme = Theme.of(context);
+    final repository = ref.read(plannerRepositoryProvider);
 
     return ListTile(
       leading: Checkbox(
-        value: done,
-        onChanged: (value) {},
+        value: task.done,
+        onChanged: (_) {
+          repository.toggleTask(
+            planId: widget.planId,
+            dayIndex: dayIndex,
+            taskIndex: day.tasks.indexOf(task),
+          );
+        },
       ),
       title: Text(
-        title,
+        task.title,
         style: theme.textTheme.bodyLarge?.copyWith(
-          decoration: done ? TextDecoration.lineThrough : null,
+          decoration: task.done ? TextDecoration.lineThrough : null,
+          color: task.done
+              ? theme.colorScheme.onSurfaceVariant
+              : theme.colorScheme.onSurface,
         ),
       ),
-      subtitle: Text('$subject • $type'),
+      subtitle: Text('${task.subject} • ${task.estimatedMinutes} min'),
       trailing: Chip(
-        label: Text('$duration min'),
+        label: Text(task.type.toUpperCase()),
         visualDensity: VisualDensity.compact,
+        backgroundColor: task.type == 'break'
+            ? Colors.orange.withValues(alpha: 0.2)
+            : theme.colorScheme.primaryContainer,
       ),
-      onTap: () {},
+      onTap: () {
+        repository.toggleTask(
+          planId: widget.planId,
+          dayIndex: dayIndex,
+          taskIndex: day.tasks.indexOf(task),
+        );
+      },
     );
+  }
+
+  void _markAllDone(StudyPlan plan) async {
+    final repository = ref.read(plannerRepositoryProvider);
+
+    for (int dayIndex = 0; dayIndex < plan.days.length; dayIndex++) {
+      for (int taskIndex = 0;
+          taskIndex < plan.days[dayIndex].tasks.length;
+          taskIndex++) {
+        await repository.updateTask(
+          planId: widget.planId,
+          dayIndex: dayIndex,
+          taskIndex: taskIndex,
+          updatedTask: plan.days[dayIndex].tasks[taskIndex].copyWith(
+            done: true,
+          ),
+        );
+      }
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('All tasks marked as done!')),
+      );
+    }
   }
 }
