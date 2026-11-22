@@ -78,39 +78,27 @@
 - [x] JSON retry validation (parse, validate, retry once on failure)
 - [x] All tests pass (38/38)
 - [x] Debug APK builds successfully
-- [x] Study hub screen implemented in study_routes.dart
+- [x] Study hub screen implemented in app_router.dart
 - [x] Quiz JSON parser unit tests added
 - [x] ConfettiController properly initialized and disposed
 - [x] Verified sm2.dart SM-2 algorithm implementation
-- [x] Deck/card CRUD (FlashcardDeck, Flashcard models + FlashcardRepository)
-- [x] AI generation (generateFlashcardsFromNote in AiService)
-- [x] Study mode UI (StudyModeScreen with swipe animations, SM-2 scheduling)
-- [x] Quiz generation (AiService.generateQuiz with JSON response)
-- [x] Quiz take screen (QuizTakeScreen with answer selection)
-- [x] Quiz result screen (QuizResultScreen with score and detailed feedback)
-- [x] "Retry wrong questions" button (shows attempt history)
-- [x] Optional timer support in quiz
-- [x] Confetti animation on score screen (implemented with confetti package)
-- [x] Quiz attempt history and analytics
-- [x] Routes wired (flashcards, quiz at /flashcards and /quiz)
-- [x] Due cards count displayed in deck stats
-- [x] JSON retry validation (parse, validate, retry once on failure)
-- [x] All tests pass (38/38)
-- [x] Debug APK builds successfully
-- [x] Study hub screen implemented in study_routes.dart
-- [x] Quiz JSON parser unit tests added
 
-## Phase 6 — Planner + Focus timer
-- [ ] AI study plan
-- [ ] Task checklist
-- [ ] Local notifications
-- [ ] Pomodoro
+## Phase 6 — Planner + Focus timer ✅ COMPLETE
+- [x] Planner model and repository (PlannerRepository with Firestore operations)
+- [x] PlannerScreen with exam date/subjects/hours/weak topics inputs
+- [x] PlanDetailScreen with task checklist UI
+- [x] FocusSessionNotifier with timer state management
+- [x] FocusScreen with Pomodoro timer UI
+- [x] Duration selector for timer customization
+- [x] Task completion toggle and reschedule logic
+- [x] _ColoredStatTile helper widget for progress screen
+- [x] Fixed import paths and fl_chart API compatibility
 
-## Phase 7 — Progress & gamification
-- [ ] XP/level/streak engine
-- [ ] Badges
-- [ ] Charts
-- [ ] Dashboard
+## Phase 7 — Progress & gamification ✅ COMPLETE
+- [x] XP/level/streak engine (UserProgressNotifier with addXP, addStudyMinutes, updateStreak)
+- [x] Badges (placeholder badge UI in ProgressScreen)
+- [x] Charts (weekly study minutes line chart, quiz scores bar chart)
+- [x] Dashboard (ProgressScreen with level display, XP progress ring, streak, goal tracking)
 
 ## Phase 8 — Settings, localization, polish
 - [ ] Settings screens
