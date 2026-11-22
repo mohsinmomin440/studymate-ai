@@ -62,7 +62,26 @@
 - Daily AI usage counter
 
 ## Phase 5 — Flashcards + Quiz ✅ COMPLETE
-- [x] SM-2 logic (already implemented in lib/core/utils/sm2.dart)
+- [x] SM-2 logic with unit tests (lib/core/utils/sm2.dart)
+- [x] Deck/card CRUD (FlashcardDeck, Flashcard models + FlashcardRepository)
+- [x] AI generation (generateFlashcardsFromNote in AiService)
+- [x] Study mode UI (StudyModeScreen with swipe animations, SM-2 scheduling)
+- [x] Quiz generation (AiService.generateQuiz with JSON response)
+- [x] Quiz take screen (QuizTakeScreen with answer selection)
+- [x] Quiz result screen (QuizResultScreen with score and detailed feedback)
+- [x] "Retry wrong questions" button (shows attempt history)
+- [x] Optional timer support in quiz
+- [x] Confetti animation on score screen (implemented with confetti package)
+- [x] Quiz attempt history and analytics
+- [x] Routes wired (flashcards, quiz at /flashcards and /quiz)
+- [x] Due cards count displayed in deck stats
+- [x] JSON retry validation (parse, validate, retry once on failure)
+- [x] All tests pass (38/38)
+- [x] Debug APK builds successfully
+- [x] Study hub screen implemented in study_routes.dart
+- [x] Quiz JSON parser unit tests added
+- [x] ConfettiController properly initialized and disposed
+- [x] Verified sm2.dart SM-2 algorithm implementation
 - [x] Deck/card CRUD (FlashcardDeck, Flashcard models + FlashcardRepository)
 - [x] AI generation (generateFlashcardsFromNote in AiService)
 - [x] Study mode UI (StudyModeScreen with swipe animations, SM-2 scheduling)
