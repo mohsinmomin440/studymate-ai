@@ -169,8 +169,29 @@
 - [x] Debug APK builds successfully
 
 ## Phase 8 — Settings, localization, polish
-- [ ] Settings screens
-- [ ] Delete account
+### Phase 8A — Settings Screen ✅ COMPLETE
+- [x] Theme section (Light/Dark/System)
+- [x] Language section (English, Gujarati, Hindi)
+- [x] Daily goal slider (15-180 minutes)
+- [x] Study reminders (enable/disable, time picker)
+- [x] AI response language dropdown (English, Gujarati, Hindi, Hinglish)
+- [x] AI response style chips (Friendly, Formal, Simple, Detailed)
+- [x] Account section:
+  - Edit Profile (placeholder for now)
+  - Link Account (Google sign-in for anonymous users)
+  - Sign Out
+  - Delete Account & Data (with recursive subcollection deletion)
+- [x] About section:
+  - About dialog with version info
+  - Privacy Policy link
+  - Rate App link (Play Store)
+  - Send Feedback (share sheet)
+  - Share App (install link)
+- [x] Settings persisted to Firestore (users/{uid}/settings/user)
+- [x] All analyzer issues resolved (only RadioListTile deprecation warnings remain)
+- [x] Tests pass (178/178)
+- [x] Build succeeds
+
 - [ ] en/gu/hi localization
 - [ ] Remote Config
 - [ ] Animations
