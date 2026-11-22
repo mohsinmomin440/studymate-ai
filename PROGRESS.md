@@ -85,25 +85,26 @@
 - [x] ConfettiController properly initialized and disposed
 - [x] Verified sm2.dart SM-2 algorithm implementation
 
-## Phase 6 — Planner + Focus timer ✅ COMPLETE
+## Phase 6 — Planner + Focus timer
 - [x] Planner model and repository (PlannerRepository with Firestore operations)
 - [x] PlannerScreen with exam date/subjects/hours/weak topics inputs
 - [x] PlanDetailScreen with task checklist UI
 - [x] FocusSessionNotifier with timer state management
-- [x] FocusScreen with Pomodoro timer UI
+- [x] FocusScreen with Pomodoro timer UI (full implementation, dark ambient styling)
 - [x] Duration selector for timer customization
 - [x] Task completion toggle and reschedule logic
 - [x] AI study plan generation via AiService (generateStudyPlan method)
-- [x] Local notifications (Android 13+ permission handling, focus timer completion)
+- [x] Local notifications (zonedSchedule for screen-off firing, cancelled on pause/reset)
 - [x] Firestore dailyStats logging (studyMinutes and xpEarned)
 - [x] Dark mode styling for focus screen
-- [x] Home dashboard wired to real data
+- [x] Router fixed (removed duplicate route definitions)
+- [ ] Home dashboard wired to real data (HomeScreen is still placeholder)
 
 ## Phase 7 — Progress & gamification
-- [x] XP/level/streak engine (UserProgressNotifier with addXP, addStudyMinutes, updateStreak)
-- [ ] Badges (placeholder UI only)
-- [x] Charts (weekly study minutes line chart, quiz scores bar chart)
-- [ ] Dashboard wired to real data (placeholder ProgressScreen, Home is also placeholder)
+- [ ] XP/level/streak engine (ProgressScreen uses local state, needs Firestore integration)
+- [ ] Badges (placeholder UI chips only)
+- [ ] Charts (weekly study minutes line chart, quiz scores bar chart - demo data)
+- [ ] Dashboard wired to real data (ProgressScreen is placeholder)
 
 ## Phase 8 — Settings, localization, polish
 - [ ] Settings screens
@@ -122,10 +123,10 @@
 
 ### Known Gaps
 
-**Remaining TODOs:**
-- Phase 7: Badges UI, Dashboard real data wiring
-- Phase 8: Settings screens, Delete account, Localization (en/gu/hi), Remote Config, Animations
-- Phase 9: App icon, Release keystore, Build app bundle
+**Core Missing Features:**
+- Phase 6: HomeScreen needs real Firestore data wiring (greeting, streak, XP, daily goal ring, due cards, planned tasks)
+- Phase 7: Badges system needs Firestore model and repository
+- Phase 7: ProgressScreen needs real data from Firestore
 
 **Pending Firebase Config:**
 - Run `flutterfire configure` to generate real `firebase_options.dart`
@@ -138,6 +139,5 @@
 
 **UI remaining:**
 - HomeScreen is just a text placeholder
-- ProgressScreen has placeholder badge chips
-- PlanDetailScreen has static example data
+- ProgressScreen has placeholder badge chips with demo data
 - SettingsScreen is a text placeholder
