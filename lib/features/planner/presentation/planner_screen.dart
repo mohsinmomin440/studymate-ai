@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
@@ -15,6 +17,72 @@ import '../../../shared/widgets/app_text_field.dart';
 import '../../chat/data/ai_service.dart' as ai_service;
 import '../data/planner_repository.dart';
 import '../domain/planner_models.dart';
+
+/// Utility function to generate deterministic 32-bit notification ID
+/// Format: hash(planId + date + reminderHour) fits in 32-bit int range
+int generateNotificationId(String planId, DateTime dayDate, int reminderHour) {
+  final dateStr = dayDate.toIso8601String().split('T')[0];
+  final key = '$planId|$dateStr|$reminderHour';
+
+  // Simple deterministic hash that fits in 32-bit signed integer range
+  // We use modulo to ensure it fits in the positive range
+  int hash = 0;
+  for (int i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.codeUnitAt(i)) % 2147483647;
+  }
+  return hash;
+}
+
+/// Read reminder time from user settings with fallback to 08:00
+Future<tz.TZDateTime> _parseReminderTime({
+  required String planId,
+  required DateTime dayDate,
+  int defaultHour = 8,
+  int defaultMinute = 0,
+}) async {
+  // Read from user settings with fallback
+  final firestore = FirebaseFirestore.instance;
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+
+  if (uid == null) {
+    return _makeReminderDateTime(dayDate, defaultHour, defaultMinute);
+  }
+
+  try {
+    final doc = await firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(uid)
+        .get();
+
+    final data = doc.data() ?? {};
+    final settings = data['settings'] as Map<String, dynamic>? ?? {};
+    final reminderTimeStr = settings['reminderTime'] as String?;
+
+    if (reminderTimeStr != null) {
+      final parts = reminderTimeStr.split(':');
+      if (parts.length == 2) {
+        final hour = int.parse(parts[0]).clamp(0, 23);
+        final minute = int.parse(parts[1]).clamp(0, 59);
+        return _makeReminderDateTime(dayDate, hour, minute);
+      }
+    }
+  } catch (e) {
+    // Fall through to default
+  }
+
+  return _makeReminderDateTime(dayDate, defaultHour, defaultMinute);
+}
+
+tz.TZDateTime _makeReminderDateTime(DateTime dayDate, int hour, int minute) {
+  return tz.TZDateTime(
+    tz.local,
+    dayDate.year,
+    dayDate.month,
+    dayDate.day,
+    hour,
+    minute,
+  );
+}
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -110,6 +178,38 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         }).toList(),
       );
     }).toList();
+  }
+
+  /// Schedule daily reminders for all days in the plan
+  /// Uses 8:00 AM default (or user's setting from Firestore)
+  Future<void> _scheduleDailyReminders(StudyPlan plan) async {
+    final notificationService = NotificationService();
+    final now = DateTime.now();
+
+    for (final day in plan.days) {
+      // Include today OR future days
+      if (!day.date.isBefore(now)) {
+        // Get reminder time from user settings with fallback to 08:00
+        final scheduledDate = await _parseReminderTime(
+          planId: plan.id,
+          dayDate: day.date,
+          defaultHour: 8,
+          defaultMinute: 0,
+        );
+
+        // Use deterministic ID generation (fits in 32-bit)
+        final notificationId =
+            generateNotificationId(plan.id, day.date, scheduledDate.hour);
+
+        await notificationService.scheduleNotification(
+          id: notificationId,
+          title: 'Study Session Today',
+          body:
+              '${day.tasks.where((t) => !t.done).length} tasks waiting. Let\'s get started!',
+          scheduledDate: scheduledDate,
+        );
+      }
+    }
   }
 
   Future<void> _generatePlan() async {
@@ -390,43 +490,15 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     setState(() => _isLoading = false);
   }
 
-  Future<void> _scheduleDailyReminders(StudyPlan plan) async {
+  Future<void> _cancelAllNotifications() async {
     final notificationService = NotificationService();
     final now = DateTime.now();
 
-    // Default reminder time: 8:00 AM
-    // In a future implementation, this would come from user settings
-    final reminderHour = 8;
-    final reminderMinute = 0;
-
-    for (final day in plan.days) {
-      // Include today OR future days
+    for (final day in _plan!.days) {
       if (!day.date.isBefore(now)) {
-        // Schedule at 8:00 AM local time
-        final scheduledDate = tz.TZDateTime(
-          tz.local,
-          day.date.year,
-          day.date.month,
-          day.date.day,
-          reminderHour,
-          reminderMinute,
-        );
-
-        // If 8:00 AM already passed today, we still schedule for today
-        // because user asked for reminders at sensible time
-        // Use unique ID based on plan ID, date, and reminder time
-        final dayKey = day.date.toIso8601String().split('T')[0];
         final notificationId =
-            'plan_${plan.id}_day_${dayKey}_$reminderHour$reminderMinute'
-                .hashCode;
-
-        await notificationService.scheduleNotification(
-          id: notificationId.abs(),
-          title: 'Study Session Today',
-          body:
-              '${day.tasks.where((t) => !t.done).length} tasks waiting. Let\'s get started!',
-          scheduledDate: scheduledDate,
-        );
+            generateNotificationId(widget.planId, day.date, 8); // 8 AM default
+        await notificationService.cancelNotification(notificationId);
       }
     }
   }
@@ -459,6 +531,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
             icon: const Icon(Icons.notifications),
             onPressed: () => _scheduleDailyReminders(plan),
           ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _confirmDeletePlan(),
+          ),
         ],
       ),
       body: ListView(
@@ -487,6 +563,73 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _scheduleDailyReminders(StudyPlan plan) async {
+    final notificationService = NotificationService();
+    final now = DateTime.now();
+
+    for (final day in plan.days) {
+      // Include today OR future days
+      if (!day.date.isBefore(now)) {
+        // Get reminder time from user settings with fallback to 08:00
+        final scheduledDate = await _parseReminderTime(
+          planId: plan.id,
+          dayDate: day.date,
+          defaultHour: 8,
+          defaultMinute: 0,
+        );
+
+        // Use deterministic ID generation (fits in 32-bit)
+        final notificationId =
+            generateNotificationId(plan.id, day.date, scheduledDate.hour);
+
+        await notificationService.scheduleNotification(
+          id: notificationId,
+          title: 'Study Session Today',
+          body:
+              '${day.tasks.where((t) => !t.done).length} tasks waiting. Let\'s get started!',
+          scheduledDate: scheduledDate,
+        );
+      }
+    }
+  }
+
+  void _confirmDeletePlan() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Plan'),
+        content: const Text(
+            'Are you sure you want to delete this plan? This will also cancel all scheduled reminders.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deletePlan();
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deletePlan() async {
+    final repository = ref.read(plannerRepositoryProvider);
+    await repository.deletePlan(widget.planId);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Plan deleted')),
+    );
+
+    context.go(AppRoutes.home);
   }
 
   List<Widget> _buildDaysList(StudyPlan plan) {

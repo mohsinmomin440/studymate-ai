@@ -97,6 +97,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
   }
 
   /// Schedule the end notification using zonedSchedule
+  /// Uses remainingSeconds so if timer is paused/resumed, notification
+  /// fires with the correct remaining time
   Future<void> _scheduleEndNotification(int remainingSeconds) async {
     final notificationService = NotificationService();
     final remainingMinutes = (remainingSeconds / 60).ceil();
@@ -139,6 +141,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     state = state.copyWith(isRunning: true);
 
     // Schedule the end notification for remaining time
+    // This ensures correct timing even after pause/resume
     _scheduleEndNotification(state.remainingSeconds);
 
     _timer?.cancel();
@@ -157,7 +160,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
             totalFocusMinutes: state.totalFocusMinutes + completedMinutes,
             lastSessionStart: DateTime.now());
 
-        _showCompletionNotification();
+        // Log focus minutes - the scheduled notification will fire
+        // in ~1 second, so no separate showFocusComplete call needed
         _logFocusMinutes(completedMinutes);
       }
     });

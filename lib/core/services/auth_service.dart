@@ -117,6 +117,15 @@ class AuthRepository {
           'reminderTime': '08:00',
         },
       });
+    } else {
+      // Merge settings if they don't exist (for existing users)
+      final data = docSnap.data() ?? {};
+      final settings = data['settings'] as Map<String, dynamic>? ?? {};
+      if (!settings.containsKey('reminderTime')) {
+        await docRef.update({
+          'settings.reminderTime': '08:00',
+        });
+      }
     }
   }
 }

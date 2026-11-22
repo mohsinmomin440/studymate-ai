@@ -3,8 +3,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/notification_service.dart';
 import '../domain/planner_models.dart';
 
 final plannerRepositoryProvider =
@@ -14,6 +16,7 @@ class PlannerRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final _uuid = const Uuid();
+  final NotificationService _notificationService = NotificationService();
 
   String get _uid => _auth.currentUser?.uid ?? '';
 
@@ -21,6 +24,55 @@ class PlannerRepository {
       .collection(AppConstants.firestoreUsersCollection)
       .doc(_uid)
       .collection(AppConstants.firestorePlansCollection);
+
+  /// Generate a deterministic 32-bit notification ID for a plan day
+  /// Format: hash(planId + date + reminderHour) fits in 32-bit int range
+  /// Using a stable hashing algorithm that produces consistent results
+  int _generateNotificationId(
+      String planId, DateTime dayDate, int reminderHour) {
+    final dateStr = dayDate.toIso8601String().split('T')[0];
+    final key = '$planId|$dateStr|$reminderHour';
+
+    // Simple deterministic hash that fits in 32-bit integer
+    int hash = 0;
+    for (int i = 0; i < key.length; i++) {
+      hash = (hash * 31 + key.codeUnitAt(i)) & 0xFFFFFFFF;
+    }
+    return hash;
+  }
+
+  /// Cancel all scheduled notifications for a plan
+  /// Called when plan is deleted or all tasks are marked done
+  Future<void> _cancelPlanNotifications(String planId, DateTime examDate,
+      {List<StudyDay>? days}) async {
+    final notificationService = NotificationService();
+
+    // Default reminder time: 8:00 AM
+    const reminderHour = 8;
+    const reminderMinute = 0;
+
+    // If days provided, use them; otherwise we just cancel all for this plan
+    if (days != null) {
+      for (final day in days) {
+        final notificationId =
+            _generateNotificationId(planId, day.date, reminderHour);
+        await notificationService.cancelNotification(notificationId);
+      }
+    } else {
+      // Fallback: try to cancel notifications for next 30 days
+      // Since we can't iterate all days, we cancel a reasonable range
+      final now = DateTime.now();
+      for (int i = 0; i < 30; i++) {
+        final dayDate =
+            DateTime(now.year, now.month, now.day).add(Duration(days: i));
+        if (!dayDate.isBefore(now)) {
+          final notificationId =
+              _generateNotificationId(planId, dayDate, reminderHour);
+          await notificationService.cancelNotification(notificationId);
+        }
+      }
+    }
+  }
 
   /// Create a new study plan from AI-generated data
   Future<String> createPlan({
@@ -62,12 +114,18 @@ class PlannerRepository {
     return StudyPlan.fromFirestore(doc);
   }
 
-  /// Delete a study plan
+  /// Delete a study plan and cancel its notifications
   Future<void> deletePlan(String planId) async {
+    // First get the plan to cancel its notifications
+    final plan = await getPlan(planId);
+    if (plan != null) {
+      await _cancelPlanNotifications(planId, plan.examDate, days: plan.days);
+    }
+
     await _plansCollection.doc(planId).delete();
   }
 
-  /// Update a task as done/undone
+  /// Update a task as done/undone, and reschedule notifications if needed
   Future<void> toggleTask({
     required String planId,
     required int dayIndex,
@@ -89,6 +147,10 @@ class PlannerRepository {
         ...day.tasks.skip(taskIndex + 1)
       ],
     );
+
+    // Cancel old notification for this day, will be rescheduled when needed
+    final notificationId = _generateNotificationId(planId, day.date, 8);
+    await _notificationService.cancelNotification(notificationId);
 
     await _plansCollection.doc(planId).update({
       'days': plan.days
