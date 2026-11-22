@@ -16,6 +16,7 @@ import '../../../shared/widgets/section_header.dart';
 import '../../chat/data/ai_service.dart';
 import '../data/scanner_repository.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/errors/failures.dart';
 
 class ScannerScreen extends ConsumerStatefulWidget {
   const ScannerScreen({super.key});
@@ -288,14 +289,18 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
 
     final canUse = await ref.read(aiServiceProvider).checkAndIncrementUsage();
     if (!canUse) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Daily AI limit reached. Try again tomorrow or use fewer AI requests.'),
+      if (!mounted) return;
+      _showErrorDialog(
+        title: 'Daily limit reached',
+        message:
+            'You\'ve used your daily AI quota. Try again tomorrow or use fewer AI requests.',
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
           ),
-        );
-      }
+        ],
+      );
       return;
     }
 
@@ -304,13 +309,14 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     try {
       final solution = await _analyzeImageWithAI();
 
+      if (!mounted) return;
       setState(() => _solution = solution);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error processing image: $e')),
-        );
-      }
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+
+      final failure = AIFailure.fromException(e);
+      _showAiErrorDialog(failure);
     } finally {
       if (mounted) {
         setState(() => _isProcessing = false);
@@ -318,39 +324,57 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     }
   }
 
+  void _showAiErrorDialog(Failure failure) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Something went wrong'),
+        content: Text(failure.message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          if (failure is AIFailure) ...[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _processImage();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog({
+    required String title,
+    required String message,
+    required List<Widget> actions,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: actions,
+      ),
+    );
+  }
+
   Future<String> _analyzeImageWithAI() async {
     final aiService = ref.read(aiServiceProvider);
 
-    try {
-      final result = await aiService.analyzeImageWithText(
-        imagePath: _selectedImage!.path,
-        subject: _selectedSubject,
-        question: 'Analyze this image and provide a step-by-step solution',
-      );
-      return result;
-    } catch (e) {
-      // Fallback to simulated response for environments without proper multimodal support
-      return _getSimulatedSolution();
-    }
-  }
-
-  /// Simulated response for environments where multimodal AI isn't fully configured
-  String _getSimulatedSolution() {
-    return '''**Solution:**
-
-Since the image cannot be fully processed in this environment, here's how StudyMate AI would analyze it:
-
-1. **Problem Identification**: Identify what type of problem this is (math equation, diagram, text)
-
-2. **Key Information Extraction**: Extract all given data and what needs to be found
-
-3. **Step-by-Step Solution**: Apply the appropriate method based on the subject:
-   - **Mathematics**: Show formula, substitute values, solve
-   - **Physics**: Apply relevant laws (F=ma, etc.), show reasoning
-   - **Chemistry**: Balance equations, show reactions
-
-4. **Final Answer with Explanation**: Provide the answer and explain the key concepts
-''';
+    final result = await aiService.analyzeImageWithText(
+      imagePath: _selectedImage!.path,
+      subject: _selectedSubject,
+      question: 'Analyze this image and provide a step-by-step solution',
+    );
+    return result;
   }
 
   Future<void> _saveSolution() async {

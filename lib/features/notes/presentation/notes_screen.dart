@@ -18,7 +18,7 @@ import '../domain/note_models.dart';
 import '../../../core/router/app_router.dart';
 
 /// AI actions available for notes
-enum AiAction { summarize, keyPoints, translate, flashcards, quiz }
+enum AiAction { summarize, keyPoints, translate, flashcards, quiz, simplify }
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -502,6 +502,14 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
               _performAiAction(AiAction.quiz);
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.calculate),
+            title: const Text('Simplify'),
+            onTap: () {
+              Navigator.pop(context);
+              _performAiAction(AiAction.simplify);
+            },
+          ),
         ],
       ),
     );
@@ -576,6 +584,8 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
         return 'Flashcards generated successfully';
       case AiAction.quiz:
         return 'Quiz generated successfully';
+      case AiAction.simplify:
+        return 'Note simplified successfully';
     }
   }
 
@@ -613,6 +623,8 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           language: language,
         );
         return 'QUIZ:${QuizQuestionToJson(quizzes)}';
+      case AiAction.simplify:
+        return await aiService.simplifyNote(noteText: body, language: language);
     }
   }
 
@@ -647,6 +659,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
       case AiAction.summarize:
       case AiAction.keyPoints:
       case AiAction.translate:
+      case AiAction.simplify:
         _bodyController.text = result;
         break;
       case AiAction.flashcards:
@@ -720,6 +733,7 @@ class _AiProcessingDialog extends StatelessWidget {
       AiAction.translate => 'Translating',
       AiAction.flashcards => 'Generating flashcards',
       AiAction.quiz => 'Generating quiz',
+      AiAction.simplify => 'Simplifying',
     };
 
     return AlertDialog(

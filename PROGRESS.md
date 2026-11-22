@@ -47,10 +47,13 @@
 ## Phase 4 — Notes + Doubt Scanner ✅ COMPLETE
 - [x] Notes CRUD/search/tags
 - [x] Import (text) - PDF import deferred to Phase 5
-- [x] AI note actions wired to AiService (Summarize, Key points, Translate, Generate Flashcards/Quiz)
+- [x] AI note actions wired to AiService (Summarize, Key points, Translate, Generate Flashcards/Quiz, Simplify)
 - [x] Camera/gallery doubt solver with AI integration
 - [x] Build succeeds (compileSdk 36)
 - [x] QR code scanning infrastructure in place
+- [x] Fixed multimodal image analysis (ImageDataPart API)
+- [x] Added friendly error dialogs with retry for scanner screen
+- [x] Unit tests for NoteModel
 
 ### Firebase testing needed:
 - Notes saving/retrieval in Firestore (offline persistence enabled)
