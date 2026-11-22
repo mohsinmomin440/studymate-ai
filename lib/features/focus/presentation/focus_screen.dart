@@ -1,6 +1,7 @@
 // Focus Timer - Pomodoro timer with session tracking
 
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -250,21 +251,26 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     final state = ref.watch(focusSessionProvider);
     final notifier = ref.read(focusSessionProvider.notifier);
 
-    // Set up callback for XP/badge awarding on session complete
-    notifier.setOnSessionComplete(() async {
-      final newBadges = await ref
+    // Set up callback for XP/badge awarding on session complete (fire-and-forget)
+    notifier.setOnSessionComplete(() {
+      ref
           .read(progressRepositoryProvider)
-          .recordActivity('focus_minute');
-      if (newBadges.isNotEmpty && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+          .recordActivity('focus_minute')
+          .then((newBadges) {
+        if (newBadges.isNotEmpty && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }).onError((error, stackTrace) {
+        developer.log('recordActivity(focus_minute) error: $error',
+            name: 'FocusScreen');
+      });
     });
 
     // Force dark theme colors for ambient focus environment

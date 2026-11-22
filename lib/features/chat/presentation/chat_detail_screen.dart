@@ -3,6 +3,8 @@
 library;
 
 import 'dart:async';
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -153,19 +155,25 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             text.length > 50 ? '${text.substring(0, 50)}...' : text,
       );
 
-      // Award XP for chat activity and check badges
-      final newBadges =
-          await ref.read(progressRepositoryProvider).recordActivity('chat');
-      if (newBadges.isNotEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+      // Award XP for chat activity and check badges (fire-and-forget, never blocks UI)
+      ref
+          .read(progressRepositoryProvider)
+          .recordActivity('chat')
+          .then((newBadges) {
+        if (newBadges.isNotEmpty && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }).onError((error, stackTrace) {
+        developer.log('recordActivity(chat) error: $error',
+            name: 'ChatDetailScreen');
+      });
 
       String fullResponse = '';
       await for (final chunk

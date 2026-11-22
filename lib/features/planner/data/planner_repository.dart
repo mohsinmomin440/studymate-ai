@@ -91,6 +91,18 @@ class PlannerRepository {
             snapshot.docs.map((doc) => StudyPlan.fromFirestore(doc)).toList());
   }
 
+  /// Get active plans (exam date in future) as a one-time future
+  Future<List<StudyPlan>> getActivePlans() async {
+    final now = DateTime.now();
+    final snapshot = await _plansCollection
+        .where('examDate',
+            isGreaterThanOrEqualTo: now.toIso8601String().split('T')[0])
+        .orderBy('examDate')
+        .get();
+
+    return snapshot.docs.map((doc) => StudyPlan.fromFirestore(doc)).toList();
+  }
+
   /// Get a single study plan by ID
   Future<StudyPlan?> getPlan(String planId) async {
     final doc = await _plansCollection.doc(planId).get();

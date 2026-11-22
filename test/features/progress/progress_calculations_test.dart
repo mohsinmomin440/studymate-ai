@@ -282,4 +282,108 @@ void main() {
           equals(366));
     });
   });
+
+  group('Anti-farming: daily XP caps', () {
+    test('canAwardXpToday - no cap for quiz', () {
+      expect(
+          canAwardXpToday(action: 'quiz', currentDailyXpForAction: 0), isTrue);
+      expect(canAwardXpToday(action: 'quiz', currentDailyXpForAction: 1000),
+          isTrue);
+    });
+
+    test('canAwardXpToday - chat cap at 50 XP (10 chats)', () {
+      expect(
+          canAwardXpToday(action: 'chat', currentDailyXpForAction: 0), isTrue);
+      expect(
+          canAwardXpToday(action: 'chat', currentDailyXpForAction: 45), isTrue);
+      expect(canAwardXpToday(action: 'chat', currentDailyXpForAction: 50),
+          isFalse);
+      expect(canAwardXpToday(action: 'chat', currentDailyXpForAction: 60),
+          isFalse);
+    });
+
+    test('canAwardXpToday - note cap at 100 XP (10 notes)', () {
+      expect(
+          canAwardXpToday(action: 'note', currentDailyXpForAction: 0), isTrue);
+      expect(
+          canAwardXpToday(action: 'note', currentDailyXpForAction: 90), isTrue);
+      expect(canAwardXpToday(action: 'note', currentDailyXpForAction: 100),
+          isFalse);
+    });
+
+    test('canAwardXpToday - flashcard_review cap at 100 XP (50 reviews)', () {
+      expect(
+          canAwardXpToday(
+              action: 'flashcard_review', currentDailyXpForAction: 0),
+          isTrue);
+      expect(
+          canAwardXpToday(
+              action: 'flashcard_review', currentDailyXpForAction: 98),
+          isTrue);
+      expect(
+          canAwardXpToday(
+              action: 'flashcard_review', currentDailyXpForAction: 100),
+          isFalse);
+    });
+
+    test('canAwardXpToday - focus_minute cap at 120 XP (120 minutes)', () {
+      expect(
+          canAwardXpToday(action: 'focus_minute', currentDailyXpForAction: 0),
+          isTrue);
+      expect(
+          canAwardXpToday(action: 'focus_minute', currentDailyXpForAction: 119),
+          isTrue);
+      expect(
+          canAwardXpToday(action: 'focus_minute', currentDailyXpForAction: 120),
+          isFalse);
+    });
+
+    test('xpToAwardToday - full award when under cap', () {
+      expect(xpToAwardToday(action: 'chat', currentDailyXpForAction: 0),
+          equals(5));
+      expect(xpToAwardToday(action: 'note', currentDailyXpForAction: 0),
+          equals(10));
+      expect(
+          xpToAwardToday(
+              action: 'flashcard_review', currentDailyXpForAction: 0),
+          equals(2));
+      expect(xpToAwardToday(action: 'focus_minute', currentDailyXpForAction: 0),
+          equals(1));
+    });
+
+    test('xpToAwardToday - partial award when near cap', () {
+      // chat cap 50, 48 XP used = 2 remaining, base 5 -> award 2
+      expect(xpToAwardToday(action: 'chat', currentDailyXpForAction: 48),
+          equals(2));
+      // note cap 100, 95 XP used = 5 remaining, base 10 -> award 5
+      expect(xpToAwardToday(action: 'note', currentDailyXpForAction: 95),
+          equals(5));
+      // flashcard cap 100, 99 XP used = 1 remaining, base 2 -> award 1
+      expect(
+          xpToAwardToday(
+              action: 'flashcard_review', currentDailyXpForAction: 99),
+          equals(1));
+    });
+
+    test('xpToAwardToday - zero award when cap reached', () {
+      expect(xpToAwardToday(action: 'chat', currentDailyXpForAction: 50),
+          equals(0));
+      expect(xpToAwardToday(action: 'chat', currentDailyXpForAction: 60),
+          equals(0));
+      expect(xpToAwardToday(action: 'note', currentDailyXpForAction: 100),
+          equals(0));
+      expect(
+          xpToAwardToday(
+              action: 'flashcard_review', currentDailyXpForAction: 100),
+          equals(0));
+      expect(
+          xpToAwardToday(action: 'focus_minute', currentDailyXpForAction: 120),
+          equals(0));
+    });
+
+    test('xpToAwardToday - unknown action returns 0', () {
+      expect(xpToAwardToday(action: 'unknown', currentDailyXpForAction: 0),
+          equals(0));
+    });
+  });
 }

@@ -2,6 +2,8 @@
 
 library;
 
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -250,19 +252,25 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
       );
       await ref.read(noteRepositoryProvider).createNote(newNote);
 
-      // Award XP for new note
-      final newBadges =
-          await ref.read(progressRepositoryProvider).recordActivity('note');
-      if (newBadges.isNotEmpty && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+      // Award XP for new note (fire-and-forget, never blocks UI)
+      ref
+          .read(progressRepositoryProvider)
+          .recordActivity('note')
+          .then((newBadges) {
+        if (newBadges.isNotEmpty && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }).onError((error, stackTrace) {
+        developer.log('recordActivity(note) error: $error',
+            name: 'NotesScreen');
+      });
     }
 
     if (context.mounted) {

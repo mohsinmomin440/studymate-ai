@@ -1,5 +1,7 @@
 // Flashcards Screen - Deck list and quick actions
 
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -1008,20 +1010,25 @@ class _StudyModeScreenState extends ConsumerState<StudyModeScreen> {
           rating: rating,
         );
 
-    // Award XP for flashcard review
-    final newBadges = await ref
+    // Award XP for flashcard review (fire-and-forget, never blocks UI)
+    ref
         .read(progressRepositoryProvider)
-        .recordActivity('flashcard_review');
-    if (newBadges.isNotEmpty && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
+        .recordActivity('flashcard_review')
+        .then((newBadges) {
+      if (newBadges.isNotEmpty && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }).onError((error, stackTrace) {
+      developer.log('recordActivity(flashcard_review) error: $error',
+          name: 'FlashcardsScreen');
+    });
 
     if (!mounted) return;
 

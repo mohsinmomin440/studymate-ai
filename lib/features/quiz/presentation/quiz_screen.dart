@@ -1,5 +1,7 @@
 // Quiz screens - List, Create, Take, Results
 
+import 'dart:developer' as developer;
+
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,9 +15,10 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../chat/data/ai_service.dart';
 import '../data/quiz_repository.dart';
-import '../domain/quiz_models.dart';
+import '../domain/quiz_models.dart' as quiz_models;
 import '../../../core/router/app_router.dart';
-import '../../../features/progress/data/progress_repository.dart';
+import '../../../features/progress/data/progress_repository.dart'
+    hide QuizAnswerData, QuizAttempt;
 
 class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key});
@@ -62,7 +65,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<List<Quiz>>(
+            child: StreamBuilder<List<quiz_models.Quiz>>(
               stream: ref.watch(quizRepositoryProvider).getQuizzes(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -118,7 +121,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     );
   }
 
-  Widget _buildQuizCard(Quiz quiz) {
+  Widget _buildQuizCard(quiz_models.Quiz quiz) {
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -561,7 +564,7 @@ class QuizDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: FutureBuilder<Quiz?>(
+      body: FutureBuilder<quiz_models.Quiz?>(
         future: ref.watch(quizRepositoryProvider).getQuiz(quizId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -595,7 +598,7 @@ class QuizDetailScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const Gap(16),
-              StreamBuilder<List<QuizAttempt>>(
+              StreamBuilder<List<quiz_models.QuizAttempt>>(
                 stream: ref.watch(quizRepositoryProvider).getAttempts(quizId),
                 builder: (context, snapshot) {
                   final attempts = snapshot.data ?? [];
@@ -661,7 +664,7 @@ class QuizTakeScreen extends ConsumerStatefulWidget {
 }
 
 class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
-  Quiz? _quiz;
+  quiz_models.Quiz? _quiz;
   int _currentIndex = 0;
   int _selectedAnswer = -1;
   List<int> _answers = [];
@@ -691,14 +694,14 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
         .where((a) => a == _quiz!.questions[_currentIndex].correctIndex)
         .length;
 
-    final attempt = QuizAttempt(
+    final attempt = quiz_models.QuizAttempt(
       id: '',
       quizId: widget.quizId,
       score: correct,
       total: _quiz!.questions.length,
       answers: List.generate(_quiz!.questions.length, (i) {
         final q = _quiz!.questions[i];
-        return AnsweredQuestion(
+        return quiz_models.AnsweredQuestion(
           question: q.question,
           options: q.options,
           selectedIndex: _answers[i],
@@ -713,19 +716,24 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
     final attemptId =
         await ref.read(quizRepositoryProvider).saveAttempt(attempt);
 
-    // Award XP for quiz completion
-    final newBadges =
-        await ref.read(progressRepositoryProvider).recordActivity('quiz');
-    if (newBadges.isNotEmpty && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
+    // Award XP for quiz completion (fire-and-forget, never blocks UI)
+    ref
+        .read(progressRepositoryProvider)
+        .recordActivity('quiz')
+        .then((newBadges) {
+      if (newBadges.isNotEmpty && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }).onError((error, stackTrace) {
+      developer.log('recordActivity(quiz) error: $error', name: 'QuizScreen');
+    });
 
     if (!mounted) return;
     context.go('${AppRoutes.quizResult}/${widget.quizId}?attemptId=$attemptId');
@@ -1082,8 +1090,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     BuildContext context,
     WidgetRef ref,
     String quizId,
-    List<AnsweredQuestion> wrongAnswers,
-    Quiz originalQuiz,
+    List<quiz_models.AnsweredQuestion> wrongAnswers,
+    quiz_models.Quiz originalQuiz,
   ) {
     final quizRepository = ref.read(quizRepositoryProvider);
 
@@ -1144,7 +1152,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     });
   }
 
-  Future<QuizAttempt?> _getAttempt(String quizId, WidgetRef ref) async {
+  Future<quiz_models.QuizAttempt?> _getAttempt(
+      String quizId, WidgetRef ref) async {
     final attempts =
         await ref.watch(quizRepositoryProvider).getAllAttempts().first;
     if (widget.attemptId == null) {
@@ -1161,8 +1170,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
 /// Helper class for quiz result data
 class _QuizResultData {
-  final Quiz quiz;
-  final QuizAttempt attempt;
+  final quiz_models.Quiz quiz;
+  final quiz_models.QuizAttempt attempt;
 
   _QuizResultData({required this.quiz, required this.attempt});
 }

@@ -135,6 +135,39 @@
 - [x] flutter analyze clean (only pre-existing use_build_context_synchronously info warnings)
 - [x] Debug APK builds successfully
 
+### Phase 7C — Real Data Dashboards & Anti-Farming ✅ COMPLETE
+- [x] Anti-farming daily XP caps (progress_calculations.dart)
+  - chat: 50 XP/day (10 chats), note: 100 XP/day (10 notes)
+  - flashcard_review: 100 XP/day (50 reviews), focus_minute: 120 XP/day (120 min)
+  - quiz: no daily cap (already limited by quiz length)
+  - Functions: canAwardXpToday(), xpToAwardToday()
+  - Unit tests: 10 test cases passing
+- [x] recordActivity() fire-and-forget pattern (never blocks UI)
+  - Uses .then() callback for badge notifications
+  - Errors caught with .onError() and logged
+- [x] Counter fields on users/{uid} document (totalQuizzes, totalNotes, totalChats, totalCardsReviewed, totalFocusMinutes)
+  - Updated atomically in transaction
+  - Enables O(1) badge stat reads instead of collection counting
+- [x] Pure Dart aggregation functions (lib/features/progress/domain/aggregations.dart)
+  - aggregateWeeklyStats() - weekly study minutes, XP, avg quiz score
+  - calculateSubjectStrength() - per-subject accuracy from quiz attempts
+  - calculateWeeklySummary() - summary card with message based on study days
+  - getTodaysTasks() - today's tasks from active study plans
+  - Unit tests: 14 test cases passing
+- [x] HomeScreen (lib/features/progress/presentation/home_screen.dart)
+  - Real Firestore data via FutureProvider: streak, XP, level, daily goal ring, study minutes, XP earned, due flashcards, today's tasks, greeting
+  - Pull-to-refresh support
+  - Loading, error, and empty states
+- [x] ProgressScreen (lib/features/progress/presentation/progress_screen.dart)
+  - Real data via FutureProviders: weekly stats chart, subject strength, weekly summary, badges
+  - Line chart with fl_chart (study minutes per day)
+  - Subject strength list sorted by accuracy
+  - Weekly summary card with motivational message
+  - Badge grid with empty state
+- [x] All 175 tests pass (15 progress calculation + 20 badge + 14 aggregation + 126 other)
+- [x] flutter analyze clean (only pre-existing use_build_context_synchronously info warnings)
+- [x] Debug APK builds successfully
+
 ## Phase 8 — Settings, localization, polish
 - [ ] Settings screens
 - [ ] Delete account
@@ -153,8 +186,8 @@
 ### Known Gaps
 
 **Core Missing Features:**
-- Phase 6: HomeScreen needs real Firestore data wiring (greeting, streak, XP, daily goal ring, due cards, planned tasks)
-- Phase 7: Badges system needs Firestore model and repository
+- Phase 6: ~~HomeScreen needs real Firestore data wiring~~ ✅ DONE in Phase 7C
+- Phase 7: ~~Badges system needs Firestore model and repository~~ ✅ DONE in Phase 7B
 
 **Pending Firebase Config:**
 - Run `flutterfire configure` to generate real `firebase_options.dart`
@@ -166,6 +199,6 @@
 - Add Flutter assets fonts for Gujarati/Hindi (Noto Sans)
 
 **UI remaining:**
-- HomeScreen is just a text placeholder
-- ProgressScreen has placeholder badge chips with demo data
+- ~~HomeScreen is just a text placeholder~~ ✅ DONE - real data dashboard
+- ~~ProgressScreen has placeholder badge chips with demo data~~ ✅ DONE - real data with charts, badges, subject strength
 - SettingsScreen is a text placeholder

@@ -10,6 +10,43 @@ const Map<String, int> xpPerAction = {
   'focus_minute': 1,
 };
 
+/// Daily XP caps per action type to prevent farming
+const Map<String, int> dailyXpCaps = {
+  'chat': 50, // 10 chats * 5 XP
+  'note': 100, // 10 notes * 10 XP
+  'flashcard_review': 100, // 50 reviews * 2 XP
+  'focus_minute': 120, // 120 minutes * 1 XP
+  // 'quiz' has no daily cap - limited by one XP award per attempt
+};
+
+/// Check if action should award XP today based on daily cap
+/// Returns true if XP can be awarded, false if daily cap reached
+bool canAwardXpToday({
+  required String action,
+  required int currentDailyXpForAction,
+}) {
+  final cap = dailyXpCaps[action];
+  if (cap == null) return true; // No cap for this action
+  return currentDailyXpForAction < cap;
+}
+
+/// Calculate how much XP to award for an action today (respects daily cap)
+/// Returns 0 if daily cap reached
+int xpToAwardToday({
+  required String action,
+  required int currentDailyXpForAction,
+}) {
+  final baseXp = xpForAction(action);
+  if (baseXp == 0) return 0;
+
+  final cap = dailyXpCaps[action];
+  if (cap == null) return baseXp; // No cap
+
+  final remaining = cap - currentDailyXpForAction;
+  if (remaining <= 0) return 0;
+  return remaining >= baseXp ? baseXp : remaining;
+}
+
 /// Get XP for a given action, defaults to 0 for unknown actions
 int xpForAction(String action) {
   return xpPerAction[action] ?? 0;

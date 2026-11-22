@@ -227,6 +227,32 @@ class FlashcardRepository {
     return cardIds;
   }
 
+  /// Get total due cards count across all decks
+  Future<int> getDueCardsCount() async {
+    if (_uid.isEmpty) return 0;
+
+    final now = Timestamp.now();
+
+    final decksSnapshot = await _decksCollection.get();
+
+    int totalDue = 0;
+
+    for (final deckDoc in decksSnapshot.docs) {
+      final cardsSnapshot = await _firestore
+          .collection(AppConstants.firestoreUsersCollection)
+          .doc(_uid)
+          .collection(AppConstants.firestoreDecksCollection)
+          .doc(deckDoc.id)
+          .collection('cards')
+          .where('dueAt', isLessThanOrEqualTo: now)
+          .get();
+
+      totalDue += cardsSnapshot.docs.length;
+    }
+
+    return totalDue;
+  }
+
   /// Get stats for a deck
   Future<DeckStats> getDeckStats(String deckId) async {
     final deck = await getDeck(deckId);
