@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:firebase_ai/firebase_ai.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../features/progress/data/progress_repository.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ai_message_bubble.dart';
@@ -151,6 +152,20 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         lastMessagePreview:
             text.length > 50 ? '${text.substring(0, 50)}...' : text,
       );
+
+      // Award XP for chat activity and check badges
+      final newBadges =
+          await ref.read(progressRepositoryProvider).recordActivity('chat');
+      if (newBadges.isNotEmpty && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
 
       String fullResponse = '';
       await for (final chunk

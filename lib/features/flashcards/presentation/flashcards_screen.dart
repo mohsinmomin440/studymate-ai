@@ -14,6 +14,7 @@ import '../../chat/data/ai_service.dart';
 import '../data/flashcard_repository.dart';
 import '../domain/flashcard_models.dart';
 import '../../../core/router/app_router.dart';
+import '../../../features/progress/data/progress_repository.dart';
 
 class FlashcardsScreen extends ConsumerStatefulWidget {
   const FlashcardsScreen({super.key});
@@ -1006,6 +1007,21 @@ class _StudyModeScreenState extends ConsumerState<StudyModeScreen> {
           cardId: card.id,
           rating: rating,
         );
+
+    // Award XP for flashcard review
+    final newBadges = await ref
+        .read(progressRepositoryProvider)
+        .recordActivity('flashcard_review');
+    if (newBadges.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
 
     if (!mounted) return;
 

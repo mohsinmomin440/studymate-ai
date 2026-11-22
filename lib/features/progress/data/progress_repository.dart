@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/progress_utils.dart';
 import '../domain/progress_calculations.dart';
+import '../domain/badges.dart';
 
 final progressRepositoryProvider =
     Provider<ProgressRepository>((ref) => ProgressRepository());
@@ -45,6 +46,115 @@ class ProgressRepository {
       return UserProgressData.fromJson(profileData,
           cardsDue: cardsDue, badgeCount: badgeCount);
     });
+  }
+
+  /// Get unlocked badge IDs for current user
+  Future<Set<String>> getUnlockedBadgeIds() async {
+    final user = _auth.currentUser;
+    if (user == null) return {};
+
+    final snapshot = await _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(user.uid)
+        .collection(AppConstants.firestoreBadgesCollection)
+        .get();
+
+    return snapshot.docs.map((d) => d.id).toSet();
+  }
+
+  /// Get user stats needed for badge evaluation
+  Future<BadgeStats> getBadgeStats() async {
+    final user = _auth.currentUser;
+    if (user == null) return BadgeStats.empty();
+
+    final userRef = _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(user.uid);
+
+    // Get quizzes completed count
+    final quizAttemptsSnapshot = await _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(user.uid)
+        .collection(AppConstants.firestoreQuizAttemptsCollection)
+        .get();
+    final quizzesCompleted = quizAttemptsSnapshot.docs.length;
+
+    // Get notes created count
+    final notesSnapshot = await _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(user.uid)
+        .collection(AppConstants.firestoreNotesCollection)
+        .get();
+    final notesCreated = notesSnapshot.docs.length;
+
+    // Get chats started count
+    final chatsSnapshot = await _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(user.uid)
+        .collection(AppConstants.firestoreChatsCollection)
+        .get();
+    final chatsStarted = chatsSnapshot.docs.length;
+
+    // Get current streak from user profile
+    final userDoc = await userRef.get();
+    final currentStreak = userDoc.data()?['streak'] as int? ?? 0;
+
+    // Get total cards reviewed from dailyStats (sum of cardsReviewed)
+    final statsSnapshot = await _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(user.uid)
+        .collection(AppConstants.firestoreDailyStatsCollection)
+        .get();
+    int cardsReviewed = 0;
+    int focusMinutes = 0;
+    for (final doc in statsSnapshot.docs) {
+      final data = doc.data();
+      cardsReviewed += data['cardsReviewed'] as int? ?? 0;
+      focusMinutes += data['studyMinutes'] as int? ?? 0;
+    }
+
+    return BadgeStats(
+      quizzesCompleted: quizzesCompleted,
+      notesCreated: notesCreated,
+      chatsStarted: chatsStarted,
+      currentStreak: currentStreak,
+      cardsReviewed: cardsReviewed,
+      focusMinutes: focusMinutes,
+    );
+  }
+
+  /// Check and unlock badges based on current stats
+  /// Returns list of newly unlocked badges
+  Future<List<Badge>> checkAndUnlockBadges() async {
+    final user = _auth.currentUser;
+    if (user == null) return [];
+
+    final alreadyUnlocked = await getUnlockedBadgeIds();
+    final stats = await getBadgeStats();
+    final newBadges = badgesToUnlock(stats, alreadyUnlocked);
+
+    if (newBadges.isEmpty) return [];
+
+    // Write new badges to Firestore
+    final batch = _firestore.batch();
+    final now = Timestamp.now();
+
+    for (final badge in newBadges) {
+      final badgeRef = _firestore
+          .collection(AppConstants.firestoreUsersCollection)
+          .doc(user.uid)
+          .collection(AppConstants.firestoreBadgesCollection)
+          .doc(badge.id);
+      batch.set(badgeRef, {
+        'unlockedAt': now,
+        'title': badge.title,
+        'description': badge.description,
+      });
+    }
+
+    await batch.commit();
+
+    return newBadges;
   }
 
   /// Get user's weekly stats for charts
@@ -265,12 +375,13 @@ class ProgressRepository {
   /// Record a user activity in a single Firestore transaction.
   /// Updates: xp, level, streak, lastStudyDate, and today's dailyStats.
   /// Uses calendar-day comparison for streak calculation.
-  Future<void> recordActivity(String action) async {
+  /// Returns newly unlocked badges.
+  Future<List<Badge>> recordActivity(String action) async {
     final user = _auth.currentUser;
-    if (user == null) return;
+    if (user == null) return [];
 
     final xpToAdd = xpForAction(action);
-    if (xpToAdd == 0) return;
+    if (xpToAdd == 0) return [];
 
     final now = DateTime.now();
     final todayStr =
@@ -343,6 +454,9 @@ class ProgressRepository {
         });
       }
     });
+
+    // Check and unlock badges after transaction
+    return await checkAndUnlockBadges();
   }
 
   /// Map action to approximate study minutes for dailyStats

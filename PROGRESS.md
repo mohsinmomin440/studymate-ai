@@ -114,15 +114,26 @@
 - [x] All tests pass (132 total)
 - [x] Debug APK builds successfully
 
-### PLACEHOLDER:
-- [ ] Badges system - UI chips exist but no Firestore model/repository
-- [ ] Dashboard wired to real data (ProgressScreen uses repository)
-- [ ] Real-time streak calculation from dailyStats
-
-### MISSING (Phase 7B):
-- [ ] Badge unlock logic and repository
-- [ ] XP award hooks in flashcards/quiz/todo completion
-- [ ] Progress charts fully integrated with Firestore data
+### Phase 7B — Badge System & Gamification ✅ COMPLETE
+- [x] Pure Dart badge definitions (lib/features/progress/domain/badges.dart)
+  - 8 badges: First Quiz, Quiz Master 10, First Note, First Chat, 7-Day Streak, 30-Day Streak, 100 Cards, 5 Hours Focus
+  - BadgeStats class with current stat values
+  - badgesToUnlock() pure function checking thresholds against already-unlocked set
+- [x] Unit tests for badge logic (20 test cases passing)
+- [x] BadgeRepository methods in ProgressRepository
+  - getUnlockedBadgeIds() reads users/{uid}/badges/{id}
+  - unlockBadges() writes badge docs with unlockedAt timestamp
+  - checkAndUnlockBadges() computes and writes new badges atomically
+- [x] Hook recordActivity() into 5 features with badge notification:
+  - Chat: recordActivity('chat') after user message sent
+  - Notes: recordActivity('note') on note creation
+  - Quiz: recordActivity('quiz') on quiz completion (score screen)
+  - Flashcards: recordActivity('flashcard_review') on card rating
+  - Focus: recordActivity('focus_minute') on session complete via callback
+- [x] ProgressScreen shows real unlocked badges from Firestore (GridView with icons, empty state)
+- [x] All 152 tests pass
+- [x] flutter analyze clean (only pre-existing use_build_context_synchronously info warnings)
+- [x] Debug APK builds successfully
 
 ## Phase 8 — Settings, localization, polish
 - [ ] Settings screens

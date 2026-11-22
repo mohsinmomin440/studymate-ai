@@ -15,6 +15,7 @@ import '../../chat/data/ai_service.dart';
 import '../data/quiz_repository.dart';
 import '../domain/quiz_models.dart';
 import '../../../core/router/app_router.dart';
+import '../../../features/progress/data/progress_repository.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key});
@@ -711,6 +712,21 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
 
     final attemptId =
         await ref.read(quizRepositoryProvider).saveAttempt(attempt);
+
+    // Award XP for quiz completion
+    final newBadges =
+        await ref.read(progressRepositoryProvider).recordActivity('quiz');
+    if (newBadges.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+
     if (!mounted) return;
     context.go('${AppRoutes.quizResult}/${widget.quizId}?attemptId=$attemptId');
   }

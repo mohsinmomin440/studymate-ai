@@ -13,6 +13,7 @@ import '../../../core/services/notification_service.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
+import '../../progress/data/progress_repository.dart';
 
 // Focus session state
 class FocusSessionState {
@@ -57,15 +58,21 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   static const int _notificationId = 1004;
+  VoidCallback? _onSessionComplete;
 
-  FocusSessionNotifier()
-      : super(FocusSessionState(
+  FocusSessionNotifier({VoidCallback? onSessionComplete})
+      : _onSessionComplete = onSessionComplete,
+        super(FocusSessionState(
           remainingSeconds: AppConstants.defaultFocusMinutes * 60,
           totalSeconds: AppConstants.defaultFocusMinutes * 60,
           isRunning: false,
           sessionCount: 0,
           totalFocusMinutes: 0,
         ));
+
+  void setOnSessionComplete(VoidCallback callback) {
+    _onSessionComplete = callback;
+  }
 
   String get _uid => _auth.currentUser?.uid ?? '';
 
@@ -163,6 +170,9 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
         // Log focus minutes - the scheduled notification will fire
         // in ~1 second, so no separate showFocusComplete call needed
         _logFocusMinutes(completedMinutes);
+
+        // Call callback for XP/badge awarding
+        _onSessionComplete?.call();
       }
     });
   }
@@ -202,7 +212,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
 final focusSessionProvider =
     StateNotifierProvider<FocusSessionNotifier, FocusSessionState>((ref) {
-  return FocusSessionNotifier();
+  final notifier = FocusSessionNotifier();
+  return notifier;
 });
 
 class FocusScreen extends ConsumerStatefulWidget {
@@ -238,6 +249,23 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(focusSessionProvider);
     final notifier = ref.read(focusSessionProvider.notifier);
+
+    // Set up callback for XP/badge awarding on session complete
+    notifier.setOnSessionComplete(() async {
+      final newBadges = await ref
+          .read(progressRepositoryProvider)
+          .recordActivity('focus_minute');
+      if (newBadges.isNotEmpty && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
 
     // Force dark theme colors for ambient focus environment
     const darkBg = Color(0xFF0B0D17);

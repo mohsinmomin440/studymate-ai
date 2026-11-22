@@ -1,12 +1,13 @@
 // Progress screen - XP, streak, badges, charts
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../features/progress/data/progress_repository.dart';
+import '../../../features/progress/domain/badges.dart' as badge_domain;
 
 class _ColoredStatTile extends StatelessWidget {
   final String label;
@@ -37,12 +38,22 @@ final weeklyStatsProvider = FutureProvider<List<WeeklyStat>>((ref) async {
   return ref.read(progressRepositoryProvider).getWeeklyStats();
 });
 
+final unlockedBadgesProvider =
+    FutureProvider<List<badge_domain.Badge>>((ref) async {
+  final repo = ref.read(progressRepositoryProvider);
+  final unlockedIds = await repo.getUnlockedBadgeIds();
+  return badge_domain.allBadges
+      .where((b) => unlockedIds.contains(b.id))
+      .toList();
+});
+
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final weeklyStatsAsync = ref.watch(weeklyStatsProvider);
+    final unlockedBadgesAsync = ref.watch(unlockedBadgesProvider);
 
     return StreamBuilder<UserProgressData>(
       stream: ref.read(progressRepositoryProvider).getUserProgressStream(),
@@ -68,7 +79,7 @@ class ProgressScreen extends ConsumerWidget {
               const Gap(24),
               const SectionHeader(title: 'Badges'),
               const Gap(16),
-              _buildBadgesSection(progress),
+              _buildBadgesSection(context, unlockedBadgesAsync),
             ],
           ),
         );
@@ -248,29 +259,86 @@ class ProgressScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBadgesSection(UserProgressData progress) {
-    if (progress.badgesCount == 0) {
-      return const Center(
-        child: Text('No badges yet. Start studying and earn badges!'),
-      );
-    }
+  Widget _buildBadgesSection(BuildContext context,
+      AsyncValue<List<badge_domain.Badge>> unlockedBadgesAsync) {
+    return unlockedBadgesAsync.when(
+      data: (unlockedBadges) {
+        if (unlockedBadges.isEmpty) {
+          return Center(
+            child: Column(
+              children: [
+                const Icon(Icons.emoji_events_outlined,
+                    size: 48, color: Colors.grey),
+                const Gap(8),
+                Text(
+                  'No badges yet. Start studying and earn badges!',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, childAspectRatio: 1),
-      itemCount: progress.badgesCount,
-      itemBuilder: (context, index) {
-        return Container(
-          padding: const EdgeInsets.all(8),
-          child: Chip(
-            label: Text('Badge ${index + 1}'),
-            backgroundColor: Colors.amber.withValues(alpha: 0.2),
-            avatar: const Icon(Icons.star, size: 16, color: Colors.amber),
-          ),
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, childAspectRatio: 1),
+          itemCount: unlockedBadges.length,
+          itemBuilder: (context, index) {
+            final badge = unlockedBadges[index];
+            return Container(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _getIconForBadge(badge.iconName),
+                    size: 32,
+                    color: Colors.amber,
+                  ),
+                  const Gap(4),
+                  Text(
+                    badge.title,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => Center(child: Text('Error: $e')),
     );
+  }
+
+  IconData _getIconForBadge(String iconName) {
+    switch (iconName) {
+      case 'quiz':
+        return Icons.quiz_rounded;
+      case 'emoji_events':
+        return Icons.emoji_events_rounded;
+      case 'note':
+        return Icons.note_rounded;
+      case 'chat':
+        return Icons.chat_rounded;
+      case 'local_fire_department':
+        return Icons.local_fire_department_rounded;
+      case 'whatshot':
+        return Icons.whatshot_rounded;
+      case 'menu_book':
+        return Icons.menu_book_rounded;
+      case 'timer':
+        return Icons.timer_rounded;
+      default:
+        return Icons.star_rounded;
+    }
   }
 }

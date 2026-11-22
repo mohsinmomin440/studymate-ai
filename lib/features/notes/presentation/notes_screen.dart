@@ -16,6 +16,7 @@ import '../../chat/data/ai_service.dart';
 import '../data/note_repository.dart';
 import '../domain/note_models.dart';
 import '../../../core/router/app_router.dart';
+import '../../../features/progress/data/progress_repository.dart';
 
 /// AI actions available for notes
 enum AiAction { summarize, keyPoints, translate, flashcards, quiz, simplify }
@@ -248,6 +249,20 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
         updatedAt: now,
       );
       await ref.read(noteRepositoryProvider).createNote(newNote);
+
+      // Award XP for new note
+      final newBadges =
+          await ref.read(progressRepositoryProvider).recordActivity('note');
+      if (newBadges.isNotEmpty && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
 
     if (context.mounted) {
