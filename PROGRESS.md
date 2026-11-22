@@ -62,10 +62,10 @@
 - Daily AI usage counter
 
 ## Phase 5 — Flashcards + Quiz
-- [ ] SM-2 logic
-- [ ] Deck/card CRUD
-- [ ] AI generation
-- [ ] Study mode
+- [x] SM-2 logic (already implemented in lib/core/utils/sm2.dart)
+- [x] Deck/card CRUD (FlashcardDeck, Flashcard models + FlashcardRepository)
+- [x] AI generation (generateFlashcardsFromNote in AiService)
+- [ ] Study mode (UI screens needed - skipped for now to focus on core)
 - [ ] Quiz generation/take/results
 
 ## Phase 6 — Planner + Focus timer
