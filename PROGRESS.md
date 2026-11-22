@@ -101,21 +101,27 @@
 - [x] Home dashboard wired to real data (HomeScreen is still placeholder)
 
 ## Phase 7 — Progress & gamification
-### DONE:
-- [x] XP/level system (calculateLevel in progress_utils.dart)
-- [x] ProgressRepository with Firestore integration
-- [x] Weekly stats for charts (study minutes, quiz scores)
-- [x] Due cards count retrieval (getDueFlashcardsCount())
+### Phase 7A — Core Calculations & Repository ✅ COMPLETE
+- [x] Pure Dart progress calculation functions (progress_calculations.dart)
+  - xpForAction, xpForLevel, levelFromXp, xpToNextLevel
+  - shouldContinueStreak (calendar-day aware)
+  - calculateStreak (calendar-day aware, handles first activity, same day, next day, missed days, year boundaries, leap years)
+- [x] Unit tests for all calculation functions (15 test cases passing)
+- [x] ProgressRepository.recordActivity() with Firestore transaction
+  - Updates xp, level, streak, lastStudyDate atomically
+  - Updates today's dailyStats (xpEarned, studyMinutes)
+  - Uses calendar-day comparison for streak
+- [x] All tests pass (132 total)
+- [x] Debug APK builds successfully
 
 ### PLACEHOLDER:
 - [ ] Badges system - UI chips exist but no Firestore model/repository
 - [ ] Dashboard wired to real data (ProgressScreen uses repository)
 - [ ] Real-time streak calculation from dailyStats
 
-### MISSING:
+### MISSING (Phase 7B):
 - [ ] Badge unlock logic and repository
 - [ ] XP award hooks in flashcards/quiz/todo completion
-- [ ] Streak calculation with date comparison
 - [ ] Progress charts fully integrated with Firestore data
 
 ## Phase 8 — Settings, localization, polish

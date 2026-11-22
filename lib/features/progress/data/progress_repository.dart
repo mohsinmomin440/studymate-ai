@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/progress_utils.dart';
+import '../domain/progress_calculations.dart';
 
 final progressRepositoryProvider =
     Provider<ProgressRepository>((ref) => ProgressRepository());
@@ -259,6 +260,107 @@ class ProgressRepository {
     }
 
     return totalDue;
+  }
+
+  /// Record a user activity in a single Firestore transaction.
+  /// Updates: xp, level, streak, lastStudyDate, and today's dailyStats.
+  /// Uses calendar-day comparison for streak calculation.
+  Future<void> recordActivity(String action) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final xpToAdd = xpForAction(action);
+    if (xpToAdd == 0) return;
+
+    final now = DateTime.now();
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayOnly = DateTime(now.year, now.month, now.day);
+
+    final userRef = _firestore
+        .collection(AppConstants.firestoreUsersCollection)
+        .doc(user.uid);
+    final dailyStatsRef = userRef
+        .collection(AppConstants.firestoreDailyStatsCollection)
+        .doc(todayStr);
+
+    await _firestore.runTransaction((transaction) async {
+      // Read current user data
+      final userSnap = await transaction.get(userRef);
+      if (!userSnap.exists) return;
+
+      final userData = userSnap.data() as Map<String, dynamic>;
+      final currentXp = userData['xp'] as int? ?? 0;
+      final currentStreak = userData['streak'] as int? ?? 0;
+      final lastStudyDateRaw = userData['lastStudyDate'];
+
+      DateTime? lastStudyDate;
+      if (lastStudyDateRaw is Timestamp) {
+        lastStudyDate = lastStudyDateRaw.toDate();
+      } else if (lastStudyDateRaw is DateTime) {
+        lastStudyDate = lastStudyDateRaw;
+      }
+
+      // Calculate new XP and level
+      final newXp = currentXp + xpToAdd;
+      final newLevel = levelFromXp(newXp);
+
+      // Calculate new streak (calendar-day aware)
+      int newStreak = 1;
+      if (lastStudyDate != null) {
+        newStreak = calculateStreak(
+          currentStreak: currentStreak,
+          lastStudyDate: lastStudyDate,
+          today: now,
+        );
+      } else {
+        // First ever activity
+        newStreak = 1;
+      }
+
+      // Update user document
+      transaction.update(userRef, {
+        'xp': newXp,
+        'level': newLevel,
+        'streak': newStreak,
+        'lastStudyDate': Timestamp.fromDate(todayOnly),
+      });
+
+      // Update today's dailyStats
+      final statsSnap = await transaction.get(dailyStatsRef);
+      if (statsSnap.exists) {
+        transaction.update(dailyStatsRef, {
+          'xpEarned': FieldValue.increment(xpToAdd),
+          'studyMinutes': FieldValue.increment(_minutesForAction(action)),
+        });
+      } else {
+        transaction.set(dailyStatsRef, {
+          'date': Timestamp.fromDate(todayOnly),
+          'xpEarned': xpToAdd,
+          'studyMinutes': _minutesForAction(action),
+          'quizzesTaken': 0,
+          'cardsReviewed': 0,
+        });
+      }
+    });
+  }
+
+  /// Map action to approximate study minutes for dailyStats
+  int _minutesForAction(String action) {
+    switch (action) {
+      case 'chat':
+        return 2;
+      case 'note':
+        return 5;
+      case 'quiz':
+        return 10;
+      case 'flashcard_review':
+        return 2;
+      case 'focus_minute':
+        return 1;
+      default:
+        return 0;
+    }
   }
 }
 

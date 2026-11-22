@@ -247,7 +247,8 @@ class DesignPreviewScreen extends StatelessWidget {
             children: [
               const Gap(16),
               AiMessageBubble(
-                text: "Hello! I'm your AI study tutor. How can I help you today?",
+                text:
+                    "Hello! I'm your AI study tutor. How can I help you today?",
                 isUser: false,
                 onCopy: () {},
                 onSaveToNotes: () {},
