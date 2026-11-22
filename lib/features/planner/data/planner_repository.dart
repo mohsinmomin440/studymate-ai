@@ -3,10 +3,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/notification_utils.dart';
 import '../domain/planner_models.dart';
 
 final plannerRepositoryProvider =
@@ -25,52 +25,35 @@ class PlannerRepository {
       .doc(_uid)
       .collection(AppConstants.firestorePlansCollection);
 
-  /// Generate a deterministic 32-bit notification ID for a plan day
-  /// Format: hash(planId + date + reminderHour) fits in 32-bit int range
-  /// Using a stable hashing algorithm that produces consistent results
-  int _generateNotificationId(
-      String planId, DateTime dayDate, int reminderHour) {
-    final dateStr = dayDate.toIso8601String().split('T')[0];
-    final key = '$planId|$dateStr|$reminderHour';
-
-    // Simple deterministic hash that fits in 32-bit integer
-    int hash = 0;
-    for (int i = 0; i < key.length; i++) {
-      hash = (hash * 31 + key.codeUnitAt(i)) & 0xFFFFFFFF;
+  /// Cancel all scheduled notifications for a plan
+  /// Called when plan is deleted
+  Future<void> _cancelAllPlanNotifications(
+      String planId, List<StudyDay> days) async {
+    for (final day in days) {
+      final notificationId = generateNotificationId(planId, day.date, 8);
+      await _notificationService.cancelNotification(notificationId);
     }
-    return hash;
   }
 
-  /// Cancel all scheduled notifications for a plan
-  /// Called when plan is deleted or all tasks are marked done
-  Future<void> _cancelPlanNotifications(String planId, DateTime examDate,
-      {List<StudyDay>? days}) async {
-    final notificationService = NotificationService();
+  /// Cancel and optionally reschedule notification for a specific day
+  Future<void> _updateDayNotification({
+    required String planId,
+    required DateTime dayDate,
+    required int undoneCount,
+    required String title,
+  }) async {
+    final notificationId = generateNotificationId(planId, dayDate, 8);
+    await _notificationService.cancelNotification(notificationId);
 
-    // Default reminder time: 8:00 AM
-    const reminderHour = 8;
-    const reminderMinute = 0;
-
-    // If days provided, use them; otherwise we just cancel all for this plan
-    if (days != null) {
-      for (final day in days) {
-        final notificationId =
-            _generateNotificationId(planId, day.date, reminderHour);
-        await notificationService.cancelNotification(notificationId);
-      }
-    } else {
-      // Fallback: try to cancel notifications for next 30 days
-      // Since we can't iterate all days, we cancel a reasonable range
-      final now = DateTime.now();
-      for (int i = 0; i < 30; i++) {
-        final dayDate =
-            DateTime(now.year, now.month, now.day).add(Duration(days: i));
-        if (!dayDate.isBefore(now)) {
-          final notificationId =
-              _generateNotificationId(planId, dayDate, reminderHour);
-          await notificationService.cancelNotification(notificationId);
-        }
-      }
+    // Only reschedule if there are undone tasks
+    if (undoneCount > 0) {
+      final scheduledDate = makeReminderDateTime(dayDate, 8, 0);
+      await _notificationService.scheduleNotification(
+        id: notificationId,
+        title: 'Study Session Today',
+        body: '$undoneCount tasks waiting. Let\'s get started!',
+        scheduledDate: scheduledDate,
+      );
     }
   }
 
@@ -95,7 +78,30 @@ class PlannerRepository {
     );
 
     await _plansCollection.doc(plan.id).set(plan.toJson());
+
+    // Schedule initial notifications for all days
+    _scheduleInitialNotifications(plan.id, days);
+
     return plan.id;
+  }
+
+  /// Schedule initial notifications when a plan is created
+  Future<void> _scheduleInitialNotifications(
+      String planId, List<StudyDay> days) async {
+    final now = DateTime.now();
+    for (final day in days) {
+      if (!day.date.isBefore(now)) {
+        final notificationId = generateNotificationId(planId, day.date, 8);
+        final scheduledDate = makeReminderDateTime(day.date, 8, 0);
+        await _notificationService.scheduleNotification(
+          id: notificationId,
+          title: 'Study Session Today',
+          body:
+              '${day.tasks.where((t) => !t.done).length} tasks waiting. Let\'s get started!',
+          scheduledDate: scheduledDate,
+        );
+      }
+    }
   }
 
   /// Get all study plans for current user (stream)
@@ -119,7 +125,7 @@ class PlannerRepository {
     // First get the plan to cancel its notifications
     final plan = await getPlan(planId);
     if (plan != null) {
-      await _cancelPlanNotifications(planId, plan.examDate, days: plan.days);
+      await _cancelAllPlanNotifications(planId, plan.days);
     }
 
     await _plansCollection.doc(planId).delete();
@@ -148,9 +154,8 @@ class PlannerRepository {
       ],
     );
 
-    // Cancel old notification for this day, will be rescheduled when needed
-    final notificationId = _generateNotificationId(planId, day.date, 8);
-    await _notificationService.cancelNotification(notificationId);
+    // Count undone tasks in the updated day
+    final undoneCount = updatedDay.tasks.where((t) => !t.done).length;
 
     await _plansCollection.doc(planId).update({
       'days': plan.days
@@ -162,6 +167,14 @@ class PlannerRepository {
 
     // Update the specific day
     await _updateDay(planId, dayIndex, updatedDay);
+
+    // Cancel old notification and reschedule based on undone count
+    await _updateDayNotification(
+      planId: planId,
+      dayDate: day.date,
+      undoneCount: undoneCount,
+      title: 'Study Session Today',
+    );
   }
 
   /// Update task in a day
@@ -209,6 +222,9 @@ class PlannerRepository {
   Future<void> rescheduleMissedTasks(String planId) async {
     final plan = await getPlan(planId);
     if (plan == null) return;
+
+    // Cancel all existing notifications first
+    await _cancelAllPlanNotifications(planId, plan.days);
 
     // Find all missed tasks and their original scheduled days
     final missedItems = <Map<String, dynamic>>[];
@@ -276,6 +292,23 @@ class PlannerRepository {
     await _plansCollection.doc(planId).update({
       'days': allDays.map((d) => d.toJson()).toList(),
     });
+
+    // Schedule new notifications for rescheduled days
+    for (final day in allDays) {
+      if (!day.date.isBefore(todayDate)) {
+        final notificationId = generateNotificationId(planId, day.date, 8);
+        final scheduledDate = makeReminderDateTime(day.date, 8, 0);
+        final undoneCount = day.tasks.where((t) => !t.done).length;
+        await _notificationService.scheduleNotification(
+          id: notificationId,
+          title: 'Study Session Today',
+          body: undoneCount > 0
+              ? '$undoneCount tasks waiting. Let\'s get started!'
+              : 'All tasks done for today!',
+          scheduledDate: scheduledDate,
+        );
+      }
+    }
   }
 
   /// Get statistics for a plan
