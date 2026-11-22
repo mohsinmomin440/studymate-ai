@@ -157,37 +157,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }).toList();
   }
 
-  /// Schedule daily reminders for all days in the plan
-  /// Uses 8:00 AM default (or user's setting from Firestore)
-  Future<void> _scheduleDailyReminders(StudyPlan plan) async {
-    final notificationService = NotificationService();
-    final now = DateTime.now();
-
-    for (final day in plan.days) {
-      // Include today OR future days
-      if (!day.date.isBefore(now)) {
-        // Get reminder time from user settings with fallback to 08:00
-        final scheduledDate = await _parseReminderTime(
-          dayDate: day.date,
-          defaultHour: 8,
-          defaultMinute: 0,
-        );
-
-        // Use deterministic ID generation (fits in 32-bit)
-        final notificationId =
-            generateNotificationId(plan.id, day.date, scheduledDate.hour);
-
-        await notificationService.scheduleNotification(
-          id: notificationId,
-          title: 'Study Session Today',
-          body:
-              '${day.tasks.where((t) => !t.done).length} tasks waiting. Let\'s get started!',
-          scheduledDate: scheduledDate,
-        );
-      }
-    }
-  }
-
   Future<void> _generatePlan() async {
     final planDate = _examDate;
     final selectedSubjectList = [..._selectedSubjects];

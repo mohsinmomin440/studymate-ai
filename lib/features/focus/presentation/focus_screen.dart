@@ -192,11 +192,6 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     );
   }
 
-  void _showCompletionNotification() async {
-    final notificationService = NotificationService();
-    await notificationService.showFocusComplete(state.totalSeconds ~/ 60);
-  }
-
   @override
   void dispose() {
     _timer?.cancel();
@@ -253,7 +248,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     const accentColor = Color(0xFF00D4C8);
     final backgroundColor = darkBg;
     final surfaceColor = darkSurface;
-    final borderColor = darkSurface.withOpacity(0.5);
+    final borderColor = darkSurface.withValues(alpha: 0.5);
     final gradientColors = [
       primaryColor.withValues(alpha: 0.15),
       accentColor.withValues(alpha: 0.1),
@@ -331,7 +326,8 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                             child: CircularProgressIndicator(
                               value: progress,
                               strokeWidth: 8,
-                              backgroundColor: surfaceColor.withOpacity(0.3),
+                              backgroundColor:
+                                  surfaceColor.withValues(alpha: 0.3),
                               valueColor:
                                   AlwaysStoppedAnimation<Color>(primaryColor),
                             ),
@@ -372,8 +368,8 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                           icon: CircleAvatar(
                             radius: 28,
                             backgroundColor: state.isRunning
-                                ? accentColor.withOpacity(0.2)
-                                : primaryColor.withOpacity(0.2),
+                                ? accentColor.withValues(alpha: 0.2)
+                                : primaryColor.withValues(alpha: 0.2),
                             child: Icon(
                               state.isRunning ? Icons.pause : Icons.play_arrow,
                               color:

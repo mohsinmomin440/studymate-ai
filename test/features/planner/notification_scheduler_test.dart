@@ -210,7 +210,7 @@ void main() {
           generateNotificationId: generateNotificationId,
         );
 
-        expect(cancelledIds.length, 1);
+        expect(notificationId, cancelledIds.first);
         expect(scheduledIds.length, 0); // Not scheduled
       });
 
@@ -257,7 +257,7 @@ void main() {
           ]),
         ];
 
-        final ids = await scheduler.rescheduleMissedTasks(
+        await scheduler.rescheduleMissedTasks(
           planId: 'plan_1',
           originalDays: days,
           generateNotificationId: generateNotificationId,

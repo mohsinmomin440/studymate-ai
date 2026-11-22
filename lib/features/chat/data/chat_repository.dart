@@ -67,8 +67,9 @@ class ChatRepository {
     final updates = <String, dynamic>{};
     if (title != null) updates['title'] = title;
     if (messageCount != null) updates['messageCount'] = messageCount;
-    if (lastMessagePreview != null)
+    if (lastMessagePreview != null) {
       updates['lastMessagePreview'] = lastMessagePreview;
+    }
     updates['updatedAt'] = FieldValue.serverTimestamp();
 
     await _chatsCollection.doc(chatId).update(updates);

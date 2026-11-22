@@ -1,5 +1,4 @@
 // Unit tests for Study Plan JSON parsing
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 // Minimal test models to avoid dependency issues

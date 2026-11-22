@@ -281,7 +281,7 @@ class _AiGenerateQuizSheetState extends ConsumerState<AiGenerateQuizSheet> {
           ),
           const Gap(16),
           DropdownButtonFormField<String>(
-            value: _selectedSubject,
+            initialValue: _selectedSubject,
             decoration: const InputDecoration(
               labelText: 'Subject',
               border: OutlineInputBorder(),
@@ -294,7 +294,7 @@ class _AiGenerateQuizSheetState extends ConsumerState<AiGenerateQuizSheet> {
           ),
           const Gap(16),
           DropdownButtonFormField<String>(
-            value: _selectedDifficulty,
+            initialValue: _selectedDifficulty,
             decoration: const InputDecoration(
               labelText: 'Difficulty',
               border: OutlineInputBorder(),
@@ -478,7 +478,7 @@ class _QuizCreateScreenState extends ConsumerState<QuizCreateScreen> {
               ),
               const Gap(16),
               DropdownButtonFormField<String>(
-                value: _selectedSubject,
+                initialValue: _selectedSubject,
                 decoration: const InputDecoration(
                   labelText: 'Subject',
                   border: OutlineInputBorder(),
@@ -491,7 +491,7 @@ class _QuizCreateScreenState extends ConsumerState<QuizCreateScreen> {
               ),
               const Gap(16),
               DropdownButtonFormField<String>(
-                value: _selectedDifficulty,
+                initialValue: _selectedDifficulty,
                 decoration: const InputDecoration(
                   labelText: 'Difficulty',
                   border: OutlineInputBorder(),

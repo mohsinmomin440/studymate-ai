@@ -12,12 +12,16 @@ import '../../shared/widgets/section_header.dart';
 import '../../shared/widgets/streak_badge.dart';
 import '../../shared/widgets/progress_ring.dart';
 import '../../shared/widgets/stat_tile.dart';
-import '../../shared/widgets/glass_card.dart';
+import '../../features/home/presentation/home_screen.dart';
 import '../../features/chat/chat_feature.dart';
 import '../../features/notes/notes_feature.dart';
 import '../../features/scanner/scanner_feature.dart';
 import '../../features/flashcards/flashcards_feature.dart';
 import '../../features/quiz/quiz_feature.dart';
+import '../../features/planner/planner_feature.dart';
+import '../../features/focus/presentation/focus_screen.dart';
+import '../../features/settings/settings_screen.dart';
+import '../../features/progress/presentation/progress_screen.dart';
 
 /// App route paths
 class AppRoutes {
@@ -1381,167 +1385,53 @@ class _EmailLinkDialogState extends State<_EmailLinkDialog> {
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Home')));
-}
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Settings')));
-}
-
-class PlannerScreen extends StatelessWidget {
-  const PlannerScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Planner')));
-}
-
-class PlanDetailScreen extends StatelessWidget {
-  final String planId;
-  const PlanDetailScreen({super.key, required this.planId});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(body: Center(child: Text('Plan: $planId')));
-}
-
-class FocusScreen extends StatelessWidget {
-  const FocusScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Focus')));
-}
-
-class StudyHubScreen extends StatelessWidget {
-  const StudyHubScreen({super.key});
-
+/// NotFoundScreen - shown when route doesn't exist
+class NotFoundScreen extends StatelessWidget {
+  const NotFoundScreen({super.key});
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Study'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'What do you want to study today?',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Gap(24),
-          _buildStudyCard(
-            context: context,
-            title: 'Flashcards',
-            subtitle: 'Review and create flashcards',
-            icon: Icons.shuffle_rounded,
-            onTap: () => GoRouter.of(context).go(AppRoutes.flashcards),
-          ),
-          const Gap(12),
-          _buildStudyCard(
-            context: context,
-            title: 'Quizzes',
-            subtitle: 'Test your knowledge',
-            icon: Icons.quiz_rounded,
-            onTap: () => GoRouter.of(context).go(AppRoutes.quiz),
-          ),
-          const Gap(12),
-          _buildStudyCard(
-            context: context,
-            title: 'Notes',
-            subtitle: 'Create and manage notes',
-            icon: Icons.note_rounded,
-            onTap: () => GoRouter.of(context).go(AppRoutes.notes),
-          ),
-          const Gap(12),
-          _buildStudyCard(
-            context: context,
-            title: 'Doubts',
-            subtitle: 'Ask AI to solve your doubts',
-            icon: Icons.question_answer_rounded,
-            onTap: () => GoRouter.of(context).go(AppRoutes.scanner),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStudyCard({
-    required BuildContext context,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return GlassCard(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.secondary,
-                ],
-              ),
-            ),
-            child: Icon(
-              icon,
-              size: 24,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
-          ),
-          const Gap(16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const Gap(4),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
-          const Gap(8),
-          const Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
-          ),
-        ],
+      appBar: AppBar(title: const Text('Not Found')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline_rounded,
+                size: 64, color: theme.colorScheme.error),
+            const Gap(16),
+            Text('Page not found',
+                style: Theme.of(context).textTheme.headlineSmall),
+          ],
+        ),
       ),
     );
   }
 }
 
-class ProgressScreen extends StatelessWidget {
-  const ProgressScreen({super.key});
+/// StudyHubScreen - main study hub (placeholder for now)
+class StudyHubScreen extends StatelessWidget {
+  const StudyHubScreen({super.key});
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Progress')));
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Study')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.school_rounded, size: 64),
+            const Gap(16),
+            Text('Study Hub', style: theme.textTheme.headlineMedium),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
+/// DesignPreviewScreen - shows all UI components for design reference
 class DesignPreviewScreen extends StatelessWidget {
   const DesignPreviewScreen({super.key});
 
@@ -1661,17 +1551,19 @@ class _DesignPreviewTab extends StatelessWidget {
         SizedBox(
           height: 100,
           child: ListView(
-            children: [
+            children: const [
               CircularStatTile(
                 label: 'XP',
                 value: '1250',
                 progress: 0.75,
               ),
+              Gap(12),
               CircularStatTile(
                 label: 'Streak',
                 value: '7 days',
                 progress: 0.7,
               ),
+              Gap(12),
               CircularStatTile(
                 label: 'Cards',
                 value: '42',
@@ -1692,23 +1584,4 @@ class _DesignPreviewTab extends StatelessWidget {
       ],
     );
   }
-}
-
-class NotFoundScreen extends StatelessWidget {
-  const NotFoundScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline_rounded,
-                  size: 64, color: Theme.of(context).colorScheme.error),
-              const Gap(16),
-              Text('Page not found',
-                  style: Theme.of(context).textTheme.headlineSmall),
-            ],
-          ),
-        ),
-      );
 }

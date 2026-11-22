@@ -278,7 +278,7 @@ class _AiGenerateSheetState extends ConsumerState<AiGenerateSheet> {
           ),
           const Gap(16),
           DropdownButtonFormField<String>(
-            value: _selectedSubject,
+            initialValue: _selectedSubject,
             decoration: const InputDecoration(
               labelText: 'Subject',
               border: OutlineInputBorder(),

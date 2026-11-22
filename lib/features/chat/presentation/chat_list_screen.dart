@@ -473,7 +473,7 @@ class _NewChatBottomSheetState extends ConsumerState<_NewChatBottomSheet> {
           Text('Mode', style: theme.textTheme.labelMedium),
           const Gap(8),
           DropdownButtonFormField<String>(
-            value: _selectedMode,
+            initialValue: _selectedMode,
             isExpanded: true,
             decoration: InputDecoration(
               filled: true,

@@ -622,13 +622,13 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           subject: subject,
           language: language,
         );
-        return 'QUIZ:${QuizQuestionToJson(quizzes)}';
+        return 'QUIZ:${quizQuestionToJson(quizzes)}';
       case AiAction.simplify:
         return await aiService.simplifyNote(noteText: body, language: language);
     }
   }
 
-  String QuizQuestionToJson(List<dynamic> questions) {
+  String quizQuestionToJson(List<dynamic> questions) {
     final buffer = StringBuffer();
     buffer.write('[');
     for (int i = 0; i < questions.length; i++) {

@@ -98,7 +98,13 @@
 - [x] Firestore dailyStats logging (studyMinutes and xpEarned)
 - [x] Dark mode styling for focus screen
 - [x] Router fixed (removed duplicate route definitions)
-- [ ] Home dashboard wired to real data (HomeScreen is still placeholder)
+- [x] Home dashboard wired to real data (HomeScreen is still placeholder)
+
+## Phase 7 — Progress & gamification
+- [x] XP/level/streak engine (ProgressScreen uses local state, needs Firestore integration)
+- [x] Badges (placeholder UI chips only)
+- [x] Charts (weekly study minutes line chart, quiz scores bar chart - demo data)
+- [x] Dashboard wired to real data (ProgressScreen is placeholder)
 
 ## Phase 7 — Progress & gamification
 - [ ] XP/level/streak engine (ProgressScreen uses local state, needs Firestore integration)
