@@ -12,6 +12,7 @@ import '../../shared/widgets/section_header.dart';
 import '../../shared/widgets/streak_badge.dart';
 import '../../shared/widgets/progress_ring.dart';
 import '../../shared/widgets/stat_tile.dart';
+import '../../shared/widgets/glass_card.dart';
 import '../../features/chat/chat_feature.dart';
 import '../../features/notes/notes_feature.dart';
 import '../../features/scanner/scanner_feature.dart';
@@ -25,6 +26,7 @@ class AppRoutes {
   static const auth = '/auth';
   static const profileSetup = '/profile-setup';
   static const home = '/home';
+  static const studyHub = '/study';
   static const chat = '/chat';
   static const chatDetail = '/chat/:chatId';
   static const scanner = '/scanner';
@@ -126,6 +128,84 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoutes.studyHub,
+                builder: (context, state) => StudyHubScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.flashcards,
+                builder: (context, state) => FlashcardsScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.flashcardsCreate,
+                builder: (context, state) => CreateEditDeckScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.flashcardsEdit,
+                builder: (context, state) => CreateEditDeckScreen(
+                    deckId: state.pathParameters['deckId']),
+              ),
+              GoRoute(
+                path: AppRoutes.deckDetail,
+                builder: (context, state) => DeckDetailScreen(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: AppRoutes.studyMode,
+                builder: (context, state) => StudyModeScreen(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: AppRoutes.quiz,
+                builder: (context, state) => QuizScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.quizCreate,
+                builder: (context, state) => QuizCreateScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.quizDetail,
+                builder: (context, state) => QuizDetailScreen(
+                  quizId: state.pathParameters['quizId']!,
+                ),
+              ),
+              GoRoute(
+                path: AppRoutes.quizTake,
+                builder: (context, state) => QuizTakeScreen(
+                  quizId: state.pathParameters['quizId']!,
+                ),
+              ),
+              GoRoute(
+                path: AppRoutes.quizResult,
+                builder: (context, state) => QuizResultScreen(
+                  quizId: state.pathParameters['quizId']!,
+                  attemptId: state.uri.queryParameters['attemptId'],
+                ),
+              ),
+              GoRoute(
+                path: AppRoutes.notes,
+                builder: (context, state) => const NotesScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.notesCreate,
+                builder: (context, state) => const CreateEditNoteScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.noteDetail,
+                builder: (context, state) => NoteDetailScreen(
+                  noteId: state.pathParameters['noteId']!,
+                ),
+              ),
+              GoRoute(
+                path: AppRoutes.scanner,
+                builder: (context, state) => const ScannerScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoutes.chat,
                 builder: (context, state) => const ChatListScreen(),
               ),
@@ -134,14 +214,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => ChatDetailScreen(
                   chatId: state.pathParameters['chatId']!,
                 ),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.scanner,
-                builder: (context, state) => const ScannerScreen(),
               ),
             ],
           ),
@@ -157,6 +229,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   planId: state.pathParameters['planId']!,
                 ),
               ),
+              GoRoute(
+                path: AppRoutes.focus,
+                builder: (context, state) => const FocusScreen(),
+              ),
             ],
           ),
           StatefulShellBranch(
@@ -164,6 +240,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.settings,
                 builder: (context, state) => const SettingsScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.progress,
+                builder: (context, state) => const ProgressScreen(),
               ),
             ],
           ),
@@ -247,14 +327,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           quizId: state.pathParameters['quizId']!,
           attemptId: state.uri.queryParameters['attemptId'],
         ),
-      ),
-      GoRoute(
-        path: AppRoutes.focus,
-        builder: (context, state) => const FocusScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.progress,
-        builder: (context, state) => const ProgressScreen(),
       ),
       GoRoute(
         path: AppRoutes.designPreview,
@@ -1426,6 +1498,124 @@ class FocusScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       const Scaffold(body: Center(child: Text('Focus')));
+}
+
+class StudyHubScreen extends StatelessWidget {
+  const StudyHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Study'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            'What do you want to study today?',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Gap(24),
+          _buildStudyCard(
+            context: context,
+            title: 'Flashcards',
+            subtitle: 'Review and create flashcards',
+            icon: Icons.shuffle_rounded,
+            onTap: () => GoRouter.of(context).go(AppRoutes.flashcards),
+          ),
+          const Gap(12),
+          _buildStudyCard(
+            context: context,
+            title: 'Quizzes',
+            subtitle: 'Test your knowledge',
+            icon: Icons.quiz_rounded,
+            onTap: () => GoRouter.of(context).go(AppRoutes.quiz),
+          ),
+          const Gap(12),
+          _buildStudyCard(
+            context: context,
+            title: 'Notes',
+            subtitle: 'Create and manage notes',
+            icon: Icons.note_rounded,
+            onTap: () => GoRouter.of(context).go(AppRoutes.notes),
+          ),
+          const Gap(12),
+          _buildStudyCard(
+            context: context,
+            title: 'Doubts',
+            subtitle: 'Ask AI to solve your doubts',
+            icon: Icons.question_answer_rounded,
+            onTap: () => GoRouter.of(context).go(AppRoutes.scanner),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudyCard({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GlassCard(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary,
+                ],
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 24,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          const Gap(16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const Gap(4),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          const Gap(8),
+          const Icon(
+            Icons.chevron_right,
+            color: Colors.grey,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class ProgressScreen extends StatelessWidget {

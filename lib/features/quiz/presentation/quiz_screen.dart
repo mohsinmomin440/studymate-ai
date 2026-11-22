@@ -1112,8 +1112,9 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         Navigator.pop(context);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(
-              '${wrongAnswers.length} wrong questions will appear in the quiz.')),
+          SnackBar(
+              content: Text(
+                  '${wrongAnswers.length} wrong questions will appear in the quiz.')),
         );
 
         GoRouter.of(context).go('${AppRoutes.quizTake}/$newQuizId');
