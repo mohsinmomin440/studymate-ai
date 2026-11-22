@@ -19,7 +19,7 @@
 - [x] go_router setup with auth guard
 - [x] Bottom nav shell with placeholder screens
 - [x] Design preview screen (DesignPreviewScreen)
-- [x] HomeScreen implemented (placeholder)
+- [ ] HomeScreen implemented (placeholder)
 - [x] ProfileSetupScreen implemented
 
 ## Phase 2 — Auth & onboarding ✅ COMPLETE
@@ -44,9 +44,9 @@
 - [x] Chat history with Firestore streaming
 - [x] Markdown rendering (via ai_message_bubble.dart)
 
-## Phase 4 — Notes + Doubt Scanner ✅ COMPLETE
+## Phase 4 — Notes + Doubt Scanner
 - [x] Notes CRUD/search/tags
-- [x] Import (text) - PDF import deferred to Phase 5
+- [ ] Import (text/PDF) - PLACEHOLDER: "PDF import coming soon"
 - [x] AI note actions wired to AiService (Summarize, Key points, Translate, Generate Flashcards/Quiz, Simplify)
 - [x] Camera/gallery doubt solver with AI integration
 - [x] Build succeeds (compileSdk 36)
@@ -56,10 +56,10 @@
 - [x] Unit tests for NoteModel
 
 ### Firebase testing needed:
-- Notes saving/retrieval in Firestore (offline persistence enabled)
-- Scanner results saving to Firestore
-- AiService Firebase AI Logic integration
-- Daily AI usage counter
+- [ ] Notes saving/retrieval in Firestore (offline persistence enabled)
+- [ ] Scanner results saving to Firestore
+- [ ] AiService Firebase AI Logic integration
+- [ ] Daily AI usage counter
 
 ## Phase 5 — Flashcards + Quiz ✅ COMPLETE
 - [x] SM-2 logic with unit tests (lib/core/utils/sm2.dart)
@@ -83,7 +83,7 @@
 - [x] ConfettiController properly initialized and disposed
 - [x] Verified sm2.dart SM-2 algorithm implementation
 
-## Phase 6 — Planner + Focus timer ✅ COMPLETE
+## Phase 6 — Planner + Focus timer
 - [x] Planner model and repository (PlannerRepository with Firestore operations)
 - [x] PlannerScreen with exam date/subjects/hours/weak topics inputs
 - [x] PlanDetailScreen with task checklist UI
@@ -91,14 +91,15 @@
 - [x] FocusScreen with Pomodoro timer UI
 - [x] Duration selector for timer customization
 - [x] Task completion toggle and reschedule logic
-- [x] _ColoredStatTile helper widget for progress screen
-- [x] Fixed import paths and fl_chart API compatibility
+- [ ] AI study plan generation (placeholder message - "coming soon")
+- [ ] Local notifications (infrastructure present but not fully configured)
+- [ ] Home dashboard wired to real data (placeholder screen)
 
-## Phase 7 — Progress & gamification ✅ COMPLETE
+## Phase 7 — Progress & gamification
 - [x] XP/level/streak engine (UserProgressNotifier with addXP, addStudyMinutes, updateStreak)
-- [x] Badges (placeholder badge UI in ProgressScreen)
+- [ ] Badges (placeholder UI only)
 - [x] Charts (weekly study minutes line chart, quiz scores bar chart)
-- [x] Dashboard (ProgressScreen with level display, XP progress ring, streak, goal tracking)
+- [ ] Dashboard wired to real data (placeholder ProgressScreen, Home is also placeholder)
 
 ## Phase 8 — Settings, localization, polish
 - [ ] Settings screens
@@ -114,6 +115,26 @@
 - [ ] Build app bundle
 
 ---
+
+### Known Gaps
+
+**Placeholder messages found in codebase:**
+- "Save to notes coming soon" (chat_detail_screen.dart)
+- "PDF import coming soon" (notes_screen.dart)
+- "Flashcard generation coming soon" (scanner_screen.dart)
+- "Coming Soon" translation key exists for localization
+
+**Missing integrations:**
+- Firestore offline persistence not fully wired
+- Firestore write operations for notes, scanner results, daily stats pending
+- Firebase AI Logic API key integration pending (requires `flutterfire configure`)
+- Local notifications need proper channel setup
+
+**UI placeholders:**
+- HomeScreen is just a text placeholder
+- ProgressScreen has placeholder badge chips
+- PlanDetailScreen has static example data
+- SettingsScreen is a text placeholder
 
 ### Manual Steps Needed After Firebase Config:
 1. Run `flutterfire configure` to generate real `firebase_options.dart`

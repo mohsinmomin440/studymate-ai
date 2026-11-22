@@ -104,6 +104,9 @@ class AppConstants {
   static const int defaultBreakMinutes = 5;
   static const int defaultLongBreakMinutes = 15;
   static const int defaultSessionsBeforeLongBreak = 4;
+
+  // User defaults
+  static const int defaultDailyGoal = 60; // minutes
 }
 
 /// Remote Config keys
