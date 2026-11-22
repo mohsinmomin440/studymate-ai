@@ -114,6 +114,7 @@ class AuthRepository {
           'theme': 'system',
           'notificationsEnabled': true,
           'aiResponseLanguage': 'en',
+          'reminderTime': '08:00',
         },
       });
     }

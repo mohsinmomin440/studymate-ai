@@ -97,17 +97,18 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
   }
 
   /// Schedule the end notification using zonedSchedule
-  Future<void> _scheduleEndNotification(int durationMinutes) async {
+  Future<void> _scheduleEndNotification(int remainingSeconds) async {
     final notificationService = NotificationService();
+    final remainingMinutes = (remainingSeconds / 60).ceil();
     final dueTime = tz.TZDateTime.from(
-      DateTime.now().add(Duration(minutes: durationMinutes)),
+      DateTime.now().add(Duration(seconds: remainingSeconds)),
       tz.local,
     );
     await notificationService.scheduleNotification(
       id: _notificationId,
       title: 'Focus Session Complete! ✅',
       body:
-          'Great job! You focused for $durationMinutes minutes. Take a break!',
+          'Great job! You focused for approximately $remainingMinutes more minutes. Take a break!',
       scheduledDate: dueTime,
       payload: 'focus_complete',
     );
@@ -137,8 +138,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
     state = state.copyWith(isRunning: true);
 
-    // Schedule the end notification
-    _scheduleEndNotification(state.totalSeconds ~/ 60);
+    // Schedule the end notification for remaining time
+    _scheduleEndNotification(state.remainingSeconds);
 
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -260,8 +261,6 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     final minutes = state.remainingSeconds ~/ 60;
     final seconds = state.remainingSeconds % 60;
     final durationText = '$minutes:${seconds.toString().padLeft(2, '0')}';
-
-    final theme = Theme.of(context);
 
     return Material(
       color: backgroundColor,

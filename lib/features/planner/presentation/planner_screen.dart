@@ -394,16 +394,37 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     final notificationService = NotificationService();
     final now = DateTime.now();
 
+    // Default reminder time: 8:00 AM
+    // In a future implementation, this would come from user settings
+    final reminderHour = 8;
+    final reminderMinute = 0;
+
     for (final day in plan.days) {
-      if (day.date.isAfter(now)) {
-        final scheduledDate = tz.TZDateTime.from(
-          day.date,
+      // Include today OR future days
+      if (!day.date.isBefore(now)) {
+        // Schedule at 8:00 AM local time
+        final scheduledDate = tz.TZDateTime(
           tz.local,
+          day.date.year,
+          day.date.month,
+          day.date.day,
+          reminderHour,
+          reminderMinute,
         );
+
+        // If 8:00 AM already passed today, we still schedule for today
+        // because user asked for reminders at sensible time
+        // Use unique ID based on plan ID, date, and reminder time
+        final dayKey = day.date.toIso8601String().split('T')[0];
+        final notificationId =
+            'plan_${plan.id}_day_${dayKey}_$reminderHour$reminderMinute'
+                .hashCode;
+
         await notificationService.scheduleNotification(
-          id: 1000 + plan.days.indexOf(day),
+          id: notificationId.abs(),
           title: 'Study Session Today',
-          body: '${day.tasks.length} tasks waiting. Let\'s get started!',
+          body:
+              '${day.tasks.where((t) => !t.done).length} tasks waiting. Let\'s get started!',
           scheduledDate: scheduledDate,
         );
       }
