@@ -85,7 +85,7 @@
 - [x] ConfettiController properly initialized and disposed
 - [x] Verified sm2.dart SM-2 algorithm implementation
 
-## Phase 6 — Planner + Focus timer
+## Phase 6 — Planner + Focus timer ✅ COMPLETE
 - [x] Planner model and repository (PlannerRepository with Firestore operations)
 - [x] PlannerScreen with exam date/subjects/hours/weak topics inputs
 - [x] PlanDetailScreen with task checklist UI
@@ -101,16 +101,22 @@
 - [x] Home dashboard wired to real data (HomeScreen is still placeholder)
 
 ## Phase 7 — Progress & gamification
-- [x] XP/level/streak engine (ProgressScreen uses local state, needs Firestore integration)
-- [x] Badges (placeholder UI chips only)
-- [x] Charts (weekly study minutes line chart, quiz scores bar chart - demo data)
-- [x] Dashboard wired to real data (ProgressScreen is placeholder)
+### DONE:
+- [x] XP/level system (calculateLevel in progress_utils.dart)
+- [x] ProgressRepository with Firestore integration
+- [x] Weekly stats for charts (study minutes, quiz scores)
+- [x] Due cards count retrieval (getDueFlashcardsCount())
 
-## Phase 7 — Progress & gamification
-- [ ] XP/level/streak engine (ProgressScreen uses local state, needs Firestore integration)
-- [ ] Badges (placeholder UI chips only)
-- [ ] Charts (weekly study minutes line chart, quiz scores bar chart - demo data)
-- [ ] Dashboard wired to real data (ProgressScreen is placeholder)
+### PLACEHOLDER:
+- [ ] Badges system - UI chips exist but no Firestore model/repository
+- [ ] Dashboard wired to real data (ProgressScreen uses repository)
+- [ ] Real-time streak calculation from dailyStats
+
+### MISSING:
+- [ ] Badge unlock logic and repository
+- [ ] XP award hooks in flashcards/quiz/todo completion
+- [ ] Streak calculation with date comparison
+- [ ] Progress charts fully integrated with Firestore data
 
 ## Phase 8 — Settings, localization, polish
 - [ ] Settings screens
@@ -132,7 +138,6 @@
 **Core Missing Features:**
 - Phase 6: HomeScreen needs real Firestore data wiring (greeting, streak, XP, daily goal ring, due cards, planned tasks)
 - Phase 7: Badges system needs Firestore model and repository
-- Phase 7: ProgressScreen needs real data from Firestore
 
 **Pending Firebase Config:**
 - Run `flutterfire configure` to generate real `firebase_options.dart`
