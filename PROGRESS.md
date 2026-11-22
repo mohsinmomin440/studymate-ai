@@ -177,20 +177,20 @@
 - [x] AI response language dropdown (English, Gujarati, Hindi, Hinglish)
 - [x] AI response style chips (Friendly, Formal, Simple, Detailed)
 - [x] Account section:
-  - Edit Profile (placeholder for now)
+  - Edit Profile (reuses profile setup widgets)
   - Link Account (Google sign-in for anonymous users)
   - Sign Out
-  - Delete Account & Data (with recursive subcollection deletion)
+  - Delete Account & Data (with recursive subcollection deletion in chunks of 400)
 - [x] About section:
   - About dialog with version info
-  - Privacy Policy link
-  - Rate App link (Play Store)
+  - Privacy Policy screen (in-app, shows stored data, Gemini processing, deletion)
+  - Rate App (uses real applicationId, shows friendly message if not on Play Store)
   - Send Feedback (share sheet)
-  - Share App (install link)
+  - Share App (uses real applicationId, shows friendly message if not on Play Store)
 - [x] Settings persisted to Firestore (users/{uid}/settings/user)
 - [x] All analyzer issues resolved (only RadioListTile deprecation warnings remain)
-- [x] Tests pass (178/178)
-- [x] Build succeeds
+- [x] Tests pass (192/192)
+- [x] Debug APK builds successfully
 
 - [ ] en/gu/hi localization
 - [ ] Remote Config
