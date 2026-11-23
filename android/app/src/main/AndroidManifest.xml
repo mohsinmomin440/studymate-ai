@@ -14,6 +14,7 @@
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
+            android:label="StudyMate AI"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
