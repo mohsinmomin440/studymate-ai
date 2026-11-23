@@ -7,7 +7,8 @@ void main() {
     // Test the shouldShowStreakReminder logic
     // This is a pure function test, no need to mock notifications
 
-    test('should remind when notifications enabled and never studied before', () {
+    test('should remind when notifications enabled and never studied before',
+        () {
       // Arrange
       final notificationsEnabled = true;
       final DateTime? lastStudyDate = null; // First time user
@@ -92,7 +93,8 @@ void main() {
       final notificationsEnabled = true;
       final today = DateTime.now();
       // Studied yesterday at 11:59 PM
-      final yesterdayLate = DateTime(today.year, today.month, today.day - 1, 23, 59);
+      final yesterdayLate =
+          DateTime(today.year, today.month, today.day - 1, 23, 59);
       final lastStudyDate = yesterdayLate;
 
       // Act

@@ -140,7 +140,8 @@ class AiService {
         attempt++;
         final errorMessage = e.toString().toLowerCase();
         // On model-not-found, retry once with default model
-        if ((errorMessage.contains('model') || errorMessage.contains('not found')) &&
+        if ((errorMessage.contains('model') ||
+                errorMessage.contains('not found')) &&
             !usedDefaultModel) {
           // Fall back to default chat model
           print('Model not found, falling back to default: ${e.message}');
@@ -235,6 +236,12 @@ class AiService {
       [Content.text(message)],
     );
     return response.text ?? '';
+  }
+
+  /// Generate content with multimodal input (images, PDFs, etc.)
+  Future<GenerateContentResponse> generateContent(
+      List<Content> contents) async {
+    return _generateWithRetry(_chatModel, contents);
   }
 
   /// Generate JSON response (quiz, flashcards, study plan)

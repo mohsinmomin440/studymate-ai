@@ -258,9 +258,8 @@ class NotificationService {
 
   /// Request Android 13+ notification permission
   Future<bool> requestAndroidPermission() async {
-    final androidPlugin = _notifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin != null) {
       // Check if we need to request permission (Android 13+)
       final status = await Permission.notification.request();
@@ -342,7 +341,9 @@ class NotificationService {
   }) async {
     await cancelStreakReminder();
 
-    if (!notificationsEnabled || reminderHour == null || reminderMinute == null) {
+    if (!notificationsEnabled ||
+        reminderHour == null ||
+        reminderMinute == null) {
       return;
     }
 
