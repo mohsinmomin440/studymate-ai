@@ -444,8 +444,10 @@ $noteText
       await initialize();
     }
 
-    // Read image file bytes
-    final imageBytes = await File(imagePath).readAsBytes();
+    // Read image file bytes and detect mime type
+    final file = File(imagePath);
+    final imageBytes = await file.readAsBytes();
+    final mimeType = _detectImageMimeType(imagePath, imageBytes);
 
     // Build prompt with subject context
     final prompt = '''
@@ -461,13 +463,58 @@ Provide a detailed step-by-step solution with explanations. Format your answer c
     // Combine image and text prompt into a single user message
     final content = [
       Content('user', [
-        InlineDataPart('image/png', imageBytes),
+        InlineDataPart(mimeType, imageBytes),
         TextPart(prompt),
       ]),
     ];
 
     final response = await _generateWithRetry(_chatModel, content);
     return response.text ?? '';
+  }
+
+  /// Detect image MIME type from file extension and magic bytes
+  String _detectImageMimeType(String path, List<int> bytes) {
+    // First try file extension
+    final ext = path.toLowerCase().split('.').last;
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'heic':
+      case 'heif':
+        return 'image/heic';
+    }
+
+    // Fallback: detect from magic bytes
+    if (bytes.length >= 4) {
+      // JPEG: FF D8 FF
+      if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+        return 'image/jpeg';
+      }
+      // PNG: 89 50 4E 47
+      if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+        return 'image/png';
+      }
+      // WebP: RIFF....WEBP
+      if (bytes.length >= 12 &&
+          bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
+          bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+        return 'image/webp';
+      }
+      // HEIC: ftyp at offset 4
+      if (bytes.length >= 12 &&
+          bytes[4] == 0x66 && bytes[5] == 0x74 && bytes[6] == 0x79 && bytes[7] == 0x70 &&
+          (bytes[8] == 0x68 || bytes[8] == 0x6D)) { // heic or mif1
+        return 'image/heic';
+      }
+    }
+
+    // Default to JPEG (most common)
+    return 'image/jpeg';
   }
 }
 
