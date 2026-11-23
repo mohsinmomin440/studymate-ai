@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_svg_icon.dart';
 
 class StreakBadge extends StatelessWidget {
   final int streak;
@@ -31,11 +32,7 @@ class StreakBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.local_fire_department_rounded,
-            size: 16,
-            color: Colors.white,
-          ),
+          AppSvgIcon.streakFlame(size: 18),
           const SizedBox(width: 4),
           Text(
             badgeText,

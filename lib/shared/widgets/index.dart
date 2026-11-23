@@ -12,3 +12,4 @@ export 'app_bottom_sheet.dart';
 export 'ai_message_bubble.dart';
 export 'gap.dart';
 export 'typing_indicator.dart';
+export 'app_svg_icon.dart';

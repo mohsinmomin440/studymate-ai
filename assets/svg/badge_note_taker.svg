@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="ntGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2ED573"/>
+      <stop offset="100%" stop-color="#10AC84"/>
+    </linearGradient>
+  </defs>
+  <polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="url(#ntGrad)"/>
+  <circle cx="24" cy="24" r="14" fill="#141828"/>
+  <path d="M19 16H27L31 20V32H19V16Z" fill="url(#ntGrad)"/>
+  <line x1="22" y1="23" x2="28" y2="23" stroke="#FFF" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="22" y1="27" x2="26" y2="27" stroke="#FFF" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

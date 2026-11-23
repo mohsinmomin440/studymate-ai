@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="bookLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#8E7BFF"/>
+    </linearGradient>
+    <linearGradient id="bookRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8E7BFF"/>
+      <stop offset="100%" stop-color="#A29BFE"/>
+    </linearGradient>
+    <linearGradient id="pageGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+  </defs>
+  <path d="M6 36C12 33 18 33 24 36V12C18 9 12 9 6 12V36Z" fill="url(#pageGlow)"/>
+  <path d="M42 36C36 33 30 33 24 36V12C30 9 36 9 42 12V36Z" fill="url(#pageGlow)"/>
+  <path d="M6 36C12 33 18 33 24 36C30 33 36 33 42 36C43 36.5 44 35.8 44 34.5V10C44 9.2 43.3 8.5 42.5 8.2C36.8 5.8 30.8 5.8 24 8.5C17.2 5.8 11.2 5.8 5.5 8.2C4.7 8.5 4 9.2 4 10V34.5C4 35.8 5 36.5 6 36Z" fill="none" stroke="url(#bookLeft)" stroke-width="2.5" stroke-linejoin="round"/>
+  <line x1="24" y1="9" x2="24" y2="36" stroke="url(#bookLeft)" stroke-width="2"/>
+  <path d="M10 17H20M10 23H18M10 29H16" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M28 17H38M30 23H38M32 29H38" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+</svg>

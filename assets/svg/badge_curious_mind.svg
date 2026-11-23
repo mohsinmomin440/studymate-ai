@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="cmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9C27B0"/>
+      <stop offset="100%" stop-color="#673AB7"/>
+    </linearGradient>
+  </defs>
+  <polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="url(#cmGrad)"/>
+  <circle cx="24" cy="24" r="14" fill="#141828"/>
+  <circle cx="24" cy="22" r="6" fill="url(#cmGrad)"/>
+  <text x="24" y="25" font-family="sans-serif" font-size="9" font-weight="bold" fill="#FFF" text-anchor="middle">AI</text>
+  <path d="M21 31C21 29 27 29 27 31" stroke="url(#cmGrad)" stroke-width="2" stroke-linecap="round"/>
+</svg>

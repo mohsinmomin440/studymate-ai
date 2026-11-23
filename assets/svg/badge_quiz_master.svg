@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="qmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FF8C00"/>
+    </linearGradient>
+  </defs>
+  <polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="url(#qmGrad)"/>
+  <circle cx="24" cy="24" r="14" fill="#141828"/>
+  <path d="M18 19L24 15L30 19L28 28H20L18 19Z" fill="url(#qmGrad)"/>
+  <circle cx="24" cy="23" r="2" fill="#FFF"/>
+</svg>

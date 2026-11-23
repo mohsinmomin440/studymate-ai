@@ -1,0 +1,16 @@
+lib\core\services\notification_service.dart:207 [📚] (U+1F4DA) final title = 'Time to Study! 📚';
+lib\core\services\notification_service.dart:224 [🔥] (U+1F525) title: 'Keep Your Streak Alive! 🔥',
+lib\core\services\notification_service.dart:234 [📇] (U+1F4C7) title: 'Flashcards Ready for Review 📇',
+lib\core\services\notification_service.dart:244 [✅] (U+2705) title: 'Focus Session Complete! ✅',
+lib\features\chat\presentation\chat_detail_screen.dart:166 [🎉] (U+1F389) '🎉 ${context.l10n.newChat}: ${newBadges.map((b) => b.title).join(', ')}'),
+lib\features\flashcards\presentation\flashcards_screen.dart:1088 [🎉] (U+1F389) '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+lib\features\focus\presentation\focus_screen.dart:121 [✅] (U+2705) title: 'Focus Session Complete! ✅',
+lib\features\focus\presentation\focus_screen.dart:276 [🎉] (U+1F389) '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+lib\features\home\presentation\home_screen.dart:160 [🔥] (U+1F525) ? '🔥 ${dashboard.streak} day ${l10n.streak.toLowerCase()} — keep it going!'
+lib\features\notes\presentation\notes_screen.dart:308 [🎉] (U+1F389) '🎉 ${context.l10n.notesCreated}: ${newBadges.map((b) => b.title).join(', ')}'),
+lib\features\notes\presentation\notes_screen.dart:581 [🎉] (U+1F389) '🎉 ${context.l10n.notesCreated}: ${newBadges.map((b) => b.title).join(', ')}'),
+lib\features\progress\domain\aggregations.dart:234 [🎉] (U+1F389) message = 'Perfect week! You studied every day! 🎉';
+lib\l10n\generated\app_localizations.dart:1324 [🎉] (U+1F389) /// **'Goal achieved! 🎉'**
+lib\l10n\generated\app_localizations_en.dart:668 [🎉] (U+1F389) String get goalAchieved => 'Goal achieved! 🎉';
+lib\l10n\generated\app_localizations_gu.dart:667 [🎉] (U+1F389) String get goalAchieved => 'લક્ષ્ય પ્રાપ્ત કર્યું! 🎉';
+lib\l10n\generated\app_localizations_hi.dart:667 [🎉] (U+1F389) String get goalAchieved => 'लक्ष्य प्राप्त कर लिया! 🎉';

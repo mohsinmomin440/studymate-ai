@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="coneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4081"/>
+      <stop offset="50%" stop-color="#7C4DFF"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 40L14 24L30 36L8 40Z" fill="url(#coneGrad)"/>
+  <circle cx="28" cy="18" r="3" fill="#FFD600"/>
+  <circle cx="38" cy="14" r="2.5" fill="#FF1744"/>
+  <circle cx="36" cy="28" r="2" fill="#00E676"/>
+  <circle cx="22" cy="10" r="2" fill="#00B0FF"/>
+  <path d="M30 6L32 10L36 10L33 13L34 17L30 14L26 17L27 13L24 10L28 10Z" fill="#FFEA00"/>
+  <path d="M18 20C18 16 22 14 25 12" stroke="#FF4081" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M26 26C28 24 33 24 35 21" stroke="#00E5FF" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>

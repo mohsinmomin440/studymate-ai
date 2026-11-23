@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="botHead" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#00D4C8"/>
+    </linearGradient>
+    <linearGradient id="botFace" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141828"/>
+      <stop offset="100%" stop-color="#0B0D17"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="12" width="32" height="26" rx="8" fill="url(#botHead)"/>
+  <rect x="11" y="15" width="26" height="20" rx="5" fill="url(#botFace)"/>
+  <line x1="24" y1="6" x2="24" y2="12" stroke="#00D4C8" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="24" cy="5" r="3" fill="#00D4C8"/>
+  <circle cx="18" cy="24" r="3.5" fill="#00E5FF"/>
+  <circle cx="30" cy="24" r="3.5" fill="#00E5FF"/>
+  <path d="M20 30C22 32 26 32 28 30" stroke="#00D4C8" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <rect x="4" y="21" width="4" height="8" rx="2" fill="#6C5CE7"/>
+  <rect x="40" y="21" width="4" height="8" rx="2" fill="#00D4C8"/>
+</svg>
