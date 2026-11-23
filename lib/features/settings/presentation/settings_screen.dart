@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:studymate_ai/core/constants/app_constants.dart';
 import 'package:studymate_ai/core/services/notification_service.dart';
+import 'package:studymate_ai/core/services/auth_service.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/gap.dart';
@@ -916,255 +917,8 @@ class _DeleteAccountConfirmDialog extends ConsumerStatefulWidget {
 class _DeleteAccountConfirmDialogState
     extends ConsumerState<_DeleteAccountConfirmDialog> {
   bool _isDeleting = false;
-  String _deleteMethod = 'full';
   String _error = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _checkDeleteMethod();
-  }
-
-  Future<void> _checkDeleteMethod() async {
-    final user = FirebaseAuth.instance.currentUser;
-    setState(() {
-      _deleteMethod = user?.isAnonymous == true ? 'full' : 'full';
-    });
-  }
-
-  Future<void> _deleteAccount() async {
-    final l10n = widget.l10n;
-    setState(() {
-      _isDeleting = true;
-      _error = '';
-    });
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      final uid = user?.uid;
-
-      if (uid == null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.noUserToDelete)),
-        );
-        setState(() => _isDeleting = false);
-        return;
-      }
-
-      await _performDelete(uid);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.accountDeletedSuccessfully)),
-      );
-      Navigator.of(context).pop();
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      String errorMsg = 'Delete failed: ${e.message}';
-
-      if (e.code == 'requires-recent-login') {
-        setState(() {
-          _deleteMethod = 'requires_recent_login';
-          _error = l10n.pleaseSignInAgainToDelete;
-        });
-        errorMsg = l10n.pleaseSignInAgainToDelete;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      String errorMsg = 'Delete failed: $e';
-      setState(() => _error = errorMsg);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
-      );
-    } finally {
-      if (mounted) setState(() => _isDeleting = false);
-    }
-  }
-
-  Future<void> _performDelete(String uid) async {
-    final firestore = FirebaseFirestore.instance;
-
-    // Step 1: Re-authenticate for non-anonymous users
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null && !user.isAnonymous) {
-      try {
-        await _reauthenticateUser();
-      } catch (e) {
-        // Reauth failed, will be caught by caller
-        return;
-      }
-    }
-
-    // Step 2: Collect all deletion operations
-    final List<Future<void>> deleteOperations = [];
-
-    // Define collections to delete
-    final mainCollections = [
-      'chats',
-      'doubts',
-      'notes',
-      'decks',
-      'quizzes',
-      'quizAttempts',
-      'plans',
-      'dailyStats',
-      'badges',
-      'settings',
-    ];
-
-    // Collect main collection deletions
-    for (final collection in mainCollections) {
-      final snapshot = await firestore
-          .collection('users')
-          .doc(uid)
-          .collection(collection)
-          .get();
-      final docs = snapshot.docs.toList();
-
-      // Chunk into batches of max 400
-      final chunks = chunkList(docs, maxBatchOperations);
-      for (final chunk in chunks) {
-        deleteOperations
-            .add(FirebaseFirestore.instance.runTransaction((tx) async {
-          for (final doc in chunk) {
-            tx.delete(doc.reference);
-          }
-        }));
-      }
-    }
-
-    // Collect nested messages deletions (chats/{chatId}/messages/{msgId})
-    final chatsSnapshot =
-        await firestore.collection('users').doc(uid).collection('chats').get();
-    for (final chatDoc in chatsSnapshot.docs) {
-      final messagesSnapshot = await firestore
-          .collection('users')
-          .doc(uid)
-          .collection('chats')
-          .doc(chatDoc.id)
-          .collection('messages')
-          .get();
-      final msgDocs = messagesSnapshot.docs.toList();
-      final msgChunks = chunkList(msgDocs, maxBatchOperations);
-      for (final chunk in msgChunks) {
-        deleteOperations
-            .add(FirebaseFirestore.instance.runTransaction((tx) async {
-          for (final doc in chunk) {
-            tx.delete(doc.reference);
-          }
-        }));
-      }
-    }
-
-    // Collect nested cards deletions (decks/{deckId}/cards/{cardId})
-    final decksSnapshot =
-        await firestore.collection('users').doc(uid).collection('decks').get();
-    for (final deckDoc in decksSnapshot.docs) {
-      final cardsSnapshot = await firestore
-          .collection('users')
-          .doc(uid)
-          .collection('decks')
-          .doc(deckDoc.id)
-          .collection('cards')
-          .get();
-      final cardDocs = cardsSnapshot.docs.toList();
-      final cardChunks = chunkList(cardDocs, maxBatchOperations);
-      for (final chunk in cardChunks) {
-        deleteOperations
-            .add(FirebaseFirestore.instance.runTransaction((tx) async {
-          for (final doc in chunk) {
-            tx.delete(doc.reference);
-          }
-        }));
-      }
-    }
-
-    // Delete parent documents (chats, decks) in batches
-    final parentDocs = [
-      chatsSnapshot.docs,
-      decksSnapshot.docs,
-    ];
-    for (final docs in parentDocs) {
-      if (docs.isEmpty) continue;
-      final docChunks = chunkList(docs, maxBatchOperations);
-      for (final chunk in docChunks) {
-        deleteOperations
-            .add(FirebaseFirestore.instance.runTransaction((tx) async {
-          for (final doc in chunk) {
-            tx.delete(doc.reference);
-          }
-        }));
-      }
-    }
-
-    // Execute all delete operations
-    for (final op in deleteOperations) {
-      try {
-        await op;
-      } catch (e) {
-        // Log error but continue with other deletions
-        debugPrint('Delete operation failed: $e');
-      }
-    }
-
-    // Step 3: Delete user document
-    await firestore.collection('users').doc(uid).delete().catchError((e) {
-      debugPrint('Failed to delete user document: $e');
-    });
-
-    // Step 4: Cancel all scheduled notifications
-    try {
-      await NotificationService().cancelAllNotifications();
-    } catch (e) {
-      debugPrint('Failed to cancel notifications: $e');
-    }
-
-    // Step 5: Delete auth account
-    await user?.delete();
-  }
-
-  Future<void> _reauthenticateUser() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final credential = await _getAuthCredential();
-    if (credential == null) {
-      throw FirebaseAuthException(
-        code: 'requires-recent-login',
-        message: 'Reauthentication required',
-      );
-    }
-
-    await user.reauthenticateWithCredential(credential);
-  }
-
-  Future<AuthCredential?> _getAuthCredential() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
-
-    // Try Google sign-in first
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth =
-            await googleUser.authentication;
-        return GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-      }
-    } catch (e) {
-      // Google sign-in failed, try email/password
-    }
-
-    // Try email/password (in production, you'd show a dialog for credentials)
-    // For now, we'll skip this and let Firebase handle the error
-    return null;
-  }
+  AuthCredential? _reauthCredential;
 
   @override
   Widget build(BuildContext context) {
@@ -1202,11 +956,7 @@ class _DeleteAccountConfirmDialogState
           ),
           const Gap(16),
           Text(
-            _error.isNotEmpty
-                ? _error
-                : (_deleteMethod == 'requires_recent_login'
-                    ? l10n.pleaseSignInAgainToDelete
-                    : l10n.accountDeleteWarning),
+            _error.isNotEmpty ? _error : l10n.accountDeleteWarning,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -1215,7 +965,7 @@ class _DeleteAccountConfirmDialogState
           if (_error.isNotEmpty) ...[
             const Gap(8),
             TextButton(
-              onPressed: _isDeleting ? null : _reauthenticateAndDelete,
+              onPressed: _isDeleting ? null : _attemptReauthAndDelete,
               child: Text(l10n.reauthAndRetry),
             ),
           ],
@@ -1245,17 +995,189 @@ class _DeleteAccountConfirmDialogState
     );
   }
 
-  Future<void> _reauthenticateAndDelete() async {
-    setState(() => _isDeleting = true);
+  Future<void> _deleteAccount() async {
+    final l10n = widget.l10n;
+    setState(() {
+      _isDeleting = true;
+      _error = '';
+    });
+
+    final authRepo = ref.read(authRepositoryProvider);
+
     try {
-      await _reauthenticateUser();
-      await _deleteAccount();
+      final result = await authRepo.deleteAccount(
+        reauthCredential: _reauthCredential,
+      );
+
+      if (!mounted) return;
+
+      if (result.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.accountDeletedSuccessfully)),
+        );
+        Navigator.of(context).pop();
+      } else if (result.needsReauth) {
+        // Show re-auth prompt
+        _showReauthDialog(l10n);
+      } else {
+        setState(() {
+          _error = result.error ?? 'Delete failed';
+          _isDeleting = false;
+        });
+      }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Delete failed: $e')),
+      setState(() {
+        _error = 'Delete failed: $e';
+        _isDeleting = false;
+      });
+    }
+  }
+
+  void _showReauthDialog(AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      builder: (context) => _ReauthDialog(
+        l10n: l10n,
+        onCredential: (credential) {
+          _reauthCredential = credential;
+          // Retry delete with the credential
+          _deleteAccount();
+        },
+      ),
+    );
+  }
+
+  Future<void> _attemptReauthAndDelete() async {
+    final l10n = widget.l10n;
+    setState(() => _isDeleting = true);
+
+    final authRepo = ref.read(authRepositoryProvider);
+    final credential = await authRepo.getReauthCredential();
+
+    if (credential != null) {
+      _reauthCredential = credential;
+      await _deleteAccount();
+    } else {
+      // No credential obtained (Google cancelled, email/password needed)
+      _showReauthDialog(l10n);
+    }
+  }
+}
+
+/// Re-authentication dialog for email/password
+class _ReauthDialog extends ConsumerStatefulWidget {
+  final AppLocalizations l10n;
+  final void Function(AuthCredential) onCredential;
+
+  const _ReauthDialog({required this.l10n, required this.onCredential});
+
+  @override
+  ConsumerState<_ReauthDialog> createState() => _ReauthDialogState();
+}
+
+class _ReauthDialogState extends ConsumerState<_ReauthDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final theme = Theme.of(context);
+
+    return AlertDialog(
+      title: Text(l10n.pleaseSignInAgainToDelete),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: l10n.email,
+                prefixIcon: const Icon(Icons.email_rounded),
+              ),
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return l10n.enterEmail;
+                }
+                return null;
+              },
+            ),
+            const Gap(16),
+            TextFormField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: l10n.password,
+                prefixIcon: const Icon(Icons.lock_rounded),
+              ),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return l10n.enterPassword;
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _isLoading ? null : _submit,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.signIn),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
-      setState(() => _isDeleting = false);
+      if (mounted) {
+        Navigator.of(context).pop();
+        widget.onCredential(credential);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Re-authentication failed')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Re-authentication failed: $e')),
+      );
     }
   }
 }
