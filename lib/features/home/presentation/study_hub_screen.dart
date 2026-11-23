@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/gap.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Study hub screen (placeholder for future Study feature)
 class StudyHubScreen extends StatelessWidget {
@@ -10,10 +11,11 @@ class StudyHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Study Hub'),
+        title: Text(l10n.studyHub),
       ),
       body: Center(
         child: Padding(
@@ -28,14 +30,14 @@ class StudyHubScreen extends StatelessWidget {
               ),
               const Gap(24),
               Text(
-                'Study Hub',
+                l10n.studyHub,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const Gap(16),
               Text(
-                'Flashcards, Notes, Quizzes, and Doubts will live here.',
+                l10n.toolsDesc,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -44,7 +46,7 @@ class StudyHubScreen extends StatelessWidget {
               const Gap(32),
               FilledButton(
                 onPressed: () => context.go(AppRoutes.home),
-                child: const Text('Back to Home'),
+                child: Text(l10n.goHome),
               ),
             ],
           ),

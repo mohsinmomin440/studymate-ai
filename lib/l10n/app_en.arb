@@ -207,6 +207,7 @@
   "flashcard": "Flashcard",
   "flashcardDeck": "Flashcard Deck",
   "cardsDueToday": "Cards Due Today",
+  "cardsDuePlural": "{count, plural, one {1 card due} other {# cards due}}",
   "reviewFlashcards": "Review Flashcards",
   "aiChat": "AI Chat",
   "askQuestionGetHelp": "Ask a question or get help with doubts",
@@ -316,5 +317,12 @@
   "pleaseSignInAgainToDelete": "Please sign in again to delete your account",
   "accountDeleteWarning": "This action cannot be undone. You will lose all saved data.",
   "deleteAccountAndDelete": "Delete My Account",
-  "deleteAccountAndConfirm": "Delete Account"
+  "deleteAccountAndConfirm": "Delete Account",
+  "noTasksToday": "No tasks for today",
+  "createPlanForTasks": "Create a study plan to see tasks here",
+  "createPlan": "Create Plan",
+  "allCaughtUp": "All caught up!",
+  "noCardsDueToday": "No cards due for review today",
+  "browseDecks": "Browse Decks",
+  "goalAchieved": "Goal achieved! 🎉"
 }

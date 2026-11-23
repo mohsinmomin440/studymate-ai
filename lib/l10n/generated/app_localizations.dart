@@ -1336,6 +1336,12 @@ abstract class AppLocalizations {
   /// **'Cards Due Today'**
   String get cardsDueToday;
 
+  /// No description provided for @cardsDuePlural.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one {1 card due} other {# cards due}}'**
+  String cardsDuePlural(num count);
+
   /// No description provided for @reviewFlashcards.
   ///
   /// In en, this message translates to:
@@ -1989,6 +1995,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete Account'**
   String get deleteAccountAndConfirm;
+
+  /// No description provided for @noTasksToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks for today'**
+  String get noTasksToday;
+
+  /// No description provided for @createPlanForTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a study plan to see tasks here'**
+  String get createPlanForTasks;
+
+  /// No description provided for @createPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Plan'**
+  String get createPlan;
+
+  /// No description provided for @allCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up!'**
+  String get allCaughtUp;
+
+  /// No description provided for @noCardsDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards due for review today'**
+  String get noCardsDueToday;
+
+  /// No description provided for @browseDecks.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Decks'**
+  String get browseDecks;
+
+  /// No description provided for @goalAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal achieved! 🎉'**
+  String get goalAchieved;
 }
 
 class _AppLocalizationsDelegate

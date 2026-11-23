@@ -635,6 +635,17 @@ class AppLocalizationsGu extends AppLocalizations {
   String get cardsDueToday => 'આજે બાકીના કાર્ડો';
 
   @override
+  String cardsDuePlural(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# કાર્ડો બાકી',
+      one: 'એક કાર્ડ બાકી',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get reviewFlashcards => 'ફ્લેશકાર્ડોની સમીક્ષા કરો';
 
   @override
@@ -985,4 +996,25 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get deleteAccountAndConfirm => 'ખાતા દૂર કરવું';
+
+  @override
+  String get noTasksToday => 'આજે કોઈ કાર્ય નથી';
+
+  @override
+  String get createPlanForTasks => 'કાર્યો જોવા માટે એક અભ્યાસ યોજના બનાવો';
+
+  @override
+  String get createPlan => 'યોજના બનાવો';
+
+  @override
+  String get allCaughtUp => 'બધા કાઢેલા!';
+
+  @override
+  String get noCardsDueToday => 'આજે કોઈ કાર્ડ સમીક્ષા માટે નથી';
+
+  @override
+  String get browseDecks => 'ડેક્સ તોડો';
+
+  @override
+  String get goalAchieved => 'લક્ષ્ય અર્જિત કર્યું! 🎉';
 }

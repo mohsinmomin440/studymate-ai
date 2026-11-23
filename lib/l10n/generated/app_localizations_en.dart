@@ -635,6 +635,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cardsDueToday => 'Cards Due Today';
 
   @override
+  String cardsDuePlural(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# cards due',
+      one: '1 card due',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get reviewFlashcards => 'Review Flashcards';
 
   @override
@@ -987,4 +998,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountAndConfirm => 'Delete Account';
+
+  @override
+  String get noTasksToday => 'No tasks for today';
+
+  @override
+  String get createPlanForTasks => 'Create a study plan to see tasks here';
+
+  @override
+  String get createPlan => 'Create Plan';
+
+  @override
+  String get allCaughtUp => 'All caught up!';
+
+  @override
+  String get noCardsDueToday => 'No cards due for review today';
+
+  @override
+  String get browseDecks => 'Browse Decks';
+
+  @override
+  String get goalAchieved => 'Goal achieved! 🎉';
 }

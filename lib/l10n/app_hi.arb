@@ -207,6 +207,7 @@
   "flashcard": "फ्लैशकार्ड",
   "flashcardDeck": "फ्लैशकार्ड डेक",
   "cardsDueToday": "आज निर्धारित कार्ड",
+  "cardsDuePlural": "{count, plural, one {1 कार्ड बाकी} other {# कार्ड बाकी}}",
   "reviewFlashcards": "फ्लैशकार्डों की समीक्षा करें",
   "aiChat": "AI वार्तालाप",
   "askQuestionGetHelp": "एक प्रश्न पूछें या संदेह के लिए मदद प्राप्त करें",
@@ -322,5 +323,12 @@
   "pleaseSignInAgainToDelete": "कृपया खाता हटाने के लिए फिर से साइन इन करें",
   "accountDeleteWarning": "यह कार्य अनिवार्य है। आप सभी सेव किए गए डेटा खो देंगे।",
   "deleteAccountAndDelete": "मेरा खाता और डेटा हटाएं",
-  "deleteAccountAndConfirm": "खाता हटाएं"
+  "deleteAccountAndConfirm": "खाता हटाएं",
+  "noTasksToday": "आज के कोई कार्य नहीं",
+  "createPlanForTasks": "कार्य देखने के लिए एक अध्ययन योजना बनाएं",
+  "createPlan": "योजना बनाएं",
+  "allCaughtUp": "सब कुछ पकड़ लिया!",
+  "noCardsDueToday": "आज कोई कार्ड समीक्षा के लिए नहीं है",
+  "browseDecks": "डेक्स ब्राउज़ करें",
+  "goalAchieved": "लक्ष्य प्राप्त कर लिया! 🎉"
 }
