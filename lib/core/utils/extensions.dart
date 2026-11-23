@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 // BuildContext extensions
 extension BuildContextX on BuildContext {
@@ -19,6 +20,7 @@ extension BuildContextX on BuildContext {
   bool get isKeyboardOpen => mediaQuery.viewInsets.bottom > 0;
   ScaffoldMessengerState get scaffoldMessenger => ScaffoldMessenger.of(this);
   NavigatorState get navigator => Navigator.of(this);
+  AppLocalizations get l10n => AppLocalizations.of(this)!;
 }
 
 // String extensions

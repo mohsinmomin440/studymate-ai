@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lottie/lottie.dart';
 import 'gap.dart';
 import 'gradient_button.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Empty state with illustration and action
 class EmptyState extends StatelessWidget {
@@ -157,6 +158,7 @@ class ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return EmptyState(
       title: title,
@@ -164,7 +166,7 @@ class ErrorState extends StatelessWidget {
       lottieAsset: lottieAsset ?? 'assets/lottie/error.json',
       icon: icon ?? Icons.error_outline_rounded,
       iconColor: theme.colorScheme.error,
-      actionLabel: retryLabel,
+      actionLabel: l10n.tryAgain,
       onAction: onRetry,
       padding: const EdgeInsets.all(48),
     );
@@ -179,9 +181,11 @@ class NoInternetState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return ErrorState(
-      title: 'No Internet Connection',
-      message: 'Please check your connection and try again.',
+      title: l10n.noInternet,
+      message: l10n.noInternetMessage,
       onRetry: onRetry,
       lottieAsset: 'assets/lottie/no_internet.json',
       icon: Icons.wifi_off_rounded,

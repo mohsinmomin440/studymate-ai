@@ -31,16 +31,14 @@ void main() {
       expect(
         guKeys,
         equals(enKeys),
-        reason:
-            'Gujarati ARB is missing keys present in English. '
+        reason: 'Gujarati ARB is missing keys present in English. '
             'Missing: ${enKeys.difference(guKeys).join(", ")}. '
             'Extra: ${guKeys.difference(enKeys).join(", ")}',
       );
       expect(
         hiKeys,
         equals(enKeys),
-        reason:
-            'Hindi ARB is missing keys present in English. '
+        reason: 'Hindi ARB is missing keys present in English. '
             'Missing: ${enKeys.difference(hiKeys).join(", ")}. '
             'Extra: ${hiKeys.difference(enKeys).join(", ")}',
       );
@@ -95,8 +93,7 @@ void main() {
       expect(
         emptyKeys,
         isEmpty,
-        reason:
-            'Hindi ARB has empty values for keys: ${emptyKeys.join(", ")}',
+        reason: 'Hindi ARB has empty values for keys: ${emptyKeys.join(", ")}',
       );
     });
 

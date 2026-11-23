@@ -12,7 +12,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get appName => 'StudyMate AI';
 
   @override
-  String get welcomeBack => 'વ્યક્તિને પાછા આવતા આવીને સ્વાગત છે!';
+  String get welcomeBack => 'ફરી સ્વાગત છે!';
 
   @override
   String get letsStudy => 'આજે સ્માર્ટ રીતે અભ્યાસ કરીએ.';
@@ -447,7 +447,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get studyPlanner => 'અભ્યાસ યોજના તાલીમ';
 
   @override
-  String get noPlansYet => '�અહીં અમેી પ્લાન છે. ઉપરના પહેલા પ્લાન બનાવો!';
+  String get noPlansYet => 'અહીં કોઈ પ્લાન છે. ઉપરના પહેલા પ્લાન બનાવો!';
 
   @override
   String get studyPlanGenerated => 'અભ્યાસ યોજના સફળતાપૂર્વક બનાઈ ગઈ!';

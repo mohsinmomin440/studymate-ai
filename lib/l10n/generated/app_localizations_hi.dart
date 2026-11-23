@@ -12,7 +12,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get appName => 'StudyMate AI';
 
   @override
-  String get welcomeBack => 'वापस स्वागत है!';
+  String get welcomeBack => 'फिर से स्वागत है!';
 
   @override
   String get letsStudy => 'आज स्मार्ट तरीके से पढ़ाई करें।';

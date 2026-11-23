@@ -477,7 +477,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAll => 'View All';
 
   @override
-  String get more => 'more';
+  String get more => 'More';
 
   @override
   String get startReview => 'Start Review';
@@ -504,7 +504,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizNotFound => 'Quiz not found';
 
   @override
-  String get questions => 'questions';
+  String get questions => 'Questions';
 
   @override
   String question1of(Object question, Object total) {
@@ -659,7 +659,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get deleteChatConfirm => 'Delete Chat';
+  String get deleteChatConfirm =>
+      'This will permanently delete this chat and all messages. Are you sure?';
 
   @override
   String get noInternetMessage => 'Please check your connection and try again.';
