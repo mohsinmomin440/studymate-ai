@@ -906,7 +906,7 @@ const int maxBatchOperations = 400;
 class _DeleteAccountConfirmDialog extends ConsumerStatefulWidget {
   final AppLocalizations l10n;
 
-  const _DeleteAccountConfirmDialog({super.key, required this.l10n});
+  const _DeleteAccountConfirmDialog({required this.l10n});
 
   @override
   ConsumerState<_DeleteAccountConfirmDialog> createState() =>

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/services.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
@@ -147,7 +146,6 @@ class ProgressScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          HapticFeedback.lightImpact();
           ref.invalidate(weeklyStatsProvider);
           ref.invalidate(subjectStrengthProvider);
           ref.invalidate(weeklySummaryProvider);
@@ -299,10 +297,7 @@ class ProgressScreen extends ConsumerWidget {
       error: (e, st) => ErrorState(
         title: 'Error Loading Weekly Summary',
         message: e.toString(),
-        onRetry: () {
-          HapticFeedback.lightImpact();
-          ref.invalidate(weeklySummaryProvider);
-        },
+        onRetry: () => ref.invalidate(weeklySummaryProvider),
       ),
     );
   }
@@ -378,10 +373,7 @@ class ProgressScreen extends ConsumerWidget {
             error: (e, st) => ErrorState(
               title: 'Error Loading Subject Strength',
               message: e.toString(),
-              onRetry: () {
-                HapticFeedback.lightImpact();
-                ref.invalidate(subjectStrengthProvider);
-              },
+              onRetry: () => ref.invalidate(subjectStrengthProvider),
             ),
           ),
         ],
@@ -477,12 +469,8 @@ class ProgressScreen extends ConsumerWidget {
           error: (e, st) => ErrorState(
             title: 'Error Loading Weekly Stats',
             message: e.toString(),
-            onRetry: ref != null
-                ? () {
-                    HapticFeedback.lightImpact();
-                    ref.invalidate(weeklyStatsProvider);
-                  }
-                : null,
+            onRetry:
+                ref != null ? () => ref.invalidate(weeklyStatsProvider) : null,
           ),
         ),
       ],
@@ -624,10 +612,7 @@ class ProgressScreen extends ConsumerWidget {
           error: (e, st) => ErrorState(
             title: 'Error Loading Quiz Score Trend',
             message: e.toString(),
-            onRetry: () {
-              HapticFeedback.lightImpact();
-              ref.invalidate(quizScoreTrendProvider);
-            },
+            onRetry: () => ref.invalidate(quizScoreTrendProvider),
           ),
         ),
       ],
@@ -689,10 +674,7 @@ class ProgressScreen extends ConsumerWidget {
           error: (e, st) => ErrorState(
             title: 'Error Loading Badges',
             message: e.toString(),
-            onRetry: () {
-              HapticFeedback.lightImpact();
-              ref.invalidate(unlockedBadgesProvider);
-            },
+            onRetry: () => ref.invalidate(unlockedBadgesProvider),
           ),
         ),
       ],

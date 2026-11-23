@@ -428,7 +428,7 @@ class ProgressRepository {
           .doc(todayStr);
 
       // Run transaction for atomic updates
-      final newBadges = await _firestore.runTransaction((transaction) async {
+      await _firestore.runTransaction((transaction) async {
         // Read current user data
         final userSnap = await transaction.get(userRef);
         if (!userSnap.exists) return <Badge>[];
@@ -556,8 +556,6 @@ class ProgressRepository {
 
     try {
       final now = DateTime.now();
-      final todayStr =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       final todayOnly = DateTime(now.year, now.month, now.day);
 
       final userRef = _firestore
@@ -627,7 +625,7 @@ class ProgressRepository {
         .doc(user.uid)
         .get();
 
-    final data = doc.data() as Map<String, dynamic>?;
+    final data = doc.data();
     return data?['streak'] as int? ?? 0;
   }
 
@@ -643,7 +641,7 @@ class ProgressRepository {
         .get();
 
     return snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
       return QuizAttempt(
         id: doc.id,
         quizId: data['quizId'] as String? ?? '',

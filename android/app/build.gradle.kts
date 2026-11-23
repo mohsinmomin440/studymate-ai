@@ -4,6 +4,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.io.File
+import java.io.FileInputStream
+import java.util.Properties
+
 android {
     namespace = "com.studymate.studymate_ai"
     compileSdk = 36
@@ -30,11 +34,29 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        val keyPropertiesFile = File(rootProject.projectDir, "key.properties")
+        if (keyPropertiesFile.exists()) {
+            val keyProperties = Properties()
+            keyProperties.load(FileInputStream(keyPropertiesFile))
+            create("release") {
+                storeFile = File(keyProperties["storeFile"] as String)
+                storePassword = keyProperties["storePassword"] as String
+                keyAlias = keyProperties["keyAlias"] as String
+                keyPassword = keyProperties["keyPassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            val releaseKeystore = signingConfigs.findByName("release")
+            signingConfig = releaseKeystore ?: signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter/services.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -35,7 +34,6 @@ class DoubtsListScreen extends ConsumerWidget {
               icon: const Icon(Icons.cleaning_services_rounded),
               tooltip: 'Clear All',
               onPressed: () {
-                HapticFeedback.lightImpact();
                 // Show confirmation dialog
                 showDialog(
                   context: context,
@@ -51,7 +49,6 @@ class DoubtsListScreen extends ConsumerWidget {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          HapticFeedback.mediumImpact();
                           // TODO: Implement clear all doubts
                         },
                         style: TextButton.styleFrom(
@@ -71,7 +68,6 @@ class DoubtsListScreen extends ConsumerWidget {
               icon: const Icon(Icons.add_rounded),
               tooltip: 'Add Doubt',
               onPressed: () {
-                HapticFeedback.lightImpact();
                 context.go(AppRoutes.scanner);
               },
             ),
@@ -80,7 +76,6 @@ class DoubtsListScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          HapticFeedback.lightImpact();
           ref.invalidate(doubtsStreamProvider);
         },
         child: Consumer(
@@ -96,7 +91,6 @@ class DoubtsListScreen extends ConsumerWidget {
                     message: 'Scan a problem with the scanner to save doubts',
                     actionLabel: 'Go to Scanner',
                     onAction: () {
-                      HapticFeedback.lightImpact();
                       context.go(AppRoutes.scanner);
                     },
                   );
@@ -179,10 +173,7 @@ class DoubtsListScreen extends ConsumerWidget {
               error: (error, stack) => ErrorState(
                 title: 'Error Loading Doubts',
                 message: error.toString(),
-                onRetry: () {
-                  HapticFeedback.lightImpact();
-                  ref.invalidate(doubtsStreamProvider);
-                },
+                onRetry: () => ref.invalidate(doubtsStreamProvider),
               ),
             );
           },

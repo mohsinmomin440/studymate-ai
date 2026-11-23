@@ -64,6 +64,7 @@ dependencies:
   confetti: ^0.8.0
 
   cupertino_icons: ^1.0.8
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,7 @@ dev_dependencies:
   riverpod_generator: ^2.4.0
   freezed: ^2.5.7
   json_serializable: ^6.8.0
+  flutter_native_splash: ^2.4.8
 
 flutter:
   uses-material-design: true
@@ -83,3 +85,33 @@ flutter:
     - assets/lottie/
 
   generate: true
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/icon/icon-1024.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon/icon-1024.png"
+    background_color: "#6C5CE7"
+    theme_color: "#6C5CE7"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon-1024.png"
+    icon_size: 48
+  macos:
+    generate: false
+
+flutter_native_splash:
+  color: "#0B0D17"
+  color_dark: "#0B0D17"
+  image: "assets/icon/icon-1024.png"
+  image_dark: "assets/icon/icon-1024.png"
+  android_12:
+    image: "assets/icon/icon-1024.png"
+    image_dark: "assets/icon/icon-1024.png"
+    color: "#0B0D17"
+    color_dark: "#0B0D17"
+  ios: true
+  web: false

@@ -242,8 +242,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Study Planner'),
@@ -433,9 +431,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               title: 'No plans yet',
               message: 'Generate your first study plan above!',
               actionLabel: 'Create Plan',
-              onAction: () {
-                HapticFeedback.lightImpact();
-              },
+              onAction: () {},
             );
           }
           return ListView.builder(
@@ -449,7 +445,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     'Plan: ${plan.title}, Exam: ${plan.examDate.toLocal().toString().split('.')[0]}',
                 child: GlassCard(
                   onTap: () {
-                    HapticFeedback.lightImpact();
                     context.go('${AppRoutes.planDetail}/${plan.id}');
                   },
                   child: ListTile(
@@ -475,10 +470,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         error: (error, stack) => ErrorState(
           title: 'Error Loading Plans',
           message: error.toString(),
-          onRetry: () {
-            HapticFeedback.lightImpact();
-            ref.invalidate(plansStreamProvider);
-          },
+          onRetry: () => ref.invalidate(plansStreamProvider),
         ),
       );
     });
@@ -677,8 +669,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     final theme = Theme.of(context);
     final repository = ref.read(plannerRepositoryProvider);
 
-    void _toggleTask() {
-      HapticFeedback.lightImpact();
+    void toggleTask() {
       repository.toggleTask(
         planId: widget.planId,
         dayIndex: dayIndex,
@@ -694,7 +685,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
       child: ListTile(
         leading: Checkbox(
           value: task.done,
-          onChanged: (_) => _toggleTask(),
+          onChanged: (_) => toggleTask(),
         ),
         title: Text(
           task.title,
@@ -713,7 +704,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
               ? Colors.orange.withValues(alpha: 0.2)
               : theme.colorScheme.primaryContainer,
         ),
-        onTap: _toggleTask,
+        onTap: toggleTask,
       ),
     );
   }
