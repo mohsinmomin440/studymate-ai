@@ -250,6 +250,8 @@
   "featureNotes": "नोट्स",
   "notificationStudyReminder": "अध्ययन अनुस्मारक",
   "notificationDailySession": "आपके दैनिक अध्ययन सत्र के लिए समय!",
+  "notificationStreakReminder": "अपना स्ट्रीक जीवित रखें!",
+  "notificationStreakReminderBody": "आप {streak} दिन का स्ट्रीक बनाए हुए हैं। अब इसे न तोड़ें!",
   "newChat": "नई चैट",
   "chatTitle": "चैट शीर्षक",
   "exampleChatTitle": "उदाहरण के लिए, कैलकुलस डेरिवेटिव्स",

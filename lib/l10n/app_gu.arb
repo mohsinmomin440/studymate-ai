@@ -250,6 +250,8 @@
   "featureNotes": "નોંધો",
   "notificationStudyReminder": "અભ્યાસ સ્મારક",
   "notificationDailySession": "તમારા દૈનિક અભ્યાસ સત્ર માટે સમય!",
+  "notificationStreakReminder": "તમારું સ્ટ્રીક જીવંત રાખો!",
+  "notificationStreakReminderBody": "તમે {streak} દિવસનો સ્ટ્રીક રાખી શક્યા છો. હવે તોડો નહીં!",
   "newChat": "નવી વાતચીત",
   "chatTitle": "વાતચીત શીર્ષક",
   "exampleChatTitle": "જેમ કે, કેલ્ક્યુલસ ડેરિવેટિવ્સ",

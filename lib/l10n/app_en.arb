@@ -250,6 +250,8 @@
   "featureNotes": "Notes",
   "notificationStudyReminder": "Study Reminder",
   "notificationDailySession": "Time for your daily study session!",
+  "notificationStreakReminder": "Keep Your Streak Alive!",
+  "notificationStreakReminderBody": "You're on a {streak} day streak. Don't break it now!",
   "newChat": "New Chat",
   "chatTitle": "Chat Title",
   "exampleChatTitle": "e.g., Calculus Derivatives",
