@@ -503,8 +503,9 @@ class HomeScreen extends ConsumerWidget {
                       Text(
                         'Spaced repetition review',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color:
-                                  Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                       ),
                     ],
@@ -541,8 +542,9 @@ class HomeScreen extends ConsumerWidget {
                       Text(
                         'From your study plan',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color:
-                                  Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                       ),
                     ],
@@ -849,8 +851,7 @@ class _TaskTile extends StatelessWidget {
             child: Text(
               task.title,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    decoration:
-                        task.done ? TextDecoration.lineThrough : null,
+                    decoration: task.done ? TextDecoration.lineThrough : null,
                     color: task.done
                         ? Theme.of(context).colorScheme.onSurfaceVariant
                         : Theme.of(context).colorScheme.onSurface,

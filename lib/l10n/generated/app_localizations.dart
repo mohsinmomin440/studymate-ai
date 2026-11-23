@@ -436,12 +436,6 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get next;
 
-  /// No description provided for @back.
-  ///
-  /// In en, this message translates to:
-  /// **'Back'**
-  String get back;
-
   /// No description provided for @done.
   ///
   /// In en, this message translates to:
@@ -844,6 +838,12 @@ abstract class AppLocalizations {
   /// **'Card'**
   String get card;
 
+  /// No description provided for @cardsDuePlural.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one {1 card due} other {# cards due}}'**
+  String cardsDuePlural(num count);
+
   /// No description provided for @question.
   ///
   /// In en, this message translates to:
@@ -861,6 +861,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Front'**
   String get front;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
 
   /// No description provided for @subjectMath.
   ///
@@ -1342,12 +1348,6 @@ abstract class AppLocalizations {
   /// **'Cards Due Today'**
   String get cardsDueToday;
 
-  /// No description provided for @cardsDuePlural.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, one {1 card due} other {# cards due}}'**
-  String cardsDuePlural(num count);
-
   /// No description provided for @todayTask.
   ///
   /// In en, this message translates to:
@@ -1636,6 +1636,12 @@ abstract class AppLocalizations {
   /// **'Rename Chat'**
   String get renameChat;
 
+  /// No description provided for @rename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
+
   /// No description provided for @deleteChat.
   ///
   /// In en, this message translates to:
@@ -1660,11 +1666,11 @@ abstract class AppLocalizations {
   /// **'Start a new conversation with StudyMate AI'**
   String get startNewConversation;
 
-  /// No description provided for @newConversation.
+  /// No description provided for @searchChats.
   ///
   /// In en, this message translates to:
-  /// **'New Chat'**
-  String get newConversation;
+  /// **'Search chats'**
+  String get searchChats;
 
   /// No description provided for @camera.
   ///
@@ -1882,12 +1888,6 @@ abstract class AppLocalizations {
   /// **'Count'**
   String get count;
 
-  /// No description provided for @cards.
-  ///
-  /// In en, this message translates to:
-  /// **'cards'**
-  String get cards;
-
   /// No description provided for @chatStepByStepDesc.
   ///
   /// In en, this message translates to:
@@ -2061,6 +2061,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Goal achieved! 🎉'**
   String get goalAchieved;
+
+  /// No description provided for @noNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get noNotes;
+
+  /// No description provided for @createFirstNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first note to get started'**
+  String get createFirstNote;
+
+  /// No description provided for @notesCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Note created successfully'**
+  String get notesCreated;
+
+  /// No description provided for @noteUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Note updated'**
+  String get noteUpdated;
+
+  /// No description provided for @errorInNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Error in note'**
+  String get errorInNote;
+
+  /// No description provided for @aiActionFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Action Failed'**
+  String get aiActionFailedMessage;
+
+  /// No description provided for @somethingWentWrongMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrongMessage;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @dailyAILimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily AI limit reached'**
+  String get dailyAILimit;
+
+  /// No description provided for @dailyAILimitMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again tomorrow or use fewer AI requests.'**
+  String get dailyAILimitMessage;
+
+  /// No description provided for @importText.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Text'**
+  String get importText;
+
+  /// No description provided for @editNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Note'**
+  String get editNote;
+
+  /// No description provided for @noteCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Note created'**
+  String get noteCreated;
+
+  /// No description provided for @noNotesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get noNotesYet;
+
+  /// No description provided for @startNoteSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search notes'**
+  String get startNoteSearch;
+
+  /// No description provided for @editNoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit your note'**
+  String get editNoteTitle;
+
+  /// No description provided for @dailyAILimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily AI limit reached'**
+  String get dailyAILimitReached;
+
+  /// No description provided for @dailyAILimitTryTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again tomorrow or reduce AI requests.'**
+  String get dailyAILimitTryTomorrow;
+
+  /// No description provided for @selectedImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Image'**
+  String get selectedImage;
+
+  /// No description provided for @processButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Process Question'**
+  String get processButton;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @voiceInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input'**
+  String get voiceInput;
 }
 
 class _AppLocalizationsDelegate
