@@ -865,13 +865,6 @@ class _LinkAccountDialogState extends ConsumerState<_LinkAccountDialog> {
             title: Text(l10n.linkGoogle),
             onTap: _isLoading ? null : _linkWithGoogle,
           ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.email_rounded),
-            title: Text(l10n.linkEmailAccount),
-            enabled: false,
-            trailing: const Icon(Icons.lock_rounded, color: Colors.grey),
-          ),
         ],
       ),
       actions: [
@@ -1092,7 +1085,6 @@ class _ReauthDialogState extends ConsumerState<_ReauthDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = widget.l10n;
-    final theme = Theme.of(context);
 
     return AlertDialog(
       title: Text(l10n.pleaseSignInAgainToDelete),

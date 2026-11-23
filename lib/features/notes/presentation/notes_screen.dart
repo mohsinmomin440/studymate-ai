@@ -1101,7 +1101,6 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   }
 
   void _handleAction(String action) {
-    final l10n = context.l10n;
     switch (action) {
       case 'pin':
         ref.read(noteRepositoryProvider).togglePin(_note!.id);
