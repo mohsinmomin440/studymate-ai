@@ -418,17 +418,6 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.picture_as_pdf),
-            title: const Text('Choose PDF file'),
-            onTap: () {
-              Navigator.pop(context);
-              // PDF import deferred - requires additional package compatibility
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('PDF import coming soon')),
-              );
-            },
-          ),
-          ListTile(
             leading: const Icon(Icons.image),
             title: const Text('Import Image (OCR)'),
             onTap: () {

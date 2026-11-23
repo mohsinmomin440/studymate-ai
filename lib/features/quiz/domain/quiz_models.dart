@@ -44,6 +44,7 @@ class Quiz {
   final String difficulty;
   final List<QuizQuestion> questions;
   final DateTime createdAt;
+  final int? durationMinutes; // Optional timer duration (e.g., 30 = 30 min)
 
   Quiz({
     required this.id,
@@ -52,6 +53,7 @@ class Quiz {
     required this.difficulty,
     required this.questions,
     required this.createdAt,
+    this.durationMinutes,
   });
 
   factory Quiz.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,7 @@ class Quiz {
       createdAt: json['createdAt'] is Timestamp
           ? (json['createdAt'] as Timestamp).toDate()
           : DateTime.parse(json['createdAt'] as String),
+      durationMinutes: json['durationMinutes'] as int?,
     );
   }
 
@@ -80,6 +83,7 @@ class Quiz {
         'difficulty': difficulty,
         'questions': questions.map((q) => q.toJson()).toList(),
         'createdAt': createdAt.toIso8601String(),
+        if (durationMinutes != null) 'durationMinutes': durationMinutes,
       };
 }
 

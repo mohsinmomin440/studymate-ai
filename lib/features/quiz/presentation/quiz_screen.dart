@@ -1,5 +1,6 @@
 // Quiz screens - List, Create, Take, Results
 
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:confetti/confetti.dart';
@@ -18,6 +19,7 @@ import '../../chat/data/ai_service.dart';
 import '../data/quiz_repository.dart';
 import '../domain/quiz_models.dart' as quiz_models;
 import '../../../core/router/app_router.dart';
+import '../../../core/utils/quiz_timer.dart';
 import '../../../features/progress/data/progress_repository.dart'
     hide QuizAnswerData, QuizAttempt;
 
@@ -187,6 +189,8 @@ class _AiGenerateQuizSheetState extends ConsumerState<AiGenerateQuizSheet> {
   String _selectedSubject = 'Mathematics';
   String _selectedDifficulty = 'Medium';
   int _questionCount = 10;
+  bool _enableTimer = false;
+  int _timerMinutes = 15;
 
   @override
   void dispose() {
@@ -247,6 +251,7 @@ class _AiGenerateQuizSheetState extends ConsumerState<AiGenerateQuizSheet> {
             subject: _selectedSubject,
             difficulty: _selectedDifficulty,
             questions: questions,
+            durationMinutes: _enableTimer ? _timerMinutes : null,
           );
 
       if (!mounted) return;
@@ -330,6 +335,41 @@ class _AiGenerateQuizSheetState extends ConsumerState<AiGenerateQuizSheet> {
               ),
             ],
           ),
+          const Gap(16),
+          SwitchListTile(
+            title: const Text('Enable Timer'),
+            subtitle: _enableTimer
+                ? Text('$_timerMinutes minutes')
+                : const Text('No time limit'),
+            value: _enableTimer,
+            onChanged: (v) => setState(() => _enableTimer = v),
+            contentPadding: EdgeInsets.zero,
+          ),
+          if (_enableTimer) ...[
+            const Gap(8),
+            Row(
+              children: [
+                const Icon(Icons.timer, size: 20),
+                const Gap(8),
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    value: _timerMinutes,
+                    decoration: const InputDecoration(
+                      labelText: 'Time Limit',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [5, 10, 15, 20, 30, 45, 60]
+                        .map((m) => DropdownMenuItem(
+                              value: m,
+                              child: Text('$m minutes'),
+                            ))
+                        .toList(),
+                    onChanged: (v) => setState(() => _timerMinutes = v ?? 15),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const Gap(24),
           FilledButton(
             onPressed: _generateQuiz,
@@ -376,6 +416,8 @@ class _QuizCreateScreenState extends ConsumerState<QuizCreateScreen> {
   String _selectedSubject = 'Mathematics';
   String _selectedDifficulty = 'Medium';
   int _questionCount = 10;
+  bool _enableTimer = false;
+  int _timerMinutes = 15;
 
   @override
   void dispose() {
@@ -429,6 +471,7 @@ class _QuizCreateScreenState extends ConsumerState<QuizCreateScreen> {
             subject: _selectedSubject,
             difficulty: _selectedDifficulty,
             questions: questions,
+            durationMinutes: _enableTimer ? _timerMinutes : null,
           );
 
       if (!mounted) return;
@@ -535,6 +578,42 @@ class _QuizCreateScreenState extends ConsumerState<QuizCreateScreen> {
                   ],
                 ),
               ),
+              const Gap(16),
+              SwitchListTile(
+                title: const Text('Enable Timer'),
+                subtitle: _enableTimer
+                    ? Text('$_timerMinutes minutes')
+                    : const Text('No time limit'),
+                value: _enableTimer,
+                onChanged: (v) => setState(() => _enableTimer = v),
+                contentPadding: EdgeInsets.zero,
+              ),
+              if (_enableTimer) ...[
+                const Gap(8),
+                Row(
+                  children: [
+                    const Icon(Icons.timer, size: 20),
+                    const Gap(8),
+                    Expanded(
+                      child: DropdownButtonFormField<int>(
+                        value: _timerMinutes,
+                        decoration: const InputDecoration(
+                          labelText: 'Time Limit',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: [5, 10, 15, 20, 30, 45, 60]
+                            .map((m) => DropdownMenuItem(
+                                  value: m,
+                                  child: Text('$m minutes'),
+                                ))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _timerMinutes = v ?? 15),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const Gap(32),
               FilledButton(
                 onPressed: _createQuiz,
@@ -674,6 +753,9 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
   int _currentIndex = 0;
   int _selectedAnswer = -1;
   List<int> _answers = [];
+  Timer? _uiUpdateTimer;
+  late QuizTimer _timer;
+  bool _submitted = false;
 
   @override
   void initState() {
@@ -683,10 +765,59 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
 
   Future<void> _loadQuiz() async {
     final quiz = await ref.read(quizRepositoryProvider).getQuiz(widget.quizId);
-    setState(() => _quiz = quiz);
-    if (quiz != null) {
-      _answers = List.filled(quiz.questions.length, -1);
-    }
+    setState(() {
+      _quiz = quiz;
+      if (quiz != null) {
+        _answers = List.filled(quiz.questions.length, -1);
+        _timer = QuizTimer(
+          totalSeconds: quiz.durationMinutes != null ? quiz.durationMinutes! * 60 : 0,
+          // No deadline needed - remainingSeconds will return totalSeconds when no deadline
+        );
+        _startTimerIfNeeded(quiz);
+      }
+    });
+  }
+
+  void _startTimerIfNeeded(quiz_models.Quiz quiz) {
+    if (quiz.durationMinutes == null) return;
+
+    // Create timer with deadline for correct background/foreground behavior
+    final totalSeconds = quiz.durationMinutes! * 60;
+    final deadline = DateTime.now().add(Duration(seconds: totalSeconds));
+
+    _timer = QuizTimer(
+      totalSeconds: totalSeconds,
+      deadline: deadline,
+    );
+
+    // Periodic UI updates to show countdown
+    _uiUpdateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _submitted) {
+        _uiUpdateTimer?.cancel();
+        return;
+      }
+
+      setState(() {
+        // Timer automatically calculates remaining through remainingSeconds getter
+      });
+
+      if (_timer.isTimeUp()) {
+        _onTimeUp();
+      }
+    });
+  }
+
+  void _onTimeUp() {
+    if (!mounted || _submitted) return;
+    _submitted = true;
+    _uiUpdateTimer?.cancel();
+    _submitQuiz(autoSubmitted: true);
+  }
+
+  @override
+  void dispose() {
+    _uiUpdateTimer?.cancel();
+    super.dispose();
   }
 
   bool get _isRetry => widget.isRetry;
@@ -695,8 +826,10 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
     setState(() => _selectedAnswer = index);
   }
 
-  Future<void> _submitQuiz() async {
+  Future<void> _submitQuiz({bool autoSubmitted = false}) async {
     if (_quiz == null) return;
+
+    _uiUpdateTimer?.cancel();
 
     final correct = _answers
         .where((a) => a == _quiz!.questions[_currentIndex].correctIndex)
@@ -717,7 +850,7 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
           explanation: q.explanation,
         );
       }),
-      durationSec: 0,
+      durationSec: _timer.elapsedSeconds,
       createdAt: DateTime.now(),
     );
 
@@ -730,7 +863,7 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
           title: _quiz!.title,
           score: correct,
           total: _quiz!.questions.length,
-          durationSec: 0,
+          durationSec: _timer.elapsedSeconds,
         );
 
     // Award XP for quiz completion (fire-and-forget, never blocks UI)
@@ -738,18 +871,7 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
     ref
         .read(progressRepositoryProvider)
         .recordActivity('quiz', isRetry: _isRetry)
-        .then((newBadges) {
-      if (newBadges.isNotEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }).onError((error, stackTrace) {
+        .then((_) {}).onError((error, stackTrace) {
       developer.log('recordActivity(quiz) error: $error', name: 'QuizScreen');
     });
 
@@ -776,6 +898,36 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Question ${_currentIndex + 1}/${quiz.questions.length}'),
+        actions: [
+          if (_timer.hasTimeLimit)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timer, size: 16, color: Colors.red),
+                      const Gap(4),
+                      Text(
+                        _timer.formattedTime,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

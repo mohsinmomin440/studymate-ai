@@ -47,7 +47,9 @@
 
 ## Phase 4 — Notes + Doubt Scanner
 - [x] Notes CRUD/search/tags
-- [ ] Import (text/PDF) - PLACEHOLDER: "PDF import coming soon"
+- [x] Import (text only) - PLACEHOLDER: "PDF import coming soon"
+    - [DEFERRED] PDF import - license requires registration for syncfusion_flutter_pdf
+    - [DEFERRED] PDF import - Android 36 compatibility issues with existing PDF packages
 - [x] AI note actions wired to AiService (Summarize, Key points, Translate, Generate Flashcards/Quiz, Simplify)
 - [x] Camera/gallery doubt solver with AI integration
 - [x] Build succeeds (compileSdk 36)
@@ -139,7 +141,7 @@
 - [x] Anti-farming daily XP caps (progress_calculations.dart)
   - chat: 50 XP/day (10 chats), note: 100 XP/day (10 notes)
   - flashcard_review: 100 XP/day (50 reviews), focus_minute: 120 XP/day (120 min)
-  - quiz: no daily cap (already limited by quiz length)
+  - quiz: 125 XP/day max (5 quiz completions × 25 XP each)
   - Functions: canAwardXpToday(), xpToAwardToday()
   - Unit tests: 10 test cases passing
 - [x] recordActivity() fire-and-forget pattern (never blocks UI)

@@ -34,6 +34,7 @@ class QuizRepository {
     required String subject,
     required String difficulty,
     required List<Map<String, dynamic>> questions,
+    int? durationMinutes,
   }) async {
     final quizQuestions =
         questions.map((q) => QuizQuestion.fromJson(q)).toList();
@@ -45,6 +46,7 @@ class QuizRepository {
       difficulty: difficulty,
       questions: quizQuestions,
       createdAt: DateTime.now(),
+      durationMinutes: durationMinutes,
     );
 
     await _quizzesCollection.doc(quiz.id).set(quiz.toJson());
