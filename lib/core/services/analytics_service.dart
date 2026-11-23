@@ -110,7 +110,7 @@ class AnalyticsService {
     });
   }
 
-  /// Record an error (safe - doesn't crash)
+  /// Record an error to Crashlytics (safe - doesn't crash)
   void recordError(Object error, StackTrace? stackTrace, {String? errorName}) {
     if (!_isAvailable) {
       developer.log('Error (no Crashlytics): $error',
@@ -118,9 +118,7 @@ class AnalyticsService {
       return;
     }
     try {
-      // Use FlutterError.dumpError toConsole as fallback since Crashlytics API changed
-      developer.log('Error reported: $error',
-          stackTrace: stackTrace, name: errorName ?? 'Error');
+      _crashlytics.recordError(error, stackTrace, reason: errorName);
     } catch (e) {
       developer.log('Crashlytics recordError failed: $e',
           name: 'AnalyticsService');
