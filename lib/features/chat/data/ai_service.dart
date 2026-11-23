@@ -496,19 +496,32 @@ Provide a detailed step-by-step solution with explanations. Format your answer c
         return 'image/jpeg';
       }
       // PNG: 89 50 4E 47
-      if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+      if (bytes[0] == 0x89 &&
+          bytes[1] == 0x50 &&
+          bytes[2] == 0x4E &&
+          bytes[3] == 0x47) {
         return 'image/png';
       }
       // WebP: RIFF....WEBP
       if (bytes.length >= 12 &&
-          bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
-          bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+          bytes[0] == 0x52 &&
+          bytes[1] == 0x49 &&
+          bytes[2] == 0x46 &&
+          bytes[3] == 0x46 &&
+          bytes[8] == 0x57 &&
+          bytes[9] == 0x45 &&
+          bytes[10] == 0x42 &&
+          bytes[11] == 0x50) {
         return 'image/webp';
       }
       // HEIC: ftyp at offset 4
       if (bytes.length >= 12 &&
-          bytes[4] == 0x66 && bytes[5] == 0x74 && bytes[6] == 0x79 && bytes[7] == 0x70 &&
-          (bytes[8] == 0x68 || bytes[8] == 0x6D)) { // heic or mif1
+          bytes[4] == 0x66 &&
+          bytes[5] == 0x74 &&
+          bytes[6] == 0x79 &&
+          bytes[7] == 0x70 &&
+          (bytes[8] == 0x68 || bytes[8] == 0x6D)) {
+        // heic or mif1
         return 'image/heic';
       }
     }
