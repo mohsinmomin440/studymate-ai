@@ -2193,6 +2193,594 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Voice input'**
   String get voiceInput;
+
+  /// No description provided for @notesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notesTitle;
+
+  /// No description provided for @createNoteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Create note'**
+  String get createNoteTooltip;
+
+  /// No description provided for @searchNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search notes...'**
+  String get searchNotesHint;
+
+  /// No description provided for @errorLoadingNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Error Loading Notes'**
+  String get errorLoadingNotes;
+
+  /// No description provided for @noNotesYetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get noNotesYetTitle;
+
+  /// No description provided for @createFirstNoteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first note to get started'**
+  String get createFirstNoteMessage;
+
+  /// No description provided for @createNoteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Note'**
+  String get createNoteAction;
+
+  /// No description provided for @editNoteTitleScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Note'**
+  String get editNoteTitleScreen;
+
+  /// No description provided for @newNoteTitleScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'New Note'**
+  String get newNoteTitleScreen;
+
+  /// No description provided for @editYourNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit your note'**
+  String get editYourNote;
+
+  /// No description provided for @createNewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new note'**
+  String get createNewNote;
+
+  /// No description provided for @titleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleLabel;
+
+  /// No description provided for @noteTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Note title'**
+  String get noteTitleHint;
+
+  /// No description provided for @titleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title required'**
+  String get titleRequired;
+
+  /// No description provided for @subjectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get subjectLabel;
+
+  /// No description provided for @subjectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Mathematics, Physics'**
+  String get subjectHint;
+
+  /// No description provided for @subjectRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject required'**
+  String get subjectRequired;
+
+  /// No description provided for @tagsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags (comma separated)'**
+  String get tagsLabel;
+
+  /// No description provided for @tagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Algebra, Geometry, Important'**
+  String get tagsHint;
+
+  /// No description provided for @contentHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get contentHeader;
+
+  /// No description provided for @writeNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your note here...'**
+  String get writeNoteHint;
+
+  /// No description provided for @contentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Content required'**
+  String get contentRequired;
+
+  /// No description provided for @importPdfTextButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import PDF/Text'**
+  String get importPdfTextButton;
+
+  /// No description provided for @aiActionsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Actions'**
+  String get aiActionsButton;
+
+  /// No description provided for @pasteTextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste Text'**
+  String get pasteTextTitle;
+
+  /// No description provided for @importImageOcrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Image (OCR)'**
+  String get importImageOcrTitle;
+
+  /// No description provided for @pasteTextDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste Text'**
+  String get pasteTextDialogTitle;
+
+  /// No description provided for @pasteTextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste text here...'**
+  String get pasteTextHint;
+
+  /// No description provided for @pasteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get pasteButton;
+
+  /// No description provided for @summarizeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize'**
+  String get summarizeAction;
+
+  /// No description provided for @keyPointsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Points'**
+  String get keyPointsAction;
+
+  /// No description provided for @translateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get translateAction;
+
+  /// No description provided for @generateFlashcardsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Flashcards'**
+  String get generateFlashcardsAction;
+
+  /// No description provided for @generateQuizAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Quiz'**
+  String get generateQuizAction;
+
+  /// No description provided for @simplifyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplify'**
+  String get simplifyAction;
+
+  /// No description provided for @pleaseEnterContentFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter content first'**
+  String get pleaseEnterContentFirst;
+
+  /// No description provided for @dailyAILimitReachedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily AI limit reached. Try again tomorrow or use fewer AI requests.'**
+  String get dailyAILimitReachedSnack;
+
+  /// No description provided for @summarizingDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarizing'**
+  String get summarizingDialog;
+
+  /// No description provided for @extractingKeyPointsDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracting key points'**
+  String get extractingKeyPointsDialog;
+
+  /// No description provided for @translatingDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating'**
+  String get translatingDialog;
+
+  /// No description provided for @generatingFlashcardsDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating flashcards'**
+  String get generatingFlashcardsDialog;
+
+  /// No description provided for @generatingQuizDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating quiz'**
+  String get generatingQuizDialog;
+
+  /// No description provided for @simplifyingDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplifying'**
+  String get simplifyingDialog;
+
+  /// No description provided for @aiWorkingDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'StudyMate AI is working on it...'**
+  String get aiWorkingDialog;
+
+  /// No description provided for @noteSummarizedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Note summarized successfully'**
+  String get noteSummarizedSuccess;
+
+  /// No description provided for @keyPointsExtractedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Key points extracted successfully'**
+  String get keyPointsExtractedSuccess;
+
+  /// No description provided for @noteTranslatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Note translated successfully'**
+  String get noteTranslatedSuccess;
+
+  /// No description provided for @flashcardsGeneratedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Flashcards generated successfully'**
+  String get flashcardsGeneratedSuccess;
+
+  /// No description provided for @quizGeneratedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz generated successfully'**
+  String get quizGeneratedSuccess;
+
+  /// No description provided for @noteSimplifiedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Note simplified successfully'**
+  String get noteSimplifiedSuccess;
+
+  /// No description provided for @aiActionFailedDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Action Failed'**
+  String get aiActionFailedDialogTitle;
+
+  /// No description provided for @aiActionFailedDialogContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong: {error}\n\nPlease try again.'**
+  String aiActionFailedDialogContent(Object error);
+
+  /// No description provided for @okButton.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get okButton;
+
+  /// No description provided for @deleteNoteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Note'**
+  String get deleteNoteDialogTitle;
+
+  /// No description provided for @deleteNoteDialogContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this note? This cannot be undone.'**
+  String get deleteNoteDialogContent;
+
+  /// No description provided for @cancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelButton;
+
+  /// No description provided for @deleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteButton;
+
+  /// No description provided for @noteDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get noteDetailTitle;
+
+  /// No description provided for @pinAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get pinAction;
+
+  /// No description provided for @editAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editAction;
+
+  /// No description provided for @deleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteAction;
+
+  /// No description provided for @deleteNoteConfirmSimple.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this note?'**
+  String get deleteNoteConfirmSimple;
+
+  /// No description provided for @doubtScannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubt Scanner'**
+  String get doubtScannerTitle;
+
+  /// No description provided for @howItWorksHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get howItWorksHeader;
+
+  /// No description provided for @howItWorksDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo or select an image of your question. StudyMate AI will analyze it and provide a step-by-step solution.'**
+  String get howItWorksDesc;
+
+  /// No description provided for @selectSubjectHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Subject'**
+  String get selectSubjectHeader;
+
+  /// No description provided for @selectSubjectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Subject'**
+  String get selectSubjectLabel;
+
+  /// No description provided for @selectImageHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Image'**
+  String get selectImageHeader;
+
+  /// No description provided for @cameraButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get cameraButton;
+
+  /// No description provided for @galleryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get galleryButton;
+
+  /// No description provided for @selectedImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Image:'**
+  String get selectedImageLabel;
+
+  /// No description provided for @solveQuestionButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Solve Question'**
+  String get solveQuestionButton;
+
+  /// No description provided for @solutionHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Solution'**
+  String get solutionHeader;
+
+  /// No description provided for @saveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveButton;
+
+  /// No description provided for @createNoteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Note'**
+  String get createNoteButton;
+
+  /// No description provided for @aiFlashcardsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Flashcards'**
+  String get aiFlashcardsButton;
+
+  /// No description provided for @cameraPermissionSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera permission required'**
+  String get cameraPermissionSnack;
+
+  /// No description provided for @galleryPermissionSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo library permission required'**
+  String get galleryPermissionSnack;
+
+  /// No description provided for @errorPickingImageSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Error picking image: {error}'**
+  String errorPickingImageSnack(Object error);
+
+  /// No description provided for @dailyLimitReachedDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily limit reached'**
+  String get dailyLimitReachedDialogTitle;
+
+  /// No description provided for @dailyLimitReachedDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used your daily AI quota. Try again tomorrow or use fewer AI requests.'**
+  String get dailyLimitReachedDialogMessage;
+
+  /// No description provided for @somethingWentWrongDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrongDialogTitle;
+
+  /// No description provided for @cancelButtonDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelButtonDialog;
+
+  /// No description provided for @retryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryButton;
+
+  /// No description provided for @solutionSavedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Solution saved to doubts'**
+  String get solutionSavedSnack;
+
+  /// No description provided for @errorSavingSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving: {error}'**
+  String errorSavingSnack(Object error);
+
+  /// No description provided for @failedToGenerateFlashcardsDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate flashcards'**
+  String get failedToGenerateFlashcardsDialogTitle;
+
+  /// No description provided for @flashcardsGeneratedSuccessSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated flashcards successfully!'**
+  String get flashcardsGeneratedSuccessSnack;
+
+  /// No description provided for @doubtsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubts'**
+  String get doubtsTitle;
+
+  /// No description provided for @clearAllTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all doubts'**
+  String get clearAllTooltip;
+
+  /// No description provided for @clearAllDoubtsDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Doubts?'**
+  String get clearAllDoubtsDialogTitle;
+
+  /// No description provided for @clearAllDoubtsDialogContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This will delete all saved doubts. Are you sure?'**
+  String get clearAllDoubtsDialogContent;
+
+  /// No description provided for @clearButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearButton;
+
+  /// No description provided for @addDoubtTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Doubt'**
+  String get addDoubtTooltip;
+
+  /// No description provided for @noDoubtsSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No doubts saved yet'**
+  String get noDoubtsSavedTitle;
+
+  /// No description provided for @scanProblemMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a problem with the scanner to save doubts'**
+  String get scanProblemMessage;
+
+  /// No description provided for @goToScannerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Scanner'**
+  String get goToScannerAction;
+
+  /// No description provided for @errorLoadingDoubtsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Error Loading Doubts'**
+  String get errorLoadingDoubtsTitle;
 }
 
 class _AppLocalizationsDelegate

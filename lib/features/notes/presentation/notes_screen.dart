@@ -21,6 +21,7 @@ import '../data/note_repository.dart';
 import '../domain/note_models.dart';
 import '../../../core/router/app_router.dart';
 import '../../../features/progress/data/progress_repository.dart';
+import '../../../core/utils/extensions.dart';
 
 /// AI actions available for notes
 enum AiAction { summarize, keyPoints, translate, flashcards, quiz, simplify }
@@ -44,14 +45,16 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notes'),
+        title: Text(l10n.notesTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.notesCreate),
-            tooltip: 'Create note',
+            tooltip: l10n.createNoteTooltip,
           )
         ],
       ),
@@ -61,7 +64,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             padding: const EdgeInsets.all(16),
             child: AppTextField(
               controller: _searchController,
-              hint: 'Search notes...',
+              hint: l10n.searchNotesHint,
               prefixIcon: Icons.search_rounded,
               onChanged: (value) => setState(() => _searchQuery = value),
             ),
@@ -84,7 +87,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
                   if (snapshot.hasError) {
                     return ErrorState(
-                      title: 'Error Loading Notes',
+                      title: l10n.errorLoadingNotes,
                       message: snapshot.error.toString(),
                       onRetry: () =>
                           setState(() => _searchQuery = _searchQuery),
@@ -94,7 +97,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                   final notes = snapshot.data ?? [];
 
                   if (notes.isEmpty) {
-                    return _buildEmptyState();
+                    return _buildEmptyState(context);
                   }
 
                   return ListView.builder(
@@ -127,12 +130,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final l10n = context.l10n;
     return EmptyState(
       icon: Icons.note_add_rounded,
-      title: 'No notes yet',
-      message: 'Create your first note to get started',
-      actionLabel: 'Create Note',
+      title: l10n.noNotesYetTitle,
+      message: l10n.createFirstNoteMessage,
+      actionLabel: l10n.createNoteAction,
       onAction: () => context.go(AppRoutes.notesCreate),
     );
   }
@@ -298,7 +302,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+                  '🎉 ${context.l10n.notesCreated}: ${newBadges.map((b) => b.title).join(', ')}'),
               backgroundColor: Theme.of(context).colorScheme.secondary,
               duration: const Duration(seconds: 3),
             ),
@@ -312,7 +316,8 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_isEditing ? 'Note updated' : 'Note created')),
+        SnackBar(
+            content: Text(_isEditing ? context.l10n.noteUpdated : context.l10n.noteCreated)),
       );
       context.go(AppRoutes.notes);
     }
@@ -321,10 +326,11 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Note' : 'New Note'),
+        title: Text(_isEditing ? l10n.editNoteTitleScreen : l10n.newNoteTitleScreen),
         actions: [
           IconButton(
             icon: const Icon(Icons.save_rounded),
@@ -345,7 +351,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                _isEditing ? 'Edit your note' : 'Create a new note',
+                _isEditing ? l10n.editYourNote : l10n.createNewNote,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -353,44 +359,44 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
               const Gap(24),
               AppTextField(
                 controller: _titleController,
-                label: 'Title',
-                hint: 'Note title',
+                label: l10n.titleLabel,
+                hint: l10n.noteTitleHint,
                 maxLines: 1,
                 textCapitalization: TextCapitalization.words,
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Title required';
+                  if (value == null || value.isEmpty) return l10n.titleRequired;
                   return null;
                 },
               ),
               const Gap(16),
               AppTextField(
                 controller: _subjectController,
-                label: 'Subject',
-                hint: 'e.g., Mathematics, Physics',
+                label: l10n.subjectLabel,
+                hint: l10n.subjectHint,
                 maxLines: 1,
                 textCapitalization: TextCapitalization.words,
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Subject required';
+                  if (value == null || value.isEmpty) return l10n.subjectRequired;
                   return null;
                 },
               ),
               const Gap(16),
               AppTextField(
                 controller: _tagsController,
-                label: 'Tags (comma separated)',
-                hint: 'Algebra, Geometry, Important',
+                label: l10n.tagsLabel,
+                hint: l10n.tagsHint,
                 maxLines: 1,
                 textCapitalization: TextCapitalization.words,
               ),
               const Gap(16),
-              const SectionHeader(title: 'Content'),
+              SectionHeader(title: l10n.contentHeader),
               const Gap(8),
               TextFormField(
                 controller: _bodyController,
                 maxLines: 10,
                 minLines: 5,
                 decoration: InputDecoration(
-                  hintText: 'Write your note here...',
+                  hintText: l10n.writeNoteHint,
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest
                       .withValues(alpha: 0.5),
@@ -402,7 +408,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Content required';
+                  if (value == null || value.isEmpty) return l10n.contentRequired;
                   return null;
                 },
               ),
@@ -412,7 +418,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.upload_file_rounded, size: 20),
-                      label: const Text('Import PDF/Text'),
+                      label: Text(l10n.importPdfTextButton),
                       onPressed: () => _showImportOptions(),
                     ),
                   ),
@@ -420,7 +426,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.auto_awesome_rounded, size: 20),
-                      label: const Text('AI Actions'),
+                      label: Text(l10n.aiActionsButton),
                       onPressed: () => _showAiActionsMenu(),
                     ),
                   ),
@@ -434,6 +440,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   }
 
   void _showImportOptions() {
+    final l10n = context.l10n;
     showModalBottomSheet(
       context: context,
       builder: (context) => Column(
@@ -441,7 +448,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
         children: [
           ListTile(
             leading: const Icon(Icons.text_fields),
-            title: const Text('Paste Text'),
+            title: Text(l10n.pasteTextTitle),
             onTap: () {
               Navigator.pop(context);
               _showPasteDialog();
@@ -449,7 +456,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.image),
-            title: const Text('Import Image (OCR)'),
+            title: Text(l10n.importImageOcrTitle),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed(AppRoutes.scanner);
@@ -461,26 +468,27 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   }
 
   void _showPasteDialog() {
+    final l10n = context.l10n;
     final pasteController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Paste Text'),
+        title: Text(l10n.pasteTextDialogTitle),
         content: SizedBox(
           width: double.maxFinite,
           child: TextField(
             controller: pasteController,
             maxLines: 10,
-            decoration: const InputDecoration(
-              hintText: 'Paste text here...',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: l10n.pasteTextHint,
+              border: const OutlineInputBorder(),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           TextButton(
             onPressed: () {
@@ -490,7 +498,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
               }
               Navigator.pop(context);
             },
-            child: const Text('Paste'),
+            child: Text(l10n.pasteButton),
           ),
         ],
       ),
@@ -498,10 +506,11 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   }
 
   void _showAiActionsMenu() {
+    final l10n = context.l10n;
     final body = _bodyController.text.trim();
     if (body.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter content first')),
+        SnackBar(content: Text(l10n.pleaseEnterContentFirst)),
       );
       return;
     }
@@ -513,7 +522,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
         children: [
           ListTile(
             leading: const Icon(Icons.auto_awesome),
-            title: const Text('Summarize'),
+            title: Text(l10n.summarizeAction),
             onTap: () {
               Navigator.pop(context);
               _performAiAction(AiAction.summarize);
@@ -521,7 +530,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.list_alt),
-            title: const Text('Key Points'),
+            title: Text(l10n.keyPointsAction),
             onTap: () {
               Navigator.pop(context);
               _performAiAction(AiAction.keyPoints);
@@ -529,7 +538,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.translate),
-            title: const Text('Translate'),
+            title: Text(l10n.translateAction),
             onTap: () {
               Navigator.pop(context);
               _performAiAction(AiAction.translate);
@@ -537,7 +546,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.flash_on),
-            title: const Text('Generate Flashcards'),
+            title: Text(l10n.generateFlashcardsAction),
             onTap: () {
               Navigator.pop(context);
               _performAiAction(AiAction.flashcards);
@@ -545,7 +554,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.quiz),
-            title: const Text('Generate Quiz'),
+            title: Text(l10n.generateQuizAction),
             onTap: () {
               Navigator.pop(context);
               _performAiAction(AiAction.quiz);
@@ -553,7 +562,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.calculate),
-            title: const Text('Simplify'),
+            title: Text(l10n.simplifyAction),
             onTap: () {
               Navigator.pop(context);
               _performAiAction(AiAction.simplify);
@@ -565,6 +574,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   }
 
   Future<void> _performAiAction(AiAction action) async {
+    final l10n = context.l10n;
     final aiService = ref.read(aiServiceProvider);
     final body = _bodyController.text.trim();
     final subject = _subjectController.text.trim();
@@ -574,10 +584,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
     if (!canUse) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Daily AI limit reached. Try again tomorrow or use fewer AI requests.'),
-        ),
+        SnackBar(content: Text(l10n.dailyAILimitReachedSnack)),
       );
       return;
     }
@@ -622,19 +629,20 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   }
 
   String _getActionSuccessMessage(AiAction action) {
+    final l10n = context.l10n;
     switch (action) {
       case AiAction.summarize:
-        return 'Note summarized successfully';
+        return l10n.noteSummarizedSuccess;
       case AiAction.keyPoints:
-        return 'Key points extracted successfully';
+        return l10n.keyPointsExtractedSuccess;
       case AiAction.translate:
-        return 'Note translated successfully';
+        return l10n.noteTranslatedSuccess;
       case AiAction.flashcards:
-        return 'Flashcards generated successfully';
+        return l10n.flashcardsGeneratedSuccess;
       case AiAction.quiz:
-        return 'Quiz generated successfully';
+        return l10n.quizGeneratedSuccess;
       case AiAction.simplify:
-        return 'Note simplified successfully';
+        return l10n.noteSimplifiedSuccess;
     }
   }
 
@@ -719,15 +727,16 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   }
 
   void _showAiErrorDialog(String error) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('AI Action Failed'),
-        content: Text('Something went wrong: $error\n\nPlease try again.'),
+        title: Text(l10n.aiActionFailedDialogTitle),
+        content: Text(l10n.aiActionFailedDialogContent('error: $error')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(l10n.okButton),
           ),
         ],
       ),
@@ -737,16 +746,16 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
   void _showDeleteDialog() {
     if (_existingNote == null) return;
 
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Note'),
-        content: const Text(
-            'Are you sure you want to delete this note? This cannot be undone.'),
+        title: Text(l10n.deleteNoteDialogTitle),
+        content: Text(l10n.deleteNoteDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           TextButton(
             onPressed: () async {
@@ -761,7 +770,7 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.deleteButton),
           ),
         ],
       ),
@@ -776,13 +785,14 @@ class _AiProcessingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final actionName = switch (action) {
-      AiAction.summarize => 'Summarizing',
-      AiAction.keyPoints => 'Extracting key points',
-      AiAction.translate => 'Translating',
-      AiAction.flashcards => 'Generating flashcards',
-      AiAction.quiz => 'Generating quiz',
-      AiAction.simplify => 'Simplifying',
+      AiAction.summarize => l10n.summarizingDialog,
+      AiAction.keyPoints => l10n.extractingKeyPointsDialog,
+      AiAction.translate => l10n.translatingDialog,
+      AiAction.flashcards => l10n.generatingFlashcardsDialog,
+      AiAction.quiz => l10n.generatingQuizDialog,
+      AiAction.simplify => l10n.simplifyingDialog,
     };
 
     return AlertDialog(
@@ -792,7 +802,7 @@ class _AiProcessingDialog extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           const Gap(16),
-          Text('StudyMate AI is working on it...'),
+          Text(l10n.aiWorkingDialog),
         ],
       ),
     );
@@ -825,10 +835,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_note?.title ?? 'Note'),
+        title: Text(_note?.title ?? l10n.noteDetailTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.save_rounded),
@@ -839,25 +850,25 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           PopupMenuButton<String>(
             onSelected: (action) => _handleAction(action),
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'pin',
                 child: ListTile(
-                  leading: Icon(Icons.push_pin_rounded),
-                  title: Text('Pin'),
+                  leading: const Icon(Icons.push_pin_rounded),
+                  title: Text(l10n.pinAction),
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'edit',
                 child: ListTile(
-                  leading: Icon(Icons.edit_rounded),
-                  title: Text('Edit'),
+                  leading: const Icon(Icons.edit_rounded),
+                  title: Text(l10n.editAction),
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: ListTile(
-                  leading: Icon(Icons.delete_rounded, color: Colors.red),
-                  title: Text('Delete', style: TextStyle(color: Colors.red)),
+                  leading: Icon(Icons.delete_rounded, color: theme.colorScheme.error),
+                  title: Text(l10n.deleteAction, style: TextStyle(color: theme.colorScheme.error)),
                 ),
               ),
             ],
@@ -925,6 +936,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   }
 
   void _handleAction(String action) {
+    final l10n = context.l10n;
     switch (action) {
       case 'pin':
         ref.read(noteRepositoryProvider).togglePin(_note!.id);
@@ -941,15 +953,16 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   }
 
   void _showDeleteDialog() {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Note'),
-        content: const Text('Are you sure you want to delete this note?'),
+        title: Text(l10n.deleteNoteDialogTitle),
+        content: Text(l10n.deleteNoteConfirmSimple),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           TextButton(
             onPressed: () async {
@@ -962,7 +975,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.deleteButton),
           ),
         ],
       ),

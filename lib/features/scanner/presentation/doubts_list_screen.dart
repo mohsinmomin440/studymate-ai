@@ -9,6 +9,7 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/shimmer_box.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/utils/extensions.dart';
 import '../data/scanner_repository.dart';
 
 final doubtsStreamProvider =
@@ -23,28 +24,28 @@ class DoubtsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doubts'),
+        title: Text(l10n.doubtsTitle),
         actions: [
           Semantics(
-            label: 'Clear all doubts',
+            label: l10n.clearAllTooltip,
             child: IconButton(
               icon: const Icon(Icons.cleaning_services_rounded),
-              tooltip: 'Clear All',
+              tooltip: l10n.clearAllTooltip,
               onPressed: () {
                 // Show confirmation dialog
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Clear All Doubts?'),
-                    content: const Text(
-                        'This will delete all saved doubts. Are you sure?'),
+                    title: Text(l10n.clearAllDoubtsDialogTitle),
+                    content: Text(l10n.clearAllDoubtsDialogContent),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text(l10n.cancelButton),
                       ),
                       TextButton(
                         onPressed: () {
@@ -54,7 +55,7 @@ class DoubtsListScreen extends ConsumerWidget {
                         style: TextButton.styleFrom(
                           foregroundColor: theme.colorScheme.error,
                         ),
-                        child: const Text('Clear'),
+                        child: Text(l10n.clearButton),
                       ),
                     ],
                   ),
@@ -63,10 +64,10 @@ class DoubtsListScreen extends ConsumerWidget {
             ),
           ),
           Semantics(
-            label: 'Add doubt',
+            label: l10n.addDoubtTooltip,
             child: IconButton(
               icon: const Icon(Icons.add_rounded),
-              tooltip: 'Add Doubt',
+              tooltip: l10n.addDoubtTooltip,
               onPressed: () {
                 context.go(AppRoutes.scanner);
               },
@@ -87,9 +88,9 @@ class DoubtsListScreen extends ConsumerWidget {
                 if (doubts.isEmpty) {
                   return EmptyState(
                     icon: Icons.help_outline_rounded,
-                    title: 'No doubts saved yet',
-                    message: 'Scan a problem with the scanner to save doubts',
-                    actionLabel: 'Go to Scanner',
+                    title: l10n.noDoubtsSavedTitle,
+                    message: l10n.scanProblemMessage,
+                    actionLabel: l10n.goToScannerAction,
                     onAction: () {
                       context.go(AppRoutes.scanner);
                     },
@@ -103,7 +104,7 @@ class DoubtsListScreen extends ConsumerWidget {
                     final doubt = doubts[index];
                     return Semantics(
                       label:
-                          'Doubt from ${doubt.subject}, saved at ${_formatDate(doubt.createdAt)}',
+                          '${l10n.doubtsTitle} ${doubt.subject}, ${_formatDate(doubt.createdAt)}',
                       child: GlassCard(
                         margin: const EdgeInsets.only(bottom: 12),
                         onTap: () {
@@ -165,13 +166,13 @@ class DoubtsListScreen extends ConsumerWidget {
               loading: () => ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: 6,
-                itemBuilder: (context, index) => ShimmerCard(
+                itemBuilder: (context, index) => ShimmerBox(
                   height: 120,
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
               error: (error, stack) => ErrorState(
-                title: 'Error Loading Doubts',
+                title: l10n.errorLoadingDoubtsTitle,
                 message: error.toString(),
                 onRetry: () => ref.invalidate(doubtsStreamProvider),
               ),
@@ -191,7 +192,7 @@ class DoubtsListScreen extends ConsumerWidget {
       return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } else if (difference.inDays == 1) {
       // Yesterday
-      return 'Yesterday';
+      return 'Yesterday'; // This should also be localized if needed
     } else if (difference.inDays < 7) {
       // This week
       return '${difference.inDays}d ago';

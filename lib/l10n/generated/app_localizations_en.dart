@@ -1100,4 +1100,313 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceInput => 'Voice input';
+
+  @override
+  String get notesTitle => 'Notes';
+
+  @override
+  String get createNoteTooltip => 'Create note';
+
+  @override
+  String get searchNotesHint => 'Search notes...';
+
+  @override
+  String get errorLoadingNotes => 'Error Loading Notes';
+
+  @override
+  String get noNotesYetTitle => 'No notes yet';
+
+  @override
+  String get createFirstNoteMessage => 'Create your first note to get started';
+
+  @override
+  String get createNoteAction => 'Create Note';
+
+  @override
+  String get editNoteTitleScreen => 'Edit Note';
+
+  @override
+  String get newNoteTitleScreen => 'New Note';
+
+  @override
+  String get editYourNote => 'Edit your note';
+
+  @override
+  String get createNewNote => 'Create a new note';
+
+  @override
+  String get titleLabel => 'Title';
+
+  @override
+  String get noteTitleHint => 'Note title';
+
+  @override
+  String get titleRequired => 'Title required';
+
+  @override
+  String get subjectLabel => 'Subject';
+
+  @override
+  String get subjectHint => 'e.g., Mathematics, Physics';
+
+  @override
+  String get subjectRequired => 'Subject required';
+
+  @override
+  String get tagsLabel => 'Tags (comma separated)';
+
+  @override
+  String get tagsHint => 'Algebra, Geometry, Important';
+
+  @override
+  String get contentHeader => 'Content';
+
+  @override
+  String get writeNoteHint => 'Write your note here...';
+
+  @override
+  String get contentRequired => 'Content required';
+
+  @override
+  String get importPdfTextButton => 'Import PDF/Text';
+
+  @override
+  String get aiActionsButton => 'AI Actions';
+
+  @override
+  String get pasteTextTitle => 'Paste Text';
+
+  @override
+  String get importImageOcrTitle => 'Import Image (OCR)';
+
+  @override
+  String get pasteTextDialogTitle => 'Paste Text';
+
+  @override
+  String get pasteTextHint => 'Paste text here...';
+
+  @override
+  String get pasteButton => 'Paste';
+
+  @override
+  String get summarizeAction => 'Summarize';
+
+  @override
+  String get keyPointsAction => 'Key Points';
+
+  @override
+  String get translateAction => 'Translate';
+
+  @override
+  String get generateFlashcardsAction => 'Generate Flashcards';
+
+  @override
+  String get generateQuizAction => 'Generate Quiz';
+
+  @override
+  String get simplifyAction => 'Simplify';
+
+  @override
+  String get pleaseEnterContentFirst => 'Please enter content first';
+
+  @override
+  String get dailyAILimitReachedSnack =>
+      'Daily AI limit reached. Try again tomorrow or use fewer AI requests.';
+
+  @override
+  String get summarizingDialog => 'Summarizing';
+
+  @override
+  String get extractingKeyPointsDialog => 'Extracting key points';
+
+  @override
+  String get translatingDialog => 'Translating';
+
+  @override
+  String get generatingFlashcardsDialog => 'Generating flashcards';
+
+  @override
+  String get generatingQuizDialog => 'Generating quiz';
+
+  @override
+  String get simplifyingDialog => 'Simplifying';
+
+  @override
+  String get aiWorkingDialog => 'StudyMate AI is working on it...';
+
+  @override
+  String get noteSummarizedSuccess => 'Note summarized successfully';
+
+  @override
+  String get keyPointsExtractedSuccess => 'Key points extracted successfully';
+
+  @override
+  String get noteTranslatedSuccess => 'Note translated successfully';
+
+  @override
+  String get flashcardsGeneratedSuccess => 'Flashcards generated successfully';
+
+  @override
+  String get quizGeneratedSuccess => 'Quiz generated successfully';
+
+  @override
+  String get noteSimplifiedSuccess => 'Note simplified successfully';
+
+  @override
+  String get aiActionFailedDialogTitle => 'AI Action Failed';
+
+  @override
+  String aiActionFailedDialogContent(Object error) {
+    return 'Something went wrong: $error\n\nPlease try again.';
+  }
+
+  @override
+  String get okButton => 'OK';
+
+  @override
+  String get deleteNoteDialogTitle => 'Delete Note';
+
+  @override
+  String get deleteNoteDialogContent =>
+      'Are you sure you want to delete this note? This cannot be undone.';
+
+  @override
+  String get cancelButton => 'Cancel';
+
+  @override
+  String get deleteButton => 'Delete';
+
+  @override
+  String get noteDetailTitle => 'Note';
+
+  @override
+  String get pinAction => 'Pin';
+
+  @override
+  String get editAction => 'Edit';
+
+  @override
+  String get deleteAction => 'Delete';
+
+  @override
+  String get deleteNoteConfirmSimple =>
+      'Are you sure you want to delete this note?';
+
+  @override
+  String get doubtScannerTitle => 'Doubt Scanner';
+
+  @override
+  String get howItWorksHeader => 'How it works';
+
+  @override
+  String get howItWorksDesc =>
+      'Take a photo or select an image of your question. StudyMate AI will analyze it and provide a step-by-step solution.';
+
+  @override
+  String get selectSubjectHeader => 'Select Subject';
+
+  @override
+  String get selectSubjectLabel => 'Select Subject';
+
+  @override
+  String get selectImageHeader => 'Select Image';
+
+  @override
+  String get cameraButton => 'Camera';
+
+  @override
+  String get galleryButton => 'Gallery';
+
+  @override
+  String get selectedImageLabel => 'Selected Image:';
+
+  @override
+  String get solveQuestionButton => 'Solve Question';
+
+  @override
+  String get solutionHeader => 'Solution';
+
+  @override
+  String get saveButton => 'Save';
+
+  @override
+  String get createNoteButton => 'Create Note';
+
+  @override
+  String get aiFlashcardsButton => 'AI Flashcards';
+
+  @override
+  String get cameraPermissionSnack => 'Camera permission required';
+
+  @override
+  String get galleryPermissionSnack => 'Photo library permission required';
+
+  @override
+  String errorPickingImageSnack(Object error) {
+    return 'Error picking image: $error';
+  }
+
+  @override
+  String get dailyLimitReachedDialogTitle => 'Daily limit reached';
+
+  @override
+  String get dailyLimitReachedDialogMessage =>
+      'You\'ve used your daily AI quota. Try again tomorrow or use fewer AI requests.';
+
+  @override
+  String get somethingWentWrongDialogTitle => 'Something went wrong';
+
+  @override
+  String get cancelButtonDialog => 'Cancel';
+
+  @override
+  String get retryButton => 'Retry';
+
+  @override
+  String get solutionSavedSnack => 'Solution saved to doubts';
+
+  @override
+  String errorSavingSnack(Object error) {
+    return 'Error saving: $error';
+  }
+
+  @override
+  String get failedToGenerateFlashcardsDialogTitle =>
+      'Failed to generate flashcards';
+
+  @override
+  String get flashcardsGeneratedSuccessSnack =>
+      'Generated flashcards successfully!';
+
+  @override
+  String get doubtsTitle => 'Doubts';
+
+  @override
+  String get clearAllTooltip => 'Clear all doubts';
+
+  @override
+  String get clearAllDoubtsDialogTitle => 'Clear All Doubts?';
+
+  @override
+  String get clearAllDoubtsDialogContent =>
+      'This will delete all saved doubts. Are you sure?';
+
+  @override
+  String get clearButton => 'Clear';
+
+  @override
+  String get addDoubtTooltip => 'Add Doubt';
+
+  @override
+  String get noDoubtsSavedTitle => 'No doubts saved yet';
+
+  @override
+  String get scanProblemMessage =>
+      'Scan a problem with the scanner to save doubts';
+
+  @override
+  String get goToScannerAction => 'Go to Scanner';
+
+  @override
+  String get errorLoadingDoubtsTitle => 'Error Loading Doubts';
 }

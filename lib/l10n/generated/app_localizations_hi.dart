@@ -39,7 +39,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get quickQuiz => 'त्वरित क्विज़';
 
   @override
-  String get dueFlashcards => 'बाकीा फ्लैशकार्ड';
+  String get dueFlashcards => 'बाकी फ्लैशकार्ड';
 
   @override
   String get streak => 'स्ट्रिक';
@@ -1101,4 +1101,311 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get voiceInput => 'वॉइस इनपुट';
+
+  @override
+  String get notesTitle => 'नोट्स';
+
+  @override
+  String get createNoteTooltip => 'नोट बनाएं';
+
+  @override
+  String get searchNotesHint => 'नोट्स खोजें...';
+
+  @override
+  String get errorLoadingNotes => 'नोट्स लोड करने में त्रुटि';
+
+  @override
+  String get noNotesYetTitle => 'अभी तक कोई नोट नहीं';
+
+  @override
+  String get createFirstNoteMessage => 'शुरू करने के लिए पहला नोट बनाएं';
+
+  @override
+  String get createNoteAction => 'नोट बनाएं';
+
+  @override
+  String get editNoteTitleScreen => 'नोट संपादित करें';
+
+  @override
+  String get newNoteTitleScreen => 'नया नोट';
+
+  @override
+  String get editYourNote => 'अपना नोट संपादित करें';
+
+  @override
+  String get createNewNote => 'नया नोट बनाएं';
+
+  @override
+  String get titleLabel => 'शीर्षक';
+
+  @override
+  String get noteTitleHint => 'नोट का शीर्षक';
+
+  @override
+  String get titleRequired => 'शीर्षक आवश्यक है';
+
+  @override
+  String get subjectLabel => 'विषय';
+
+  @override
+  String get subjectHint => 'जैसे, गणित, भौतिक विज्ञान';
+
+  @override
+  String get subjectRequired => 'विषय आवश्यक है';
+
+  @override
+  String get tagsLabel => 'टैग्स (कॉमा से अलग)';
+
+  @override
+  String get tagsHint => 'बीजगणित, ज्यामिति, महत्वपूर्ण';
+
+  @override
+  String get contentHeader => 'सामग्री';
+
+  @override
+  String get writeNoteHint => 'यहाँ अपना नोट लिखें...';
+
+  @override
+  String get contentRequired => 'सामग्री आवश्यक है';
+
+  @override
+  String get importPdfTextButton => 'PDF/टेक्स्ट आयात करें';
+
+  @override
+  String get aiActionsButton => 'AI क्रियाएं';
+
+  @override
+  String get pasteTextTitle => 'टेक्स्ट पेस्ट करें';
+
+  @override
+  String get importImageOcrTitle => 'छवि आयात करें (OCR)';
+
+  @override
+  String get pasteTextDialogTitle => 'टेक्स्ट पेस्ट करें';
+
+  @override
+  String get pasteTextHint => 'यहाँ टेक्स्ट पेस्ट करें...';
+
+  @override
+  String get pasteButton => 'पेस्ट करें';
+
+  @override
+  String get summarizeAction => 'सारांश बनाएं';
+
+  @override
+  String get keyPointsAction => 'मुख्य बिंदु';
+
+  @override
+  String get translateAction => 'अनुवाद करें';
+
+  @override
+  String get generateFlashcardsAction => 'फ्लैशकार्ड बनाएं';
+
+  @override
+  String get generateQuizAction => 'क्विज़ बनाएं';
+
+  @override
+  String get simplifyAction => 'सरल बनाएं';
+
+  @override
+  String get pleaseEnterContentFirst => 'कृपया पहले सामग्री दर्ज करें';
+
+  @override
+  String get dailyAILimitReachedSnack =>
+      'दैनिक AI सीमा पूरी हुई। कल फिर कोशिश करें या कम AI अनुरोध करें।';
+
+  @override
+  String get summarizingDialog => 'सारांश बना रहे हैं...';
+
+  @override
+  String get extractingKeyPointsDialog => 'मुख्य बिंदु निकाल रहे हैं...';
+
+  @override
+  String get translatingDialog => 'अनुवाद कर रहे हैं...';
+
+  @override
+  String get generatingFlashcardsDialog => 'फ्लैशकार्ड बना रहे हैं...';
+
+  @override
+  String get generatingQuizDialog => 'क्विज़ बना रहे हैं...';
+
+  @override
+  String get simplifyingDialog => 'सरल बना रहे हैं...';
+
+  @override
+  String get aiWorkingDialog => 'StudyMate AI काम कर रहा है...';
+
+  @override
+  String get noteSummarizedSuccess => 'नोट सफलतापूर्वक सारांशित';
+
+  @override
+  String get keyPointsExtractedSuccess => 'मुख्य बिंदु सफलतापूर्वक निकाले गए';
+
+  @override
+  String get noteTranslatedSuccess => 'नोट सफलतापूर्वक अनुवादित';
+
+  @override
+  String get flashcardsGeneratedSuccess => 'फ्लैशकार्ड सफलतापूर्वक बने';
+
+  @override
+  String get quizGeneratedSuccess => 'क्विज़ सफलतापूर्वक बना';
+
+  @override
+  String get noteSimplifiedSuccess => 'नोट सफलतापूर्वक सरल बनाया गया';
+
+  @override
+  String get aiActionFailedDialogTitle => 'AI कार्रवाई विफल';
+
+  @override
+  String aiActionFailedDialogContent(Object error) {
+    return 'कुछ गलत हुआ: $error\n\nकृपया फिर से प्रयास करें।';
+  }
+
+  @override
+  String get okButton => 'ठीक है';
+
+  @override
+  String get deleteNoteDialogTitle => 'नोट हटाएं';
+
+  @override
+  String get deleteNoteDialogContent =>
+      'क्या आप वाकई इस नोट को हटाना चाहते हैं? यह पूर्ववत नहीं हो सकता।';
+
+  @override
+  String get cancelButton => 'रद्द करें';
+
+  @override
+  String get deleteButton => 'हटाएं';
+
+  @override
+  String get noteDetailTitle => 'नोट';
+
+  @override
+  String get pinAction => 'पिन करें';
+
+  @override
+  String get editAction => 'संपादित करें';
+
+  @override
+  String get deleteAction => 'हटाएं';
+
+  @override
+  String get deleteNoteConfirmSimple => 'क्या इस नोट को हटाएं?';
+
+  @override
+  String get doubtScannerTitle => 'शंका स्कैनर';
+
+  @override
+  String get howItWorksHeader => 'यह कैसे काम करता है';
+
+  @override
+  String get howItWorksDesc =>
+      'अपने प्रश्न की फोटो लें या गैलरी से चुनें। StudyMate AI उसका विश्लेषण करेगा और चरण-दर-चरण समाधान देगा।';
+
+  @override
+  String get selectSubjectHeader => 'विषय चुनें';
+
+  @override
+  String get selectSubjectLabel => 'विषय चुनें';
+
+  @override
+  String get selectImageHeader => 'छवि चुनें';
+
+  @override
+  String get cameraButton => 'कैमरा';
+
+  @override
+  String get galleryButton => 'गैलरी';
+
+  @override
+  String get selectedImageLabel => 'चुनी गई छवि:';
+
+  @override
+  String get solveQuestionButton => 'प्रश्न हल करें';
+
+  @override
+  String get solutionHeader => 'समाधान';
+
+  @override
+  String get saveButton => 'सेव करें';
+
+  @override
+  String get createNoteButton => 'नोट बनाएं';
+
+  @override
+  String get aiFlashcardsButton => 'AI फ्लैशकार्ड';
+
+  @override
+  String get cameraPermissionSnack => 'कैमरा अनुमति आवश्यक है';
+
+  @override
+  String get galleryPermissionSnack => 'फोटो लाइब्रेरी अनुमति आवश्यक है';
+
+  @override
+  String errorPickingImageSnack(Object error) {
+    return 'छवि चुनने में त्रुटि: $error';
+  }
+
+  @override
+  String get dailyLimitReachedDialogTitle => 'दैनिक सीमा पूरी हुई';
+
+  @override
+  String get dailyLimitReachedDialogMessage =>
+      'आपने अपना दैनिक AI कोटा उपयोग कर लिया है। कल फिर कोशिश करें या कम AI अनुरोध करें।';
+
+  @override
+  String get somethingWentWrongDialogTitle => 'कुछ गलत हो गया';
+
+  @override
+  String get cancelButtonDialog => 'रद्द करें';
+
+  @override
+  String get retryButton => 'पुनः प्रयास';
+
+  @override
+  String get solutionSavedSnack => 'समाधान शंकाओं में सेव किया गया';
+
+  @override
+  String errorSavingSnack(Object error) {
+    return 'सेव करने में त्रुटि: $error';
+  }
+
+  @override
+  String get failedToGenerateFlashcardsDialogTitle =>
+      'फ्लैशकार्ड बनाने में विफल';
+
+  @override
+  String get flashcardsGeneratedSuccessSnack => 'फ्लैशकार्ड सफलतापूर्वक बने!';
+
+  @override
+  String get doubtsTitle => 'शंकाएं';
+
+  @override
+  String get clearAllTooltip => 'सभी शंकाएं हटाएं';
+
+  @override
+  String get clearAllDoubtsDialogTitle => 'सभी शंकाएं हटाएं?';
+
+  @override
+  String get clearAllDoubtsDialogContent =>
+      'यह सभी सेव की गई शंकाओं को हटा देगा। क्या आप पक्के हैं?';
+
+  @override
+  String get clearButton => 'हटाएं';
+
+  @override
+  String get addDoubtTooltip => 'शंका जोड़ें';
+
+  @override
+  String get noDoubtsSavedTitle => 'अभी तक कोई शंका सेव नहीं';
+
+  @override
+  String get scanProblemMessage =>
+      'स्कैनर से समस्या स्कैन करके शंकाएं सेव करें';
+
+  @override
+  String get goToScannerAction => 'स्कैनर पर जाएं';
+
+  @override
+  String get errorLoadingDoubtsTitle => 'शंकाएं लोड करने में त्रुटि';
 }
