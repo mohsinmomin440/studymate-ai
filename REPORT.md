@@ -342,3 +342,89 @@ assets/icon/icon-*.png (9 sizes from 36 to 1024)
 ```
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+---
+
+## Fixes 4-7: Post-Phase 3 Critical Fixes ✅
+
+### Fix 4: Delete Account - Re-authenticate First, Safe Deletion Order
+**Commit:** `9f15f50`
+- Modified `AuthRepository.deleteAccount()` to require re-authentication credential for non-anonymous users
+- Deletes Firestore subcollections in order (nested first: messages under chats, cards under decks; then parents)
+- Stops on any deletion failure and returns error with `needsReauth` flag
+- Only deletes auth account AFTER all data is successfully deleted
+- Added `DeleteAccountResult` class with success, error, needsReauth, dataDeleted fields
+- Added `AuthRepository.getReauthCredential()` for Google sign-in re-auth
+- Updated `_DeleteAccountConfirmDialog` to use new auth service API
+- Added `_ReauthDialog` for email/password re-authentication
+- Guests (anonymous users) skip re-authentication
+
+### Fix 5: Crashlytics Integration
+**Commit:** `78b7179`
+- Modified `AnalyticsService.recordError()` to use `_crashlytics.recordError(error, stackTrace, reason: errorName)`
+- Removed fallback logging that didn't actually report to Crashlytics
+
+### Fix 6: dailyStats - Single Device-Local Date Key
+**Commit:** `be77f3b`
+- Added `dailyStatsKey()` utility to generate consistent `yyyy-MM-dd` format date keys
+- Added `todayOnly()` utility to get date at midnight
+- Updated all dailyStats operations in `ProgressRepository` to use these utilities
+- Ensures reads and writes use the same document ID key (device-local date)
+- Added unit tests for `dailyStatsKey`, `todayOnly`, `xpForLevel`, `calculateLevel`, `calculateXpProgress`
+
+### Fix 7: Delete Duplicate Settings Screen
+**Commit:** `c7fc4f4`
+- Deleted unused `lib/features/settings/settings_screen.dart` (simple stub)
+- Updated router import to use `lib/features/settings/presentation/settings_screen.dart` (full-featured)
+
+---
+
+## Raw Output (After Fixes 4-7)
+
+### flutter test (all passing - 247 tests)
+```
+00:03 +247: All tests passed!
+Total: 247 passed
+```
+
+### flutter analyze (0 errors)
+```
+31 issues found. (ran in 3.9s)
+```
+(Info-level warnings and pre-existing suggestions only - no errors)
+
+### flutter build apk --debug
+```
+Running Gradle task 'assembleDebug'...                              7.3s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+```
+
+### git status
+```
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   lib/features/chat/data/ai_service.dart
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	AUDIT.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+### Files Modified in Fixes 4-7
+```
+M lib/core/services/auth_service.dart
+M lib/features/settings/presentation/settings_screen.dart
+M lib/core/services/analytics_service.dart
+M lib/core/utils/progress_utils.dart
+M lib/features/progress/data/progress_repository.dart
+A test/core/utils/progress_utils_test.dart
+D lib/features/settings/settings_screen.dart
+M lib/core/router/app_router.dart
+M lib/features/chat/data/ai_service.dart (formatting only)
+```
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
