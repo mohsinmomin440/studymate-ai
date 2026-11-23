@@ -3,7 +3,7 @@
     "short_name": "studymate_ai",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#6C5CE7",
+    "background_color": "#0B0D1B",
     "theme_color": "#6C5CE7",
     "description": "A new Flutter project.",
     "orientation": "portrait-primary",
