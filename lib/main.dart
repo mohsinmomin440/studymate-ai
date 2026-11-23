@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'firebase_options.dart';
 import 'app.dart';
@@ -32,6 +33,10 @@ enum FirebaseStatus { unknown, initialized, error }
 /// Firebase initialization service
 class FirebaseInitializer {
   static bool _initialized = false;
+  static bool _initSucceeded = false;
+
+  static bool get isInitialized => _initialized;
+  static bool get initSucceeded => _initSucceeded;
 
   static Future<void> initialize() async {
     if (_initialized) return;
@@ -39,6 +44,12 @@ class FirebaseInitializer {
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
+      );
+
+      // Enable Firestore offline persistence
+      FirebaseFirestore.instance.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
       );
 
       // Use playIntegrity for release, debug provider for debug
@@ -51,16 +62,20 @@ class FirebaseInitializer {
       // Set up Crashlytics error handlers (guarded against missing Firebase)
       _setupErrorHandling();
 
-      _initialized = true;
+      _initSucceeded = true;
     } catch (e) {
       // Firebase failed to initialize - will show setup screen
+      _initSucceeded = false;
       developer.log('Firebase init failed: $e', name: 'FirebaseInitializer');
+    } finally {
+      _initialized = true;
     }
   }
 
   /// Set up Crashlytics error handling - guarded so app never crashes
   /// when Firebase is missing
   static void _setupErrorHandling() {
+    if (!_initSucceeded) return;
     try {
       // Handle Flutter errors
       FlutterError.onError = (FlutterErrorDetails details) {
