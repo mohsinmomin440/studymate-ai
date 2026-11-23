@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/gap.dart';
@@ -40,17 +41,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppConstants.appName),
+        title: Text(context.l10n.appName),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
             onPressed: _showNewChatBottomSheet,
-            tooltip: 'New Chat',
+            tooltip: context.l10n.newChat,
           ),
           IconButton(
             icon: const Icon(Icons.settings_rounded),
             onPressed: () => context.go(AppRoutes.settings),
-            tooltip: 'Settings',
+            tooltip: context.l10n.settings,
           ),
         ],
       ),
@@ -60,7 +61,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             padding: const EdgeInsets.all(16),
             child: AppSearchField(
               controller: _searchController,
-              hint: 'Search chats...',
+              hint: context.l10n.searchChats,
               onChanged: (value) => setState(() => _searchQuery = value),
               onClear: () => setState(() => _searchQuery = ''),
             ),
@@ -100,9 +101,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   Widget _buildEmptyState() {
     return EmptyState(
       icon: Icons.chat_bubble_outline_rounded,
-      title: 'No chats yet',
-      message: 'Start a new conversation with StudyMate AI',
-      actionLabel: 'New Chat',
+      title: context.l10n.noChats,
+      message: context.l10n.startNewConversation,
+      actionLabel: context.l10n.newChat,
       onAction: _showNewChatBottomSheet,
     );
   }
@@ -122,9 +123,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   Widget _buildErrorState(String error) {
     return EmptyState(
       icon: Icons.error_outline_rounded,
-      title: 'Unable to load chats',
+      title: context.l10n.error,
       message: error,
-      actionLabel: 'Retry',
+      actionLabel: context.l10n.tryAgain,
       onAction: () => ref.invalidate(chatListStreamProvider(_searchQuery)),
     );
   }
@@ -234,7 +235,7 @@ class _ChatListTile extends ConsumerWidget {
                     ),
                     const Gap(8),
                     Text(
-                      _formatDate(chat.updatedAt),
+                      _formatDate(chat.updatedAt, context),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -259,13 +260,13 @@ class _ChatListTile extends ConsumerWidget {
           PopupMenuButton<String>(
             onSelected: (value) => _handleMenuAction(context, ref, value, chat),
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'rename',
                 child: Row(
                   children: [
                     Icon(Icons.edit_rounded, size: 20),
                     Gap(12),
-                    Text('Rename'),
+                    Text(context.l10n.renameChat),
                   ],
                 ),
               ),
@@ -273,9 +274,11 @@ class _ChatListTile extends ConsumerWidget {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_rounded, size: 20, color: Colors.red),
+                    Icon(Icons.delete_rounded,
+                        size: 20, color: theme.colorScheme.error),
                     Gap(12),
-                    Text('Delete', style: TextStyle(color: Colors.red)),
+                    Text(context.l10n.deleteChat,
+                        style: TextStyle(color: theme.colorScheme.error)),
                   ],
                 ),
               ),
@@ -290,14 +293,14 @@ class _ChatListTile extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date, BuildContext context) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
       return DateFormat.jm().format(date);
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return context.l10n.yesterday;
     } else if (difference.inDays < 7) {
       return DateFormat.E().format(date);
     } else {
@@ -325,16 +328,16 @@ void _showRenameDialog(
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Rename Chat'),
+      title: Text(context.l10n.renameChat),
       content: TextField(
         controller: controller,
         autofocus: true,
-        decoration: const InputDecoration(labelText: 'Chat Title'),
+        decoration: InputDecoration(labelText: context.l10n.chatTitle),
       ),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
+            child: Text(context.l10n.cancel)),
         TextButton(
           onPressed: () async {
             final newTitle = controller.text.trim();
@@ -343,7 +346,7 @@ void _showRenameDialog(
             }
             if (context.mounted) Navigator.pop(context);
           },
-          child: const Text('Save'),
+          child: Text(context.l10n.save),
         ),
       ],
     ),
@@ -355,13 +358,12 @@ void _confirmDelete(
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete Chat'),
-      content: const Text(
-          'This will permanently delete the chat and all messages. Are you sure?'),
+      title: Text(context.l10n.deleteChat),
+      content: Text(context.l10n.deleteChatConfirm),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
+            child: Text(context.l10n.cancel)),
         TextButton(
           onPressed: () async {
             await repository.deleteChat(chat.id);
@@ -371,7 +373,7 @@ void _confirmDelete(
           },
           style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error),
-          child: const Text('Delete'),
+          child: Text(context.l10n.delete),
         ),
       ],
     ),
@@ -431,20 +433,20 @@ class _NewChatBottomSheetState extends ConsumerState<_NewChatBottomSheet> {
           ),
           const Gap(16),
           Text(
-            'New Chat',
+            context.l10n.newChat,
             style: theme.textTheme.headlineSmall
                 ?.copyWith(fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const Gap(24),
           AppTextField(
-            label: 'Chat Title',
-            hint: 'e.g., Calculus Derivatives',
+            label: context.l10n.chatTitle,
+            hint: context.l10n.exampleChatTitle,
             controller: _titleController,
             textCapitalization: TextCapitalization.words,
           ),
           const Gap(16),
-          Text('Subject', style: theme.textTheme.labelMedium),
+          Text(context.l10n.subject, style: theme.textTheme.labelMedium),
           const Gap(8),
           DropdownButtonFormField<String>(
             initialValue: _selectedSubject,
@@ -470,7 +472,7 @@ class _NewChatBottomSheetState extends ConsumerState<_NewChatBottomSheet> {
                 setState(() => _selectedSubject = value ?? _selectedSubject),
           ),
           const Gap(16),
-          Text('Mode', style: theme.textTheme.labelMedium),
+          Text(context.l10n.mode, style: theme.textTheme.labelMedium),
           const Gap(8),
           DropdownButtonFormField<String>(
             initialValue: _selectedMode,
@@ -509,7 +511,7 @@ class _NewChatBottomSheetState extends ConsumerState<_NewChatBottomSheet> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Create Chat'),
+                : Text(context.l10n.createChat),
           ),
           const Gap(8),
         ],
@@ -536,7 +538,7 @@ class _NewChatBottomSheetState extends ConsumerState<_NewChatBottomSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create chat: ${e.toString()}')),
+          SnackBar(content: Text(context.l10n.failedToCreateChat(e))),
         );
       }
     } finally {

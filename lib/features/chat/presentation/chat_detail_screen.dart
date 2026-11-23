@@ -11,9 +11,9 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:firebase_ai/firebase_ai.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../features/progress/data/progress_repository.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/utils/extensions.dart';
+import '../../../features/progress/data/progress_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ai_message_bubble.dart';
 import '../../../shared/widgets/app_text_field.dart' show AppTextField;
@@ -77,10 +77,10 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           _scrollToBottom();
         }
       },
-      onError: (error) {
+      onError: (error, stackTrace) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error loading messages: $error')),
+            SnackBar(content: Text(context.l10n.errorLoading(error))),
           );
         }
       },
@@ -127,9 +127,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Daily AI limit reached (${AppConstants.dailyAIRequestLimit} requests). Try again tomorrow.',
-            ),
+            content: Text(context.l10n.dailyAILimitMessage),
             backgroundColor: Theme.of(context).customColors.warning,
           ),
         );
@@ -164,7 +162,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  '🎉 New badge: ${newBadges.map((b) => b.title).join(', ')}'),
+                  '🎉 ${context.l10n.newChat}: ${newBadges.map((b) => b.title).join(', ')}'),
               backgroundColor: Theme.of(context).colorScheme.secondary,
               duration: const Duration(seconds: 3),
             ),
@@ -195,7 +193,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: ${e.toString()}')),
+          SnackBar(content: Text(context.l10n.failedToSend(e))),
         );
       }
     } finally {
@@ -225,7 +223,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Copied to clipboard')),
+        SnackBar(content: Text(context.l10n.copiedToClipboard)),
       );
     }
   }
@@ -240,9 +238,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
       final note = NoteModel(
         id: '',
-        title: 'Chat Note',
+        title: context.l10n.chatTitle,
         body: text,
-        subject: _chat?.subject ?? 'General',
+        subject: _chat?.subject ?? context.l10n.subject,
         tags: ['ai-chat'],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -252,13 +250,13 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Saved to notes!')),
+          SnackBar(content: Text(context.l10n.savedToNotes)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving: ${e.toString()}')),
+          SnackBar(content: Text(context.l10n.errorSaving(e))),
         );
       }
     }
@@ -288,18 +286,18 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   ),
                 ],
               )
-            : const Text('Loading...'),
+            : Text(context.l10n.loadingStats),
         actions: [
           PopupMenuButton<String>(
             onSelected: _handleAppMenuAction,
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'rename',
                 child: Row(
                   children: [
                     Icon(Icons.edit_rounded, size: 20),
                     Gap(12),
-                    Text('Rename'),
+                    Text(context.l10n.renameChat),
                   ],
                 ),
               ),
@@ -310,7 +308,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     Icon(Icons.delete_rounded,
                         size: 20, color: theme.colorScheme.error),
                     Gap(12),
-                    Text('Delete',
+                    Text(context.l10n.deleteChat,
                         style: TextStyle(color: theme.colorScheme.error)),
                   ],
                 ),
@@ -346,9 +344,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   Widget _buildEmptyState() {
     return EmptyState(
       icon: Icons.chat_bubble_outline_rounded,
-      title: 'Start a conversation',
-      message:
-          'Ask StudyMate AI anything about ${_chat?.subject ?? 'your subject'}',
+      title: context.l10n.startNewConversation,
+      message: context.l10n.askQuestionGetHelp,
       actionLabel: null,
       onAction: null,
     );
@@ -404,7 +401,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           Expanded(
             child: AppTextField(
               controller: _messageController,
-              hint: 'Ask a question...',
+              hint: context.l10n.askQuestionGetHelp,
               maxLines: 5,
               minLines: 1,
               textInputAction: TextInputAction.send,
@@ -421,7 +418,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     onPressed: () {
                       // TODO: voice input
                     },
-                    tooltip: 'Voice input',
+                    tooltip: context.l10n.voiceInput,
                   ),
                 ],
               ),
@@ -474,16 +471,16 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Rename Chat'),
+        title: Text(context.l10n.renameChat),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(labelText: 'Chat Title'),
+          decoration: InputDecoration(labelText: context.l10n.chatTitle),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+              child: Text(context.l10n.cancel)),
           TextButton(
             onPressed: () async {
               final newTitle = controller.text.trim();
@@ -492,7 +489,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               }
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('Save'),
+            child: Text(context.l10n.save),
           ),
         ],
       ),
@@ -503,13 +500,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Chat'),
-        content: const Text(
-            'This will permanently delete the chat and all messages. Are you sure?'),
+        title: Text(context.l10n.deleteChat),
+        content: Text(context.l10n.deleteChatConfirm),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+              child: Text(context.l10n.cancel)),
           TextButton(
             onPressed: () async {
               await repository.deleteChat(widget.chatId);
@@ -519,7 +515,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             },
             style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.error),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),

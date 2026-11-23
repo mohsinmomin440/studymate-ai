@@ -39,7 +39,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get quickQuiz => 'त्वरित क्विज़';
 
   @override
-  String get dueFlashcards => 'बकाया फ्लैशकार्ड';
+  String get dueFlashcards => 'बाकीा फ्लैशकार्ड';
 
   @override
   String get streak => 'स्ट्रिक';
@@ -175,9 +175,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get next => 'आगे';
-
-  @override
-  String get back => 'पीछे';
 
   @override
   String get done => 'पूर्ण';
@@ -381,6 +378,17 @@ class AppLocalizationsHi extends AppLocalizations {
   String get card => 'कार्ड';
 
   @override
+  String cardsDuePlural(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# कार्ड बाकी',
+      one: '1 कार्ड बाकी',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get question => 'प्रश्न';
 
   @override
@@ -388,6 +396,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get front => 'सामने';
+
+  @override
+  String get back => 'पीछे';
 
   @override
   String get subjectMath => 'गणित';
@@ -545,7 +556,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get profileSetup => 'अपना प्रोफ़ाइल सेट करें';
 
   @override
-  String get helpPersonalize => 'आपके अनुभव को व्यक्तिगत बनाने में मदद करें';
+  String get helpPersonalize => 'आपके अनुभव को व्यक्तिगत बनायें मदद करें';
 
   @override
   String get editProfile => 'प्रोफ़ाइल संपादित करें';
@@ -638,17 +649,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get cardsDueToday => 'आज निर्धारित कार्ड';
 
   @override
-  String cardsDuePlural(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '# कार्ड बाकी',
-      one: '1 कार्ड बाकी',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get todayTask => 'आज का कार्य';
 
   @override
@@ -688,7 +688,8 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get deleteChatConfirm => 'चैट कन्फर्म डिलीट';
+  String get deleteChatConfirm =>
+      'यह चैट और सभी संदेशों को स्थायी रूप से हटा देगा। क्या आप सुनिश्चित हैं?';
 
   @override
   String get noInternetMessage =>
@@ -706,7 +707,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get runFlutterfireConfigure =>
-      'शुरू करने के लिए, आपको Firebase कॉन्फ़िगर करना होगा:\\n1. चलाएं: flutterfire configure\\n2. Auth प्रदाता शुरू करें (Google, ईमेल/पासवर्ड)\\n3. Cloud Firestore शुरू करें\\n4. Firebase AI Logic (Gemini) शुरू करें\\n5. App Check शुरू करें';
+      'शुरू करने के लिए, आपको Firebase कॉन्फ़िगर करना होगा:\\n1. चलाएं: flutterfire configure\\n2. Auth प्रदाता शुरू करें (गूगल, ईमेल/पासवर्ड)\\n3. Cloud Firestore शुरू करें\\n4. Firebase AI Logic (गैमिनी) शुरू करें\\n5. App Check शुरू करें';
 
   @override
   String get firebaseSetUp => 'सेटअप की आवश्यकता है';
@@ -722,7 +723,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get privacyPolicyStudyData =>
-      '• प्रोफ़ाइल: नाम, ग्रेड, भाषा, दैनिक लक्ष्य\\n• अध्ययन डेटा: चैट, संदेश, नोट्स, फ्लैशकार्ड, क्विज़\\n• प्रगति: XP, लेवल, स्ट्रिक, दैनिक आंकड़े\\n• प्लानर: अध्ययन शेड्यूल और कार्य\\n• बैज: अपहटित उपलब्धि';
+      '• प्रोफ़ाइल: नाम, ग्रेड, भाषा, दैनिक लक्ष्य\\n• अध्ययन डेटा: चैट, संदेश, नोट्स, फ्लैशकार्ड, क्विज़\\n• प्रगति: XP, लेवल, स्ट्रिक, दैनिक आंकड़े\\n• प्लाननेटर: अध्ययन योजना और कार्य\\n• बैज: अपहटित उपलब्धि';
 
   @override
   String get privacyPolicyDataProcessing => 'डेटा प्रोसेसिंग';
@@ -809,6 +810,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get renameChat => 'चैट का नाम बदलें';
 
   @override
+  String get rename => 'बदलें';
+
+  @override
   String get deleteChat => 'चैट हटाएं';
 
   @override
@@ -822,7 +826,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get startNewConversation => 'StudyMate AI के साथ नई बातचीत शुरू करें';
 
   @override
-  String get newConversation => 'नई चैट';
+  String get searchChats => 'चैट खोजें';
 
   @override
   String get camera => 'कैमरा';
@@ -939,9 +943,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get count => 'गिनती';
 
   @override
-  String get cards => 'कार्ड्स';
-
-  @override
   String get chatStepByStepDesc =>
       'शंकाओं को पूछें, चरण-दर-चरण समझाएं, और अपनी गति से सीखें।';
 
@@ -1032,4 +1033,72 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get goalAchieved => 'लक्ष्य प्राप्त कर लिया! 🎉';
+
+  @override
+  String get noNotes => 'अभी तक कोई नोट नहीं';
+
+  @override
+  String get createFirstNote => 'शुरू करने के लिए पहला नोट बनाएं';
+
+  @override
+  String get notesCreated => 'नोट सफलतापूर्वक बनाया गया';
+
+  @override
+  String get noteUpdated => 'नोट अपडेट किया गया';
+
+  @override
+  String get errorInNote => 'नोट में त्रुटि';
+
+  @override
+  String get aiActionFailedMessage => 'AI कार्रवाई विफल';
+
+  @override
+  String get somethingWentWrongMessage => 'कुछ गलत हो गया';
+
+  @override
+  String get ok => 'ठीक है';
+
+  @override
+  String get dailyAILimit => 'दैनिक AI मर्ज़दा पहुँच गई';
+
+  @override
+  String get dailyAILimitMessage =>
+      'कृपया अगले दिन फिर से प्रयास करें या कम AI अनुरोध उपयोग करें।';
+
+  @override
+  String get importText => 'आयात टेक्स्ट';
+
+  @override
+  String get editNote => 'नोट संपादित करें';
+
+  @override
+  String get noteCreated => 'नोट बनाया गया';
+
+  @override
+  String get noNotesYet => 'अभी तक कोई नोट नहीं';
+
+  @override
+  String get startNoteSearch => 'नोट खोजें';
+
+  @override
+  String get editNoteTitle => 'अपना नोट संपादित करें';
+
+  @override
+  String get dailyAILimitReached => 'दैनिक AI मर्ज़दा पहुँच गई';
+
+  @override
+  String get dailyAILimitTryTomorrow =>
+      'अगले दिन फिर से प्रयास करें या AI अनुरोध घटाएं।';
+
+  @override
+  String get selectedImage => 'चुनी गई छवि';
+
+  @override
+  String get processButton => 'प्रश्न प्रोसेस करें';
+
+  @override
+  String get yesterday => 'कल';
+
+  @override
+  String get voiceInput => 'वॉइस इनपुट';
 }

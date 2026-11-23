@@ -202,9 +202,10 @@
 - [x] Phase 8B Batch 1: Corrected bad Gujarati/Hindi translations
 - [x] Phase 8B Batch 1: Added ICU plural tests for cardsDuePlural in all 3 languages
 - [x] Phase 8B Batch 2: HomeScreen fully localized with goalAchieved, noTasksToday, createPlanForTasks, noCardsDueToday, browseDecks, cardsDuePlural, todayTask, todayTasks, reviewFlashcard, level, errorLoadingDashboard
+- [x] Phase 8B Batch 3: Chat list/detail localized with proper parameter substitution
 - [ ] Remote Config
 - [ ] Animations
-- [ ] Phase 8B Batch 3: Remaining screens (chat list/detail, scanner, notes, flashcards, quiz, planner, focus, progress)
+- [ ] Phase 8B Batch 3: Remaining screens (scanner, notes, flashcards, quiz, planner, focus, progress) localization pending
 
 ## Phase 9 — Release prep
 - [ ] App icon

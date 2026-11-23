@@ -177,9 +177,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get next => 'Next';
 
   @override
-  String get back => 'Back';
-
-  @override
   String get done => 'Done';
 
   @override
@@ -381,6 +378,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get card => 'Card';
 
   @override
+  String cardsDuePlural(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# cards due',
+      one: '1 card due',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get question => 'Question';
 
   @override
@@ -388,6 +396,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get front => 'Front';
+
+  @override
+  String get back => 'Back';
 
   @override
   String get subjectMath => 'Math';
@@ -638,17 +649,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cardsDueToday => 'Cards Due Today';
 
   @override
-  String cardsDuePlural(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '# cards due',
-      one: '1 card due',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get todayTask => 'Today\'s Task';
 
   @override
@@ -808,6 +808,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get renameChat => 'Rename Chat';
 
   @override
+  String get rename => 'Rename';
+
+  @override
   String get deleteChat => 'Delete Chat';
 
   @override
@@ -822,7 +825,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Start a new conversation with StudyMate AI';
 
   @override
-  String get newConversation => 'New Chat';
+  String get searchChats => 'Search chats';
 
   @override
   String get camera => 'Camera';
@@ -939,9 +942,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get count => 'Count';
 
   @override
-  String get cards => 'cards';
-
-  @override
   String get chatStepByStepDesc =>
       'Ask doubts, get step-by-step explanations, and learn at your own pace.';
 
@@ -1032,4 +1032,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goalAchieved => 'Goal achieved! 🎉';
+
+  @override
+  String get noNotes => 'No notes yet';
+
+  @override
+  String get createFirstNote => 'Create your first note to get started';
+
+  @override
+  String get notesCreated => 'Note created successfully';
+
+  @override
+  String get noteUpdated => 'Note updated';
+
+  @override
+  String get errorInNote => 'Error in note';
+
+  @override
+  String get aiActionFailedMessage => 'AI Action Failed';
+
+  @override
+  String get somethingWentWrongMessage => 'Something went wrong';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get dailyAILimit => 'Daily AI limit reached';
+
+  @override
+  String get dailyAILimitMessage =>
+      'Try again tomorrow or use fewer AI requests.';
+
+  @override
+  String get importText => 'Import Text';
+
+  @override
+  String get editNote => 'Edit Note';
+
+  @override
+  String get noteCreated => 'Note created';
+
+  @override
+  String get noNotesYet => 'No notes yet';
+
+  @override
+  String get startNoteSearch => 'Search notes';
+
+  @override
+  String get editNoteTitle => 'Edit your note';
+
+  @override
+  String get dailyAILimitReached => 'Daily AI limit reached';
+
+  @override
+  String get dailyAILimitTryTomorrow =>
+      'Try again tomorrow or reduce AI requests.';
+
+  @override
+  String get selectedImage => 'Selected Image';
+
+  @override
+  String get processButton => 'Process Question';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get voiceInput => 'Voice input';
 }

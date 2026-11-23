@@ -126,10 +126,10 @@ class AppLocalizationsGu extends AppLocalizations {
   String get shareApp => 'એપ્લિકેશન શેર કરો';
 
   @override
-  String get signIn => 'સાઈન ઇન';
+  String get signIn => 'સાઇન ઇન';
 
   @override
-  String get signUp => 'સાઈન અપ';
+  String get signUp => 'સાઇન અપ';
 
   @override
   String get continueAsGuest => 'મહેમાન તરીકે ચાલુ રાખો';
@@ -177,9 +177,6 @@ class AppLocalizationsGu extends AppLocalizations {
   String get next => 'આગળ';
 
   @override
-  String get back => 'પાછળ';
-
-  @override
   String get done => 'પૂરું';
 
   @override
@@ -213,7 +210,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get loading => 'લોડ થઈ રહ્યું છે...';
 
   @override
-  String get error => 'ભૂલ';
+  String get error => 'કંઈક ભૂલ થઈ ગયું';
 
   @override
   String get noInternet => 'ઇન્ટરનેટ કનેક્શન નથી';
@@ -381,6 +378,17 @@ class AppLocalizationsGu extends AppLocalizations {
   String get card => 'કાર્ડ';
 
   @override
+  String cardsDuePlural(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# કાર્ડો બાકી',
+      one: 'એક કાર્ડ બાકી',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get question => 'પ્રશ્ન';
 
   @override
@@ -388,6 +396,9 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get front => 'સામે';
+
+  @override
+  String get back => 'પાછળ';
 
   @override
   String get subjectMath => 'ગણિત';
@@ -536,7 +547,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get reviewAnswers => 'જવાબો સમીક્ષા કરો';
 
   @override
-  String get generating => 'જનરેટ કરી રહ્યા છે...';
+  String get generating => 'જેનરેટ કરી રહ્યા છે...';
 
   @override
   String get aiIsWorking => 'StudyMate AI તેને કામ પર રહ્યું છે...';
@@ -638,17 +649,6 @@ class AppLocalizationsGu extends AppLocalizations {
   String get cardsDueToday => 'આજે બાકીના કાર્ડો';
 
   @override
-  String cardsDuePlural(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '# કાર્ડો બાકી',
-      one: 'એક કાર્ડ બાકી',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get todayTask => 'આજનું કાર્ય';
 
   @override
@@ -687,7 +687,8 @@ class AppLocalizationsGu extends AppLocalizations {
   }
 
   @override
-  String get deleteChatConfirm => 'ચેટ કંફર્મ મુચાડો';
+  String get deleteChatConfirm =>
+      'આ વાતચીત અને તમામ સંદેશો દરમિયાની રીતે મુચાડી દેશે. શું તમને ખાતરી છે?';
 
   @override
   String get noInternetMessage =>
@@ -751,11 +752,10 @@ class AppLocalizationsGu extends AppLocalizations {
   String get privacyPolicyScreen => 'ગોપનીયતા નીતિ';
 
   @override
-  String get accountLinkedSuccessfully => 'ખાતું સફળતાપૂર્વક જોડાયું';
+  String get accountLinkedSuccessfully => 'ખાતું સફળતાપૂર્વક લિંક કરેલ';
 
   @override
-  String get accountDeletedSuccessfully =>
-      'ખાતું અને ડેટા સફળતાપૂર્વક દૂર કરાયા';
+  String get accountDeletedSuccessfully => 'ખાતા અને ડેટા સફળતાપૂર્વક દૂર કરેલ';
 
   @override
   String get featureFlashcards => 'ફ્લેશકાર્ડ્સ';
@@ -808,11 +808,14 @@ class AppLocalizationsGu extends AppLocalizations {
   String get renameChat => 'વાતચીતનું નામ બદલો';
 
   @override
+  String get rename => 'બદલો';
+
+  @override
   String get deleteChat => 'વાતચીત મિટાવો';
 
   @override
   String get chatDeleteConfirm =>
-      'આ વાતચીત અને તમામ સંદેશો دائમી રીતે મુચાડી દેશે. શું તમને ખાતરી છે?';
+      'This will permanently delete the chat and all messages. Are you sure?';
 
   @override
   String get noChats => 'હજુ કોઈ વાતચીત નથી';
@@ -821,7 +824,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get startNewConversation => 'StudyMate AI સાથે નવી વાતચીત શરૂ કરો';
 
   @override
-  String get newConversation => 'નવી વાતચીત';
+  String get searchChats => 'વાતચીતો શોધો';
 
   @override
   String get camera => 'કેમેરા';
@@ -873,7 +876,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get pleaseTryAgain => 'કૃપા કરીને ફરીથી પ્રયત્ન કરો.';
 
   @override
-  String get importPdfText => 'PDF/ટેક્સ્ટ આમפור્ટ કરો';
+  String get importPdfText => 'PDF/ટેક્સ્ટ આમફોર્ટ કરો';
 
   @override
   String get pasteText => 'ટેક્સ્ટ પેસ્ટ કરો';
@@ -882,10 +885,10 @@ class AppLocalizationsGu extends AppLocalizations {
   String get choosePdfFile => 'PDF ફાઇલ પસંદ કરો';
 
   @override
-  String get pdfImportComingSoon => 'PDF આમפור્ટ જલ્દી આવશે';
+  String get pdfImportComingSoon => 'PDF આમફોર્ટ જલ્દી આવશે';
 
   @override
-  String get importImageOcr => 'છબી આમفور્ટ કરો (OCR)';
+  String get importImageOcr => 'છબી આમફોર્ટ કરો (OCR)';
 
   @override
   String get pleaseEnterContent => 'કૃપા કરીને સામગ્રી દાખલ કરો';
@@ -916,7 +919,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get deleteNoteConfirm =>
-      'શું તમને ખાતરી છે કે آپણે આ નોંધને મિટાવવા માંગો છો?';
+      'શું તમને ખાતરી છે કે તમે આ નોંધને મિટાવવા માંગો છો?';
 
   @override
   String get note => 'નોંધ';
@@ -939,24 +942,22 @@ class AppLocalizationsGu extends AppLocalizations {
   String get count => 'ગણતરી';
 
   @override
-  String get cards => 'કાર્ડ્સ';
-
-  @override
   String get chatStepByStepDesc =>
-      'શંકાઓ પૂછો, કદમ દર કદમ વિકલ્પો આપો, અને તમારા હુલમુલે શીખો.';
+      'Ask doubts, get step-by-step explanations, and learn at your own pace.';
 
   @override
-  String get cameraDesc => 'કોઈ પ્રશ્નની ફોટો લેવા માટે તરતના AI ઉક્રિશ માટે.';
+  String get cameraDesc =>
+      'Take a photo of any question and get instant AI solutions.';
 
   @override
   String get toolsDesc =>
-      'ફ્લેશકાર્ડ્સ, ક્વિઝ, અભ્યાસ યોજના, અને ફોકસ ટાઈમર - બધા એક એપમાં.';
+      'Flashcards, quizzes, study plans, and focus timer - all in one app.';
 
   @override
   String get failedToLoadSettings => 'સેટિંગ્સ લોડ કરવામાં ભૂલ';
 
   @override
-  String get noUserToDelete => 'કોઈ વપરાસકર્તા દૂર કરવા માટે નથી';
+  String get noUserToDelete => 'કોઈ વપરાતર બધાવવા માટે નહીં';
 
   @override
   String get reauthAndRetry => 'પુનઃપ્રમાણીકરણ અને ફરીથી પ્રયત્ન કરો';
@@ -968,47 +969,47 @@ class AppLocalizationsGu extends AppLocalizations {
   String get perDay => 'દરેક દિવસ';
 
   @override
-  String get enterEmail => 'કૃપા કરીને તમારું ઈમેલ દાખલ કરો';
+  String get enterEmail => 'કૃપા કરીને તમારું ઇમેલ દાખલ કરો';
 
   @override
-  String get validEmail => 'માન્ય ઈમેલ દાખલ કરો';
+  String get validEmail => 'કૃપા કરીને વૈધ ઇમેલ દાખલ કરો';
 
   @override
   String get enterName => 'કૃપા કરીને તમારું નામ દાખલ કરો';
 
   @override
-  String get enterPassword => 'કૃપા કરીને પાસવર્ડ દાખલ કરો';
+  String get enterPassword => 'કૃપા કરીને તમારું પાસવર્ડ દાખલ કરો';
 
   @override
-  String get passwordMin6 => 'પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરનો હોવો જોઈએ';
+  String get passwordMin6 => 'પાસવર્ડને ઓછામાં ઓછું 6 અક્ષર હોવા જોઈએ';
 
   @override
-  String get passwordsMatch => 'પાસવર્ડ મેળ ખાતા નથી';
+  String get passwordsMatch => 'પાસવર્ડો નથી મેળ ખાતા';
 
   @override
-  String get authFailed => 'સાઇન-ઇન નિષ્ફળ ગયું';
+  String get authFailed => 'સુવિધા પરિક્ષે એકાઉન્ટ બનાવી નહીં શકે';
 
   @override
-  String get googleSignInFailed => 'ગૂગલ સાઇન-ઇન નિષ્ફળ ગયું';
+  String get googleSignInFailed => 'ગૂગલ સાઇન-ઇન પરિક્ષા બધાવે';
 
   @override
-  String get guestSignInFailed => 'મહેમાન સાઇન-ઇન નિષ્ફળ ગયું';
+  String get guestSignInFailed => 'ગેસ્ટ સાઇન-ઇન પરિક્ષા બધાવે';
 
   @override
   String get notSet => 'સેટ નથી';
 
   @override
-  String get pleaseSignInAgainToDelete => 'કૃપા કરીને ફરીથી સાઇન ઇન કરો';
+  String get pleaseSignInAgainToDelete => 'ખાતું બધાવવા માટે ફરીથી સાઇન ઇન કરો';
 
   @override
   String get accountDeleteWarning =>
-      'આ ક્રિયા અનિવાર્ય છે. તમને બધા સાચા ડેટા ખોવવા પડશે.';
+      'આ કામ પુનઃપ્રયાસનીય છે. તમે બધા સેવ કરેલ ડેટા ખોવશો.';
 
   @override
-  String get deleteAccountAndDelete => 'મારા ખાતા દૂર કરો';
+  String get deleteAccountAndDelete => 'મારા ખાતા અને ડેટા દૂર કરો';
 
   @override
-  String get deleteAccountAndConfirm => 'ખાતા દૂર કરવું';
+  String get deleteAccountAndConfirm => 'ખાતું દૂર કરો';
 
   @override
   String get noTasksToday => 'આજે કોઈ કાર્ય નથી';
@@ -1020,14 +1021,82 @@ class AppLocalizationsGu extends AppLocalizations {
   String get createPlan => 'યોજના બનાવો';
 
   @override
-  String get allCaughtUp => 'બધા કાઢેલા!';
+  String get allCaughtUp => 'બધા જ પકડાયું!';
 
   @override
   String get noCardsDueToday => 'આજે કોઈ કાર્ડ સમીક્ષા માટે નથી';
 
   @override
-  String get browseDecks => 'ડેક્સ તોડો';
+  String get browseDecks => 'ડેક્સ બ્રાઉઝ કરો';
 
   @override
-  String get goalAchieved => 'લક્ષ્ય અર્જિત કર્યું! 🎉';
+  String get goalAchieved => 'લક્ષ્ય પ્રાપ્ત કર્યું! 🎉';
+
+  @override
+  String get noNotes => 'No notes yet';
+
+  @override
+  String get createFirstNote => 'Create your first note to get started';
+
+  @override
+  String get notesCreated => 'Note created successfully';
+
+  @override
+  String get noteUpdated => 'Note updated';
+
+  @override
+  String get errorInNote => 'Error in note';
+
+  @override
+  String get aiActionFailedMessage => 'AI Action Failed';
+
+  @override
+  String get somethingWentWrongMessage => 'Something went wrong';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get dailyAILimit => 'દરેક દિવસનું AI મર્યાદા પહોંચી ગઈ';
+
+  @override
+  String get dailyAILimitMessage =>
+      'કૃપા કરીને આગળના દિવસે ફરીથી પ્રયત્ન કરો અથવા ઓછા AI અનુરોહો કરો.';
+
+  @override
+  String get importText => 'આયાત પાઠ';
+
+  @override
+  String get editNote => 'નોંધ સંપાદિત કરો';
+
+  @override
+  String get noteCreated => 'નોંધ બનાયું';
+
+  @override
+  String get noNotesYet => 'No notes yet';
+
+  @override
+  String get startNoteSearch => 'Search notes';
+
+  @override
+  String get editNoteTitle => 'Edit your note';
+
+  @override
+  String get dailyAILimitReached => 'Daily AI limit reached';
+
+  @override
+  String get dailyAILimitTryTomorrow =>
+      'Try again tomorrow or reduce AI requests.';
+
+  @override
+  String get selectedImage => 'Selected Image';
+
+  @override
+  String get processButton => 'Process Question';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get voiceInput => 'Voice input';
 }
