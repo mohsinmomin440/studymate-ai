@@ -3,11 +3,14 @@
 library;
 
 import 'dart:developer' as developer;
+import 'dart:typed_data';
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -317,7 +320,9 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(_isEditing ? context.l10n.noteUpdated : context.l10n.noteCreated)),
+            content: Text(_isEditing
+                ? context.l10n.noteUpdated
+                : context.l10n.noteCreated)),
       );
       context.go(AppRoutes.notes);
     }
@@ -330,7 +335,8 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? l10n.editNoteTitleScreen : l10n.newNoteTitleScreen),
+        title: Text(
+            _isEditing ? l10n.editNoteTitleScreen : l10n.newNoteTitleScreen),
         actions: [
           IconButton(
             icon: const Icon(Icons.save_rounded),
@@ -376,7 +382,8 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
                 maxLines: 1,
                 textCapitalization: TextCapitalization.words,
                 validator: (value) {
-                  if (value == null || value.isEmpty) return l10n.subjectRequired;
+                  if (value == null || value.isEmpty)
+                    return l10n.subjectRequired;
                   return null;
                 },
               ),
@@ -408,7 +415,8 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return l10n.contentRequired;
+                  if (value == null || value.isEmpty)
+                    return l10n.contentRequired;
                   return null;
                 },
               ),
@@ -455,6 +463,14 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.picture_as_pdf),
+            title: Text(l10n.importPdfButton),
+            onTap: () {
+              Navigator.pop(context);
+              _importPdf();
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.image),
             title: Text(l10n.importImageOcrTitle),
             onTap: () {
@@ -465,6 +481,153 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
         ],
       ),
     );
+  }
+
+  /// Import PDF file and extract text using Gemini
+  Future<void> _importPdf() async {
+    final l10n = context.l10n;
+
+    try {
+      // Pick PDF file using file_selector
+      final result = await openFile(
+        acceptedTypeGroups: [
+          XTypeGroup(
+            label: 'PDF',
+            extensions: ['pdf'],
+          ),
+        ],
+      );
+
+      if (result == null) {
+        // User cancelled
+        return;
+      }
+
+      final file = result;
+
+      // Check file size (max 10 MB)
+      const maxSize = 10 * 1024 * 1024; // 10 MB
+      if (await file.length() > maxSize) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.pdfFileTooLarge(maxSize ~/ (1024 * 1024))),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const Gap(16),
+              Text(l10n.extractingPdfTextDialog),
+            ],
+          ),
+        ),
+      );
+
+      // Extract text using Gemini
+      final aiService = ref.read(aiServiceProvider);
+      final canUse = await aiService.checkAndIncrementUsage();
+
+      if (!canUse) {
+        if (!mounted) return;
+        Navigator.pop(context); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.dailyAILimitReachedSnack)),
+        );
+        return;
+      }
+
+      try {
+        final extractedText =
+            await _extractTextFromPdf(aiService, await file.readAsBytes());
+
+        if (!mounted) return;
+        Navigator.pop(context); // Close loading dialog
+
+        if (extractedText.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.pdfNoTextFound),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+          return;
+        }
+
+        // Insert extracted text into body controller
+        _bodyController.text = extractedText;
+
+        // Record activity and analytics (same as manual note creation)
+        ref
+            .read(progressRepositoryProvider)
+            .recordActivity('note')
+            .then((newBadges) {
+          if (newBadges.isNotEmpty && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    '🎉 ${context.l10n.notesCreated}: ${newBadges.map((b) => b.title).join(', ')}'),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }).onError((error, stackTrace) {
+          developer.log('recordActivity(note) error: $error',
+              name: 'NotesScreen');
+        });
+
+        // Log analytics event for note creation
+        ref.read(analyticsServiceProvider).logNoteCreated(
+              subject: _subjectController.text.trim(),
+              wordCount: extractedText.split(RegExp(r'\s+')).length,
+            );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.pdfImportSuccess)),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        Navigator.pop(context); // Close loading dialog
+        _showAiErrorDialog('PDF import failed: ${e.toString()}');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.errorImportingPdf(e.toString())),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
+  /// Extract text from PDF bytes using Gemini
+  Future<String> _extractTextFromPdf(
+      AiService aiService, List<int> pdfBytes) async {
+    // Use the chat model with multimodal input
+    final content = [
+      Content('user', [
+        InlineDataPart('application/pdf', Uint8List.fromList(pdfBytes)),
+        TextPart(
+            'Extract all text from this PDF. Return ONLY the extracted text, no formatting or extra commentary.'),
+      ]),
+    ];
+
+    final response = await aiService.generateContent(content);
+    return response.text ?? '';
   }
 
   void _showPasteDialog() {
@@ -867,8 +1030,10 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
               PopupMenuItem(
                 value: 'delete',
                 child: ListTile(
-                  leading: Icon(Icons.delete_rounded, color: theme.colorScheme.error),
-                  title: Text(l10n.deleteAction, style: TextStyle(color: theme.colorScheme.error)),
+                  leading: Icon(Icons.delete_rounded,
+                      color: theme.colorScheme.error),
+                  title: Text(l10n.deleteAction,
+                      style: TextStyle(color: theme.colorScheme.error)),
                 ),
               ),
             ],
