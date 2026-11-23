@@ -8,11 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/shimmer_box.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../chat/data/ai_service.dart';
@@ -46,13 +48,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       appBar: AppBar(
         title: const Text('Quizzes'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_rounded),
-            onPressed: () => context.go(AppRoutes.quizCreate),
+          Semantics(
+            label: 'Create quiz',
+            child: IconButton(
+              icon: const Icon(Icons.add_rounded),
+              onPressed: () => context.go(AppRoutes.quizCreate),
+              tooltip: 'Create quiz',
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.auto_awesome_rounded),
-            onPressed: () => _showAiGenerateSheet(),
+          Semantics(
+            label: 'Generate quiz with AI',
+            child: IconButton(
+              icon: const Icon(Icons.auto_awesome_rounded),
+              onPressed: () => _showAiGenerateSheet(),
+              tooltip: 'Generate quiz with AI',
+            ),
           ),
         ],
       ),
@@ -68,59 +78,95 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<List<quiz_models.Quiz>>(
-              stream: ref.watch(quizRepositoryProvider).getQuizzes(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                }
-
-                final quizzes = snapshot.data ?? [];
-
-                if (quizzes.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.quiz_rounded,
-                    title: 'No quizzes yet',
-                    message: 'Create your first quiz or generate one from AI',
-                  );
-                }
-
-                final filteredQuizzes = _searchQuery.isEmpty
-                    ? quizzes
-                    : quizzes
-                        .where((q) => q.title
-                            .toLowerCase()
-                            .contains(_searchQuery.toLowerCase()))
-                        .toList();
-
-                if (filteredQuizzes.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.search,
-                    title: 'No quizzes found',
-                    message: 'Try a different search term',
-                  );
-                }
-
-                return ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: filteredQuizzes.length,
-                  itemBuilder: (context, index) {
-                    final quiz = filteredQuizzes[index];
-                    return _buildQuizCard(quiz);
-                  },
-                );
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(quizRepositoryProvider);
+                HapticFeedback.lightImpact();
               },
+              child: StreamBuilder<List<quiz_models.Quiz>>(
+                stream: ref.watch(quizRepositoryProvider).getQuizzes(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildLoadingList();
+                  }
+
+                  if (snapshot.hasError) {
+                    return _buildErrorState(snapshot.error.toString());
+                  }
+
+                  final quizzes = snapshot.data ?? [];
+
+                  if (quizzes.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  final filteredQuizzes = _searchQuery.isEmpty
+                      ? quizzes
+                      : quizzes
+                          .where((q) => q.title
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()))
+                          .toList();
+
+                  if (filteredQuizzes.isEmpty) {
+                    return _buildNoResultsState();
+                  }
+
+                  return ListView.builder(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: filteredQuizzes.length,
+                    itemBuilder: (context, index) {
+                      final quiz = filteredQuizzes[index];
+                      return _buildQuizCard(quiz);
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLoadingList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: 6,
+      itemBuilder: (context, index) => ShimmerBox(
+        height: 100,
+        margin: const EdgeInsets.only(bottom: 12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return EmptyState(
+      icon: Icons.quiz_rounded,
+      title: 'No quizzes yet',
+      message: 'Create your first quiz or generate one from AI',
+      actionLabel: 'Create Quiz',
+      onAction: () => context.go(AppRoutes.quizCreate),
+    );
+  }
+
+  Widget _buildNoResultsState() {
+    return EmptyState(
+      icon: Icons.search,
+      title: 'No quizzes found',
+      message: 'Try a different search term',
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return EmptyState(
+      icon: Icons.error_outline_rounded,
+      title: 'Error Loading Quizzes',
+      message: error,
+      actionLabel: 'Try Again',
+      onAction: () => setState(() => _searchQuery = _searchQuery),
     );
   }
 
@@ -638,9 +684,13 @@ class QuizDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Quiz'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.play_circle_rounded),
-            onPressed: () => context.go('${AppRoutes.quizTake}/$quizId'),
+          Semantics(
+            label: 'Take quiz',
+            child: IconButton(
+              icon: const Icon(Icons.play_circle_rounded),
+              onPressed: () => context.go('${AppRoutes.quizTake}/$quizId'),
+              tooltip: 'Take quiz',
+            ),
           ),
         ],
       ),
@@ -770,7 +820,8 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
       if (quiz != null) {
         _answers = List.filled(quiz.questions.length, -1);
         _timer = QuizTimer(
-          totalSeconds: quiz.durationMinutes != null ? quiz.durationMinutes! * 60 : 0,
+          totalSeconds:
+              quiz.durationMinutes != null ? quiz.durationMinutes! * 60 : 0,
           // No deadline needed - remainingSeconds will return totalSeconds when no deadline
         );
         _startTimerIfNeeded(quiz);
@@ -871,7 +922,8 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
     ref
         .read(progressRepositoryProvider)
         .recordActivity('quiz', isRetry: _isRetry)
-        .then((_) {}).onError((error, stackTrace) {
+        .then((_) {})
+        .onError((error, stackTrace) {
       developer.log('recordActivity(quiz) error: $error', name: 'QuizScreen');
     });
 

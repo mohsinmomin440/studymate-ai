@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/shimmer_box.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../chat/data/ai_service.dart';
@@ -45,10 +47,12 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
           IconButton(
             icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.flashcardsCreate),
+            tooltip: 'Create deck',
           ),
           IconButton(
             icon: const Icon(Icons.auto_awesome_rounded),
             onPressed: () => _showAiGenerateSheet(),
+            tooltip: 'Generate with AI',
           ),
         ],
       ),
@@ -64,60 +68,90 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<List<FlashcardDeck>>(
-              stream: ref.watch(flashcardRepositoryProvider).getDecks(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                }
-
-                final decks = snapshot.data ?? [];
-
-                if (decks.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.flash_on_rounded,
-                    title: 'No decks yet',
-                    message:
-                        'Create your first deck or generate flashcards from AI',
-                  );
-                }
-
-                final filteredDecks = _searchQuery.isEmpty
-                    ? decks
-                    : decks
-                        .where((d) => d.title
-                            .toLowerCase()
-                            .contains(_searchQuery.toLowerCase()))
-                        .toList();
-
-                if (filteredDecks.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.search,
-                    title: 'No decks found',
-                    message: 'Try a different search term',
-                  );
-                }
-
-                return ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: filteredDecks.length,
-                  itemBuilder: (context, index) {
-                    final deck = filteredDecks[index];
-                    return _buildDeckCard(deck, context);
-                  },
-                );
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(flashcardRepositoryProvider);
+                HapticFeedback.lightImpact();
               },
+              child: StreamBuilder<List<FlashcardDeck>>(
+                stream: ref.watch(flashcardRepositoryProvider).getDecks(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildLoadingList();
+                  }
+
+                  if (snapshot.hasError) {
+                    return ErrorState(
+                      title: 'Error Loading Decks',
+                      message: snapshot.error.toString(),
+                      onRetry: () =>
+                          setState(() => _searchQuery = _searchQuery),
+                    );
+                  }
+
+                  final decks = snapshot.data ?? [];
+
+                  if (decks.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  final filteredDecks = _searchQuery.isEmpty
+                      ? decks
+                      : decks
+                          .where((d) => d.title
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()))
+                          .toList();
+
+                  if (filteredDecks.isEmpty) {
+                    return _buildNoResultsState();
+                  }
+
+                  return ListView.builder(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: filteredDecks.length,
+                    itemBuilder: (context, index) {
+                      final deck = filteredDecks[index];
+                      return _buildDeckCard(deck, context);
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLoadingList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: 6,
+      itemBuilder: (context, index) => ShimmerBox(
+        height: 100,
+        margin: const EdgeInsets.only(bottom: 12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return EmptyState(
+      icon: Icons.flash_on_rounded,
+      title: 'No decks yet',
+      message: 'Create your first deck or generate flashcards from AI',
+      actionLabel: 'Create Deck',
+      onAction: () => context.go(AppRoutes.flashcardsCreate),
+    );
+  }
+
+  Widget _buildNoResultsState() {
+    return EmptyState(
+      icon: Icons.search,
+      title: 'No decks found',
+      message: 'Try a different search term',
     );
   }
 
@@ -423,14 +457,22 @@ class _CreateEditDeckScreenState extends ConsumerState<CreateEditDeckScreen> {
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Deck' : 'New Deck'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save_rounded),
-            onPressed: _saveDeck,
+          Semantics(
+            label: _isEditing ? 'Save deck' : 'Create deck',
+            child: IconButton(
+              icon: const Icon(Icons.save_rounded),
+              onPressed: _saveDeck,
+              tooltip: _isEditing ? 'Save deck' : 'Create deck',
+            ),
           ),
           if (_isEditing)
-            IconButton(
-              icon: const Icon(Icons.delete_rounded),
-              onPressed: _showDeleteDialog,
+            Semantics(
+              label: 'Delete deck',
+              child: IconButton(
+                icon: const Icon(Icons.delete_rounded),
+                onPressed: _showDeleteDialog,
+                tooltip: 'Delete deck',
+              ),
             ),
         ],
       ),
@@ -588,14 +630,22 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
       appBar: AppBar(
         title: const Text('Card'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save_rounded),
-            onPressed: _saveCard,
+          Semantics(
+            label: _isEditing ? 'Save card' : 'Create card',
+            child: IconButton(
+              icon: const Icon(Icons.save_rounded),
+              onPressed: _saveCard,
+              tooltip: _isEditing ? 'Save card' : 'Create card',
+            ),
           ),
           if (_isEditing)
-            IconButton(
-              icon: const Icon(Icons.delete_rounded),
-              onPressed: _showDeleteDialog,
+            Semantics(
+              label: 'Delete card',
+              child: IconButton(
+                icon: const Icon(Icons.delete_rounded),
+                onPressed: _showDeleteDialog,
+                tooltip: 'Delete card',
+              ),
             ),
         ],
       ),
@@ -704,15 +754,23 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
         appBar: AppBar(
           title: const Text('Deck'),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.edit_rounded),
-              onPressed: () =>
-                  context.go('${AppRoutes.flashcardsEdit}/${widget.deckId}'),
+            Semantics(
+              label: 'Edit deck',
+              child: IconButton(
+                icon: const Icon(Icons.edit_rounded),
+                onPressed: () =>
+                    context.go('${AppRoutes.flashcardsEdit}/${widget.deckId}'),
+                tooltip: 'Edit deck',
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.play_circle_rounded),
-              onPressed: () =>
-                  context.go('${AppRoutes.studyMode}/${widget.deckId}'),
+            Semantics(
+              label: 'Study deck',
+              child: IconButton(
+                icon: const Icon(Icons.play_circle_rounded),
+                onPressed: () =>
+                    context.go('${AppRoutes.studyMode}/${widget.deckId}'),
+                tooltip: 'Study deck',
+              ),
             ),
           ],
           bottom: const TabBar(
