@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'gap.dart';
 import 'gradient_button.dart';
@@ -10,6 +11,7 @@ class EmptyState extends StatelessWidget {
   final String title;
   final String message;
   final String? lottieAsset;
+  final String? svgAsset;
   final IconData? icon;
   final Color? iconColor;
   final double iconSize;
@@ -25,6 +27,7 @@ class EmptyState extends StatelessWidget {
     required this.title,
     required this.message,
     this.lottieAsset,
+    this.svgAsset,
     this.icon,
     this.iconColor,
     this.iconSize = 80,
@@ -47,7 +50,13 @@ class EmptyState extends StatelessWidget {
         crossAxisAlignment: crossAxisAlignment,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (lottieAsset != null)
+          if (svgAsset != null)
+            SvgPicture.asset(
+              svgAsset!,
+              width: iconSize,
+              height: iconSize,
+            )
+          else if (lottieAsset != null)
             Lottie.asset(
               lottieAsset!,
               width: iconSize * 2,
@@ -109,6 +118,7 @@ class EmptyListState extends StatelessWidget {
   final String title;
   final String message;
   final String? lottieAsset;
+  final String? svgAsset;
   final IconData? icon;
   final Widget? action;
 
@@ -117,6 +127,7 @@ class EmptyListState extends StatelessWidget {
     required this.title,
     required this.message,
     this.lottieAsset,
+    this.svgAsset,
     this.icon,
     this.action,
   });
@@ -143,6 +154,7 @@ class ErrorState extends StatelessWidget {
   final VoidCallback? onRetry;
   final String retryLabel;
   final String? lottieAsset;
+  final String? svgAsset;
   final IconData? icon;
 
   const ErrorState({
@@ -152,6 +164,7 @@ class ErrorState extends StatelessWidget {
     this.onRetry,
     this.retryLabel = 'Try Again',
     this.lottieAsset,
+    this.svgAsset,
     this.icon,
   });
 

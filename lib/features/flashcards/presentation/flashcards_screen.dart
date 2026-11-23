@@ -139,6 +139,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
 
   Widget _buildEmptyState() {
     return EmptyState(
+      svgAsset: 'assets/svg/cards_stack.svg',
       icon: Icons.flash_on_rounded,
       title: 'No decks yet',
       message: 'Create your first deck or generate flashcards from AI',

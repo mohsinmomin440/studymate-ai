@@ -106,6 +106,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   Widget _buildEmptyState() {
     return EmptyState(
+      svgAsset: 'assets/svg/robot_ai.svg',
       icon: Icons.chat_bubble_outline_rounded,
       title: context.l10n.noChats,
       message: context.l10n.startNewConversation,

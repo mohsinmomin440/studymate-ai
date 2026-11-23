@@ -7,6 +7,7 @@ import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/app_svg_icon.dart';
 import '../../../features/progress/data/progress_repository.dart';
 import '../../../features/progress/domain/badges.dart' as badge_domain;
 import '../../../features/progress/domain/aggregations.dart';
@@ -748,11 +749,7 @@ class _BadgeCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.emoji_events_rounded,
-            size: 32,
-            color: Colors.amber.shade700,
-          ),
+          AppSvgIcon.badge(badge.id, size: 36),
           const Gap(4),
           Text(badge.title,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(

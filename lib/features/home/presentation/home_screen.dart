@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/app_svg_icon.dart';
 import '../../../features/progress/data/progress_repository.dart';
 import '../../../features/planner/data/planner_repository.dart';
 import '../../../features/flashcards/data/flashcard_repository.dart';
@@ -155,13 +156,23 @@ class HomeScreen extends ConsumerWidget {
                 ),
           ),
           const Gap(8),
-          Text(
-            dashboard.streak > 0
-                ? '🔥 ${dashboard.streak} day ${l10n.streak.toLowerCase()} — keep it going!'
-                : 'Start your study ${l10n.streak.toLowerCase()} today!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+          Row(
+            children: [
+              if (dashboard.streak > 0) ...[
+                AppSvgIcon.streakFlame(size: 20),
+                const Gap(8),
+              ],
+              Expanded(
+                child: Text(
+                  dashboard.streak > 0
+                      ? '${dashboard.streak} day ${l10n.streak.toLowerCase()} — keep it going!'
+                      : 'Start your study ${l10n.streak.toLowerCase()} today!',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
+              ),
+            ],
           ),
         ],
       ),
@@ -177,11 +188,7 @@ class HomeScreen extends ConsumerWidget {
           child: GlassCard(
             child: Column(
               children: [
-                Icon(
-                  Icons.local_fire_department_rounded,
-                  size: 32,
-                  color: const Color(0xFFFFB020),
-                ),
+                AppSvgIcon.streakFlame(size: 32),
                 const Gap(8),
                 Text(
                   '${dashboard.streak}',
@@ -206,6 +213,8 @@ class HomeScreen extends ConsumerWidget {
           child: GlassCard(
             child: Column(
               children: [
+                AppSvgIcon.xpBolt(size: 32),
+                const Gap(8),
                 Text(
                   'Level ${dashboard.level}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(

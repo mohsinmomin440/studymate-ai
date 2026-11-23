@@ -87,6 +87,7 @@ class DoubtsListScreen extends ConsumerWidget {
               data: (doubts) {
                 if (doubts.isEmpty) {
                   return EmptyState(
+                    svgAsset: 'assets/svg/camera_scan.svg',
                     icon: Icons.help_outline_rounded,
                     title: l10n.noDoubtsSavedTitle,
                     message: l10n.scanProblemMessage,

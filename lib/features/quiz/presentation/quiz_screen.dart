@@ -144,6 +144,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
   Widget _buildEmptyState() {
     return EmptyState(
+      svgAsset: 'assets/svg/trophy.svg',
       icon: Icons.quiz_rounded,
       title: 'No quizzes yet',
       message: 'Create your first quiz or generate one from AI',

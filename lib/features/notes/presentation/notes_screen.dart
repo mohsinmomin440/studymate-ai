@@ -136,6 +136,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   Widget _buildEmptyState(BuildContext context) {
     final l10n = context.l10n;
     return EmptyState(
+      svgAsset: 'assets/svg/study_book.svg',
       icon: Icons.note_add_rounded,
       title: l10n.noNotesYetTitle,
       message: l10n.createFirstNoteMessage,
