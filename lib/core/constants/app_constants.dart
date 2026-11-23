@@ -23,6 +23,9 @@ class AppConstants {
   static const String firestoreBadgesCollection = 'badges';
 
   // AI - Gemini models (current Firebase AI Logic model names)
+  // IMPORTANT: Check Firebase AI Logic docs (https://firebase.google.com/docs/ai-logic)
+  // and ai.google.dev for current model IDs before release.
+  // Model names can change - use Remote Config to update without app release.
   static const String defaultChatModel = 'gemini-3.5-flash';
   static const String defaultCheapModel = 'gemini-3.5-flash-lite';
   static const int maxChatHistoryMessages = 10;

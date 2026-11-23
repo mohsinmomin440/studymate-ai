@@ -123,11 +123,13 @@ class AiService {
     return prefs.getInt(PrefKeys.dailyAIUsageCount) ?? 0;
   }
 
-  /// Generate content with retry and exponential backoff
+  /// Generate content with retry, exponential backoff, and model fallback
+  /// If model-not-found error, retries once with default model.
   Future<GenerateContentResponse> _generateWithRetry(
     GenerativeModel model,
     List<Content> contents, {
     int maxRetries = 3,
+    bool usedDefaultModel = false,
   }) async {
     var attempt = 0;
     while (true) {
@@ -136,6 +138,25 @@ class AiService {
         return response;
       } on FirebaseAIException catch (e) {
         attempt++;
+        final errorMessage = e.toString().toLowerCase();
+        // On model-not-found, retry once with default model
+        if ((errorMessage.contains('model') || errorMessage.contains('not found')) &&
+            !usedDefaultModel) {
+          // Fall back to default chat model
+          print('Model not found, falling back to default: ${e.message}');
+          return _generateWithRetry(
+            _firebaseAI.generativeModel(
+              model: AppConstants.defaultChatModel,
+              generationConfig: GenerationConfig(
+                temperature: AppConstants.temperatureChat,
+                maxOutputTokens: AppConstants.maxOutputTokensChat,
+              ),
+            ),
+            contents,
+            maxRetries: 1,
+            usedDefaultModel: true,
+          );
+        }
         if (attempt >= maxRetries) {
           throw mapExceptionToFailure(e, StackTrace.current);
         }
