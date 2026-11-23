@@ -102,7 +102,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get theme => 'થીમ';
 
   @override
-  String get min => 'નિએમ';
+  String get min => 'મિનિટ';
 
   @override
   String get aiResponseLanguage => 'AI જવાબની ભાષા';
@@ -815,7 +815,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get chatDeleteConfirm =>
-      'This will permanently delete the chat and all messages. Are you sure?';
+      'આ વાતચીત અને બધા સંદેશો મર્યાદિત રીતે મહેલાડશે. શું તમને ખાતરી છે?';
 
   @override
   String get noChats => 'હજુ કોઈ વાતચીત નથી';
@@ -943,15 +943,15 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get chatStepByStepDesc =>
-      'Ask doubts, get step-by-step explanations, and learn at your own pace.';
+      'શંકાઓ પૂછો, પગલું-દર-પગલું સમજાવો, અને તમારા હિસ્સે મુજબ શીખો.';
 
   @override
   String get cameraDesc =>
-      'Take a photo of any question and get instant AI solutions.';
+      'કોઈપણ પ્રશ્નની ફોટો લેવા અને તરતના AI ઉત્તર મેળવવા માટે.';
 
   @override
   String get toolsDesc =>
-      'Flashcards, quizzes, study plans, and focus timer - all in one app.';
+      'ફ્લેશકાર્ડ્સ, ક્વિઝ, અભ્યાસ યોજનાઓ, અને ફોકસ ટાઈમર - બધા બરમાં એકલા.';
 
   @override
   String get failedToLoadSettings => 'સેટિંગ્સ લોડ કરવામાં ભૂલ';
