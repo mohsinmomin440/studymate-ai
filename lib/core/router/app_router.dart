@@ -13,7 +13,7 @@ import '../../features/flashcards/flashcards_feature.dart';
 import '../../features/quiz/quiz_feature.dart';
 import '../../features/planner/planner_feature.dart';
 import '../../features/focus/presentation/focus_screen.dart';
-import '../../features/settings/settings_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/auth/presentation/onboarding_screen.dart';
