@@ -15,8 +15,47 @@
 
 ### 3. Quiz XP Daily Cap ✅
 - Verified: Quiz XP is capped at 125 XP/day (5 quiz completions × 25 XP each)
-- Code location: `lib/core/utils/progress_calculations.dart` lines 14-20
+- Code location: `lib/features/progress/domain/progress_calculations.dart` lines 14-48
 - Functions: `canAwardXpToday()` and `xpToAwardToday()` enforce the cap
+
+**Code that enforces the quiz XP daily cap:**
+```dart
+/// Daily XP caps per action type to prevent farming
+const Map<String, int> dailyXpCaps = {
+  'chat': 50, // 10 chats * 5 XP
+  'note': 100, // 10 notes * 10 XP
+  'flashcard_review': 100, // 50 reviews * 2 XP
+  'focus_minute': 120, // 120 minutes * 1 XP
+  'quiz': 125, // 5 quiz completions * 25 XP per day max
+};
+
+/// Check if action should award XP today based on daily cap
+bool canAwardXpToday({
+  required String action,
+  required int currentDailyXpForAction,
+}) {
+  final cap = dailyXpCaps[action];
+  if (cap == null) return true;
+  return currentDailyXpForAction < cap;
+}
+
+/// Calculate how much XP to award for an action today (respects daily cap)
+int xpToAwardToday({
+  required String action,
+  required int currentDailyXpForAction,
+}) {
+  final baseXp = xpForAction(action);
+  if (baseXp == 0) return 0;
+
+  final cap = dailyXpCaps[action];
+  if (cap == null) return baseXp;
+
+  final remaining = cap - currentDailyXpForAction;
+  if (remaining <= 0) return 0;
+  return remaining >= baseXp ? baseXp : remaining;
+}
+```
+
 - Retry-wrong-only attempts correctly award 0 XP (verified in `progress_repository.dart`)
 
 ### 4. FlutterError.onError and PlatformDispatcher.instance.onError ✅
@@ -48,15 +87,13 @@ static void _setupErrorHandling() {
   - License requires registration for syncfusion_flutter_pdf
   - Android 36 compatibility issues with existing PDF packages
 
-### 6. Unit Tests for QuizTimer ✅
-- 22 unit tests covering:
-  - Creation and basic state
-  - Remaining time calculation
-  - `isTimeUp()` behavior
-  - `tick()` method
-  - `elapsedSeconds` calculation
-  - `reset()` functionality
-  - `questionsAnsweredByTime()` method
+### 6. Unit Tests for QuizXP Cap ✅
+**Code location:** `test/features/progress/progress_calculations_test.dart` lines 410-433
+
+**Tests verify:**
+- 5 quiz completions give 25 XP each (total 125 XP)
+- 6th quiz completion when cap reached gives 0 XP
+- Retry-wrong-only attempts award 0 XP (verified in `progress_repository.dart`)
 
 ## Raw Output
 
@@ -115,10 +152,7 @@ lib\features\progress\presentation\home_screen.dart
 
 ### findstr /S /M /C:"HapticFeedback" lib\features\*.dart
 ```
-lib\features\notes\presentation\notes_screen.dart
+lib\features\notes\presentation/notes_screen.dart
 ```
-
-## Summary
-All Phase 8C tasks completed successfully. The quiz timer now uses deadline-based timing for correct behavior when the app goes to background/foreground. All 227 tests pass, debug APK builds successfully, and 0 errors found by analyzer.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
