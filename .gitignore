@@ -51,6 +51,7 @@ app.*.map.json
 google-services.json
 key.properties
 *.jks
+*.keystore
 
 # Windows artifacts
 nul

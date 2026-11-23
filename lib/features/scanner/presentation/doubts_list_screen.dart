@@ -113,7 +113,7 @@ class DoubtsListScreen extends ConsumerWidget {
                       child: GlassCard(
                         margin: const EdgeInsets.only(bottom: 12),
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          // Navigate to view doubt details (future feature)
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

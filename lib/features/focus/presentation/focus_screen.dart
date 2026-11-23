@@ -6,6 +6,7 @@ import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -144,6 +145,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       );
 
       _logFocusMinutes(completedMinutes);
+      HapticFeedback.mediumImpact(); // Haptic feedback on session finish
       return;
     }
 
@@ -175,6 +177,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
         // Call callback for XP/badge awarding
         _onSessionComplete?.call();
+        HapticFeedback.mediumImpact(); // Haptic feedback on session finish
       }
     });
   }

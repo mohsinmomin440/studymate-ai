@@ -1,5 +1,6 @@
 name: studymate_ai
 description: "StudyMate AI - Premium Android app for students to study smarter with AI."
+
 publish_to: 'none'
 version: 1.0.0+1
 

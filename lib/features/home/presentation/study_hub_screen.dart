@@ -56,6 +56,18 @@ class StudyHubScreen extends StatelessWidget {
                   child: Text(l10n.goHome),
                 ),
               ),
+              const Gap(16),
+              Semantics(
+                label: 'View saved doubts',
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    context.go(AppRoutes.doubts);
+                  },
+                  icon: const Icon(Icons.help_outline_rounded),
+                  label: const Text('View Doubts'),
+                ),
+              ),
             ],
           ),
         ),
