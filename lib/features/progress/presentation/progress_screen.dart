@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/services.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
@@ -140,34 +141,45 @@ class ProgressScreen extends ConsumerWidget {
 
     final quizScoreTrendAsync = ref.watch(quizScoreTrendProvider);
 
-    return StreamBuilder<UserProgressData>(
-      stream: ref.read(progressRepositoryProvider).getUserProgressStream(),
-      builder: (context, snapshot) {
-        final progress = snapshot.data ?? UserProgressData.empty();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Progress'),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          HapticFeedback.lightImpact();
+          ref.invalidate(weeklyStatsProvider);
+          ref.invalidate(subjectStrengthProvider);
+          ref.invalidate(weeklySummaryProvider);
+          ref.invalidate(unlockedBadgesProvider);
+          ref.invalidate(quizScoreTrendProvider);
+        },
+        child: StreamBuilder<UserProgressData>(
+          stream: ref.read(progressRepositoryProvider).getUserProgressStream(),
+          builder: (context, snapshot) {
+            final progress = snapshot.data ?? UserProgressData.empty();
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Progress'),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _buildHeaderCard(context, progress),
-              const Gap(16),
-              _buildWeeklySummary(context, weeklySummaryAsync, progress.streak),
-              const Gap(16),
-              _buildSubjectStrength(context, subjectStrengthAsync),
-              const Gap(24),
-              _buildWeeklyStatsSection(context, weeklyStatsAsync),
-              const Gap(24),
-              _buildQuizScoreTrend(context, quizScoreTrendAsync),
-              const Gap(24),
-              _buildBadgesSection(
-                  context, unlockedBadgesAsync, progress.badgesCount),
-            ],
-          ),
-        );
-      },
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _buildHeaderCard(context, progress),
+                const Gap(16),
+                _buildWeeklySummary(
+                    context, weeklySummaryAsync, progress.streak, ref),
+                const Gap(16),
+                _buildSubjectStrength(context, subjectStrengthAsync, ref),
+                const Gap(24),
+                _buildWeeklyStatsSection(context, weeklyStatsAsync),
+                const Gap(24),
+                _buildQuizScoreTrend(context, quizScoreTrendAsync, ref),
+                const Gap(24),
+                _buildBadgesSection(
+                    context, unlockedBadgesAsync, progress.badgesCount, ref),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -230,7 +242,7 @@ class ProgressScreen extends ConsumerWidget {
   }
 
   Widget _buildWeeklySummary(BuildContext context,
-      AsyncValue<WeeklySummary> weeklySummaryAsync, int streak) {
+      AsyncValue<WeeklySummary> weeklySummaryAsync, int streak, WidgetRef ref) {
     return weeklySummaryAsync.when(
       data: (summary) => GlassCard(
         child: Column(
@@ -270,9 +282,7 @@ class ProgressScreen extends ConsumerWidget {
             _SummaryItem(
               label: summary.message,
               value: 'Streak: $streak days',
-              icon: streak >= 7
-                  ? Icons.local_fire_department_rounded
-                  : Icons.local_fire_department_rounded,
+              icon: Icons.local_fire_department_rounded,
               color: streak >= 7
                   ? const Color(0xFFFFB020)
                   : const Color(0xFFA3A9C7),
@@ -286,12 +296,19 @@ class ProgressScreen extends ConsumerWidget {
           child: Center(child: CircularProgressIndicator()),
         ),
       ),
-      error: (e, st) => Center(child: Text('Error: $e')),
+      error: (e, st) => ErrorState(
+        title: 'Error Loading Weekly Summary',
+        message: e.toString(),
+        onRetry: () {
+          HapticFeedback.lightImpact();
+          ref.invalidate(weeklySummaryProvider);
+        },
+      ),
     );
   }
 
-  Widget _buildSubjectStrength(
-      BuildContext context, AsyncValue<List<SubjectStrength>> async) {
+  Widget _buildSubjectStrength(BuildContext context,
+      AsyncValue<List<SubjectStrength>> async, WidgetRef ref) {
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,53 +329,69 @@ class ProgressScreen extends ConsumerWidget {
                   message: 'Take some quizzes to see your subject strengths',
                 );
               }
-              return Column(
-                children: strengths.take(5).map((s) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      children: [
-                        Icon(Icons.book_rounded,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.primary),
-                        const Gap(12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(s.subject,
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium),
-                              Text(
-                                  '${(s.accuracy * 100).round()}% average accuracy',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
-                                      )),
-                            ],
-                          ),
+              return Semantics(
+                label: 'Subject strengths for ${strengths.length} subjects',
+                child: Column(
+                  children: strengths.take(5).map((s) {
+                    return Semantics(
+                      label:
+                          '${s.subject}: ${(s.accuracy * 100).round()}% accuracy',
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            Icon(Icons.book_rounded,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.primary),
+                            const Gap(12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(s.subject,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium),
+                                  Text(
+                                      '${(s.accuracy * 100).round()}% average accuracy',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          )),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                      ),
+                    );
+                  }).toList(),
+                ),
               );
             },
             loading: () => SizedBox(
                 height: 120, child: Center(child: CircularProgressIndicator())),
-            error: (e, st) => Center(child: Text('Error: $e')),
+            error: (e, st) => ErrorState(
+              title: 'Error Loading Subject Strength',
+              message: e.toString(),
+              onRetry: () {
+                HapticFeedback.lightImpact();
+                ref.invalidate(subjectStrengthProvider);
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWeeklyStatsSection(BuildContext context,
-      AsyncValue<AggregatedWeeklyStats> weeklyStatsAsync) {
+  Widget _buildWeeklyStatsSection(
+      BuildContext context, AsyncValue<AggregatedWeeklyStats> weeklyStatsAsync,
+      [WidgetRef? ref]) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -373,60 +406,66 @@ class ProgressScreen extends ConsumerWidget {
                 message: 'Start studying today to build your weekly stats',
               );
             }
-            return Column(
-              children: [
-                GlassCard(
-                  child: SizedBox(
-                    height: 200,
-                    child: LineChart(
-                      LineChartData(
-                        gridData: FlGridData(show: false),
-                        titlesData: const FlTitlesData(show: false),
-                        borderData: FlBorderData(show: false),
-                        minX: 0,
-                        maxX: stats.dailyStats.length.toDouble() - 1,
-                        minY: 0,
-                        maxY: stats.dailyStats.length > 0
-                            ? stats.dailyStats
-                                    .map((s) => s.studyMinutes)
-                                    .reduce((a, b) => a > b ? a : b) +
-                                10
-                            : 60,
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: [
-                              for (int i = 0; i < stats.dailyStats.length; i++)
-                                FlSpot(
-                                    i.toDouble(),
-                                    stats.dailyStats[i].studyMinutes
-                                        .toDouble()),
-                            ],
-                            isCurved: true,
-                            color: const Color(0xFF6C5CE7),
-                            barWidth: 4,
-                            dotData: FlDotData(show: true),
-                          ),
-                        ],
+            return Semantics(
+              label:
+                  'Weekly study stats: ${stats.totalStudyMinutes} minutes, average ${stats.dailyStats.map((s) => s.studyMinutes).reduce((a, b) => a + b) / stats.dailyStats.length.round()} minutes per day',
+              child: Column(
+                children: [
+                  GlassCard(
+                    child: SizedBox(
+                      height: 200,
+                      child: LineChart(
+                        LineChartData(
+                          gridData: FlGridData(show: false),
+                          titlesData: const FlTitlesData(show: false),
+                          borderData: FlBorderData(show: false),
+                          minX: 0,
+                          maxX: stats.dailyStats.length.toDouble() - 1,
+                          minY: 0,
+                          maxY: stats.dailyStats.length > 0
+                              ? stats.dailyStats
+                                      .map((s) => s.studyMinutes)
+                                      .reduce((a, b) => a > b ? a : b) +
+                                  10
+                              : 60,
+                          lineBarsData: [
+                            LineChartBarData(
+                              spots: [
+                                for (int i = 0;
+                                    i < stats.dailyStats.length;
+                                    i++)
+                                  FlSpot(
+                                      i.toDouble(),
+                                      stats.dailyStats[i].studyMinutes
+                                          .toDouble()),
+                              ],
+                              isCurved: true,
+                              color: const Color(0xFF6C5CE7),
+                              barWidth: 4,
+                              dotData: FlDotData(show: true),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const Gap(12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _ColorLegendDot(
-                      label: 'Study Minutes',
-                      color: const Color(0xFF6C5CE7),
-                    ),
-                    const Gap(24),
-                    _ColorLegendDot(
-                      label: 'XP Earned',
-                      color: const Color(0xFF00D4C8),
-                    ),
-                  ],
-                ),
-              ],
+                  const Gap(12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _ColorLegendDot(
+                        label: 'Study Minutes',
+                        color: const Color(0xFF6C5CE7),
+                      ),
+                      const Gap(24),
+                      _ColorLegendDot(
+                        label: 'XP Earned',
+                        color: const Color(0xFF00D4C8),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             );
           },
           loading: () => GlassCard(
@@ -435,14 +474,23 @@ class ProgressScreen extends ConsumerWidget {
               child: Center(child: CircularProgressIndicator()),
             ),
           ),
-          error: (e, st) => Center(child: Text('Error: $e')),
+          error: (e, st) => ErrorState(
+            title: 'Error Loading Weekly Stats',
+            message: e.toString(),
+            onRetry: ref != null
+                ? () {
+                    HapticFeedback.lightImpact();
+                    ref.invalidate(weeklyStatsProvider);
+                  }
+                : null,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildQuizScoreTrend(
-      BuildContext context, AsyncValue<QuizScoreTrend> quizScoreTrendAsync) {
+  Widget _buildQuizScoreTrend(BuildContext context,
+      AsyncValue<QuizScoreTrend> quizScoreTrendAsync, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -458,108 +506,113 @@ class ProgressScreen extends ConsumerWidget {
                 message: 'Complete quizzes to see your weekly score trend',
               );
             }
-            return Column(
-              children: [
-                GlassCard(
-                  child: SizedBox(
-                    height: 200,
-                    child: LineChart(
-                      LineChartData(
-                        gridData: FlGridData(show: false),
-                        titlesData: FlTitlesData(
-                          show: true,
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 28,
-                              getTitlesWidget: (value, meta) {
-                                final index = value.toInt();
-                                if (index < 0 || index >= trend.points.length) {
-                                  return const Text('');
-                                }
-                                return SideTitleWidget(
-                                  axisSide: meta.axisSide,
-                                  child: Text(
-                                    trend.points[index].label,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant,
-                                        ),
-                                  ),
-                                );
-                              },
+            return Semantics(
+              label:
+                  'Quiz score trend: average ${trend.averageScore.round()}% across ${trend.points.length} days',
+              child: Column(
+                children: [
+                  GlassCard(
+                    child: SizedBox(
+                      height: 200,
+                      child: LineChart(
+                        LineChartData(
+                          gridData: FlGridData(show: false),
+                          titlesData: FlTitlesData(
+                            show: true,
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 28,
+                                getTitlesWidget: (value, meta) {
+                                  final index = value.toInt();
+                                  if (index < 0 ||
+                                      index >= trend.points.length) {
+                                    return const Text('');
+                                  }
+                                  return SideTitleWidget(
+                                    axisSide: meta.axisSide,
+                                    child: Text(
+                                      trend.points[index].label,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 32,
-                              interval: 25,
-                              getTitlesWidget: (value, meta) {
-                                return SideTitleWidget(
-                                  axisSide: meta.axisSide,
-                                  child: Text(
-                                    '${value.toInt()}%',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant,
-                                        ),
-                                  ),
-                                );
-                              },
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 32,
+                                interval: 25,
+                                getTitlesWidget: (value, meta) {
+                                  return SideTitleWidget(
+                                    axisSide: meta.axisSide,
+                                    child: Text(
+                                      '${value.toInt()}%',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
+                            topTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false)),
+                            rightTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false)),
                           ),
-                          topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
+                          borderData: FlBorderData(show: false),
+                          minX: 0,
+                          maxX: trend.points.length.toDouble() - 1,
+                          minY: 0,
+                          maxY: 100,
+                          lineBarsData: [
+                            LineChartBarData(
+                              spots: [
+                                for (int i = 0; i < trend.points.length; i++)
+                                  FlSpot(
+                                      i.toDouble(), trend.points[i].percentage),
+                              ],
+                              isCurved: true,
+                              color: const Color(0xFF2ED573),
+                              barWidth: 4,
+                              dotData: FlDotData(show: true),
+                              belowBarData: BarAreaData(
+                                show: true,
+                                color: const Color(0xFF2ED573)
+                                    .withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ],
                         ),
-                        borderData: FlBorderData(show: false),
-                        minX: 0,
-                        maxX: trend.points.length.toDouble() - 1,
-                        minY: 0,
-                        maxY: 100,
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: [
-                              for (int i = 0; i < trend.points.length; i++)
-                                FlSpot(
-                                    i.toDouble(), trend.points[i].percentage),
-                            ],
-                            isCurved: true,
-                            color: const Color(0xFF2ED573),
-                            barWidth: 4,
-                            dotData: FlDotData(show: true),
-                            belowBarData: BarAreaData(
-                              show: true,
-                              color: const Color(0xFF2ED573)
-                                  .withValues(alpha: 0.1),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ),
-                ),
-                const Gap(12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _ColorLegendDot(
-                      label: 'Avg: ${trend.averageScore.round()}%',
-                      color: const Color(0xFF2ED573),
-                    ),
-                  ],
-                ),
-              ],
+                  const Gap(12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _ColorLegendDot(
+                        label: 'Avg: ${trend.averageScore.round()}%',
+                        color: const Color(0xFF2ED573),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             );
           },
           loading: () => GlassCard(
@@ -568,7 +621,14 @@ class ProgressScreen extends ConsumerWidget {
               child: Center(child: CircularProgressIndicator()),
             ),
           ),
-          error: (e, st) => Center(child: Text('Error: $e')),
+          error: (e, st) => ErrorState(
+            title: 'Error Loading Quiz Score Trend',
+            message: e.toString(),
+            onRetry: () {
+              HapticFeedback.lightImpact();
+              ref.invalidate(quizScoreTrendProvider);
+            },
+          ),
         ),
       ],
     );
@@ -577,7 +637,8 @@ class ProgressScreen extends ConsumerWidget {
   Widget _buildBadgesSection(
       BuildContext context,
       AsyncValue<List<badge_domain.Badge>> unlockedBadgesAsync,
-      int badgeCount) {
+      int badgeCount,
+      WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -603,23 +664,36 @@ class ProgressScreen extends ConsumerWidget {
               );
             }
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 1,
+            return Semantics(
+              label: '${unlockedBadges.length} badges unlocked',
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 1,
+                ),
+                itemCount: unlockedBadges.length,
+                itemBuilder: (context, index) {
+                  final badge = unlockedBadges[index];
+                  return Semantics(
+                    label: '${badge.title}: ${badge.description}',
+                    child: _BadgeCard(badge: badge),
+                  );
+                },
               ),
-              itemCount: unlockedBadges.length,
-              itemBuilder: (context, index) {
-                final badge = unlockedBadges[index];
-                return _BadgeCard(badge: badge);
-              },
             );
           },
           loading: () => SizedBox(
               height: 200, child: Center(child: CircularProgressIndicator())),
-          error: (e, st) => Center(child: Text('Error: $e')),
+          error: (e, st) => ErrorState(
+            title: 'Error Loading Badges',
+            message: e.toString(),
+            onRetry: () {
+              HapticFeedback.lightImpact();
+              ref.invalidate(unlockedBadgesProvider);
+            },
+          ),
         ),
       ],
     );

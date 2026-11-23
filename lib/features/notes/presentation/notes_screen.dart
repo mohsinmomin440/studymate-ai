@@ -77,7 +77,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
               child: StreamBuilder<List<NoteModel>>(
                 stream: _searchQuery.isEmpty
                     ? ref.watch(noteRepositoryProvider).getNotes()
-                    : ref.watch(noteRepositoryProvider).searchNotes(_searchQuery),
+                    : ref
+                        .watch(noteRepositoryProvider)
+                        .searchNotes(_searchQuery),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return _buildLoadingList();
@@ -87,7 +89,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     return ErrorState(
                       title: 'Error Loading Notes',
                       message: snapshot.error.toString(),
-                      onRetry: () => setState(() => _searchQuery = _searchQuery),
+                      onRetry: () =>
+                          setState(() => _searchQuery = _searchQuery),
                     );
                   }
 

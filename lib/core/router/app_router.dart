@@ -8,6 +8,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/chat/chat_feature.dart';
 import '../../features/notes/notes_feature.dart';
 import '../../features/scanner/scanner_feature.dart';
+import '../../features/scanner/presentation/doubts_list_screen.dart';
 import '../../features/flashcards/flashcards_feature.dart';
 import '../../features/quiz/quiz_feature.dart';
 import '../../features/planner/planner_feature.dart';
@@ -33,6 +34,7 @@ class AppRoutes {
   static const chat = '/chat';
   static const chatDetail = '/chat/:chatId';
   static const scanner = '/scanner';
+  static const doubts = '/doubts';
   static const notes = '/notes';
   static const notesCreate = '/notes/create';
   static const noteDetail = '/notes/:noteId';
@@ -203,6 +205,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.scanner,
                 builder: (context, state) => const ScannerScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.doubts,
+                builder: (context, state) => const DoubtsListScreen(),
               ),
             ],
           ),

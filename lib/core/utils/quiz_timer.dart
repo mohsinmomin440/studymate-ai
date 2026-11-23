@@ -28,7 +28,8 @@ class QuizTimer {
   /// Create a timer from quiz duration minutes with current time as start
   QuizTimer.fromDurationMinutes(int minutes, {DateTime Function()? clock})
       : _totalSeconds = minutes * 60,
-        _deadline = (clock ?? _defaultClock)().add(Duration(seconds: minutes * 60)),
+        _deadline =
+            (clock ?? _defaultClock)().add(Duration(seconds: minutes * 60)),
         _now = clock ?? _defaultClock;
 
   /// Check if timer has a time limit

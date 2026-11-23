@@ -67,26 +67,32 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             ),
           ),
           Expanded(
-            child: chatsAsync.when(
-              data: (chats) {
-                if (chats.isEmpty) {
-                  return _buildEmptyState();
-                }
-                return ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: chats.length,
-                  itemBuilder: (context, index) {
-                    final chat = chats[index];
-                    return _ChatListTile(chat: chat)
-                        .animate()
-                        .fadeIn(duration: 300.ms, delay: (index * 50).ms)
-                        .slideX(begin: 0.2, end: 0);
-                  },
-                );
+            child: RefreshIndicator(
+              onRefresh: () async {
+                // Refresh the chats stream
+                ref.invalidate(chatListStreamProvider(_searchQuery));
               },
-              loading: () => _buildLoadingList(),
-              error: (err, stack) => _buildErrorState(err.toString()),
+              child: chatsAsync.when(
+                data: (chats) {
+                  if (chats.isEmpty) {
+                    return _buildEmptyState();
+                  }
+                  return ListView.builder(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: chats.length,
+                    itemBuilder: (context, index) {
+                      final chat = chats[index];
+                      return _ChatListTile(chat: chat)
+                          .animate()
+                          .fadeIn(duration: 300.ms, delay: (index * 50).ms)
+                          .slideX(begin: 0.2, end: 0);
+                    },
+                  );
+                },
+                loading: () => _buildLoadingList(),
+                error: (err, stack) => _buildErrorState(err.toString()),
+              ),
             ),
           ),
         ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/gap.dart';
@@ -44,14 +46,20 @@ class StudyHubScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const Gap(32),
-              FilledButton(
-                onPressed: () => context.go(AppRoutes.home),
-                child: Text(l10n.goHome),
+              Semantics(
+                label: l10n.goHome,
+                child: FilledButton(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    context.go(AppRoutes.home);
+                  },
+                  child: Text(l10n.goHome),
+                ),
               ),
             ],
           ),
         ),
-      ),
+      ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
     );
   }
 }

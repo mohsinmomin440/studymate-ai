@@ -70,7 +70,8 @@ class FirebaseInitializer {
       };
 
       // Handle uncaught Dart errors
-      ui.PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+      ui.PlatformDispatcher.instance.onError =
+          (Object error, StackTrace stack) {
         FirebaseCrashlytics.instance.recordError(error, stack);
         return true;
       };

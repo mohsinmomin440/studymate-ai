@@ -6,6 +6,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
@@ -15,6 +16,8 @@ import '../../../core/services/analytics_service.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/shimmer_box.dart';
 import '../../chat/data/ai_service.dart' as ai_service;
 import '../data/planner_repository.dart';
 import '../domain/planner_models.dart';
@@ -239,112 +242,164 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Study Planner'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => const AlertDialog(
-                  title: Text('Study Planner Help'),
-                  content: Text(
-                    '1. Enter your exam date\n'
-                    '2. Select subjects you need to study\n'
-                    '3. Set daily study hours\n'
-                    '4. Add weak topics to prioritize them\n'
-                    '5. AI generates a day-by-day plan with spaced repetition\n'
-                    '6. Mark tasks as done and reschedule missed ones',
+          Semantics(
+            label: 'Study Planner Help',
+            child: IconButton(
+              icon: const Icon(Icons.info_outline_rounded),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const AlertDialog(
+                    title: Text('Study Planner Help'),
+                    content: Text(
+                      '1. Enter your exam date\n'
+                      '2. Select subjects you need to study\n'
+                      '3. Set daily study hours\n'
+                      '4. Add weak topics to prioritize them\n'
+                      '5. AI generates a day-by-day plan with spaced repetition\n'
+                      '6. Mark tasks as done and reschedule missed ones',
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+              tooltip: 'Help',
+            ),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SectionHeader(title: 'Create Study Plan'),
-          const Gap(16),
-          GlassCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Exam Date',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const Gap(8),
-                ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: Text(_examDate?.toLocal().toString().split('.')[0] ??
-                      'Select exam date'),
-                  trailing: const Icon(Icons.chevron_right),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          HapticFeedback.lightImpact();
+          ref.invalidate(plansStreamProvider);
+        },
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SectionHeader(title: 'Create Study Plan'),
+            const Gap(16),
+            _buildPlanForm(),
+            const Gap(32),
+            const SectionHeader(title: 'My Plans'),
+            const Gap(16),
+            _buildPlansList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlanForm() {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Exam Date',
+                style: theme.textTheme.titleSmall,
+              ),
+              const Gap(8),
+              Semantics(
+                label: 'Exam date',
+                child: ListTile(
+                  leading: const Icon(Icons.calendar_today_rounded, size: 20),
+                  title: Text(
+                    _examDate?.toLocal().toString().split('.')[0] ??
+                        'Select exam date',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight:
+                          _examDate == null ? FontWeight.w400 : FontWeight.w500,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                   onTap: _pickDate,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const Gap(16),
+        ),
+        const Gap(16),
+        Text(
+          'Subjects to Study',
+          style: theme.textTheme.titleSmall,
+        ),
+        const Gap(8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _allSubjects.map((subject) {
+            final isSelected = _selectedSubjects.contains(subject);
+            return Semantics(
+              label: '$subject, ${isSelected ? "selected" : "not selected"}',
+              checked: isSelected,
+              child: FilterChip(
+                selected: isSelected,
+                label: Text(subject),
+                onSelected: (selected) {
+                  HapticFeedback.lightImpact();
+                  _toggleSubject(subject);
+                },
+              ),
+            );
+          }).toList(),
+        ),
+        const Gap(24),
+        AppTextField(
+          label: 'Hours per Day',
+          hint: 'e.g., 2',
+          controller: _hoursPerDayController,
+          keyboardType: TextInputType.number,
+        ),
+        const Gap(16),
+        Text(
+          'Weak Topics (Optional)',
+          style: theme.textTheme.titleSmall,
+        ),
+        const Gap(8),
+        if (_weakTopics.isEmpty)
           Text(
-            'Subjects to Study',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          const Gap(8),
+            'Add topics you struggle with',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          )
+        else
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _allSubjects.map((subject) {
-              final isSelected = _selectedSubjects.contains(subject);
-              return FilterChip(
-                selected: isSelected,
-                label: Text(subject),
-                onSelected: (selected) => _toggleSubject(subject),
+            children: _weakTopics.map((topic) {
+              return Chip(
+                label: Text(topic),
+                deleteIcon: const Icon(Icons.close_rounded, size: 16),
+                onDeleted: () {
+                  HapticFeedback.lightImpact();
+                  _removeWeakTopic(topic);
+                },
               );
             }).toList(),
           ),
-          const Gap(24),
-          AppTextField(
-            label: 'Hours per Day',
-            hint: 'e.g., 2',
-            controller: _hoursPerDayController,
-            keyboardType: TextInputType.number,
-          ),
-          const Gap(16),
-          Text(
-            'Weak Topics (Optional)',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          const Gap(8),
-          if (_weakTopics.isEmpty)
-            Text(
-              'Add topics you struggle with',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            )
-          else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _weakTopics.map((topic) {
-                return Chip(
-                  label: Text(topic),
-                  deleteIcon: const Icon(Icons.close),
-                  onDeleted: () => _removeWeakTopic(topic),
-                );
-              }).toList(),
-            ),
-          TextButton.icon(
+        Semantics(
+          label: 'Add weak topic',
+          child: TextButton.icon(
             onPressed: _addWeakTopic,
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_rounded, size: 20),
             label: const Text('Add Weak Topic'),
           ),
-          const Gap(24),
-          FilledButton(
+        ),
+        const Gap(24),
+        Semantics(
+          label: _isGenerating ? 'Generating plan' : 'Generate study plan',
+          child: FilledButton(
             onPressed: _isGenerating ? null : _generatePlan,
             child: _isGenerating
                 ? const SizedBox(
@@ -354,19 +409,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   )
                 : const Text('Generate Study Plan'),
           ),
-          if (_errorMessage != null) ...[
-            const Gap(16),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ],
-          const Gap(32),
-          const SectionHeader(title: 'My Plans'),
+        ),
+        if (_errorMessage != null) ...[
           const Gap(16),
-          _buildPlansList(),
+          Text(
+            _errorMessage!,
+            style: const TextStyle(color: Colors.red),
+          ),
         ],
-      ),
+      ],
     );
   }
 
@@ -377,11 +428,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return plansAsync.when(
         data: (plans) {
           if (plans.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Text('No plans yet. Generate your first plan above!'),
-              ),
+            return EmptyState(
+              icon: Icons.route_rounded,
+              title: 'No plans yet',
+              message: 'Generate your first study plan above!',
+              actionLabel: 'Create Plan',
+              onAction: () {
+                HapticFeedback.lightImpact();
+              },
             );
           }
           return ListView.builder(
@@ -390,22 +444,41 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
             itemCount: plans.length,
             itemBuilder: (context, index) {
               final plan = plans[index];
-              return GlassCard(
-                onTap: () => context.go('${AppRoutes.planDetail}/${plan.id}'),
-                child: ListTile(
-                  title: Text(plan.title),
-                  subtitle: Text(
-                    'Exam: ${plan.examDate.toLocal().toString().split('.')[0]}',
+              return Semantics(
+                label:
+                    'Plan: ${plan.title}, Exam: ${plan.examDate.toLocal().toString().split('.')[0]}',
+                child: GlassCard(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.go('${AppRoutes.planDetail}/${plan.id}');
+                  },
+                  child: ListTile(
+                    title: Text(plan.title),
+                    subtitle: Text(
+                      'Exam: ${plan.examDate.toLocal().toString().split('.')[0]}',
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                   ),
-                  trailing: const Icon(Icons.chevron_right),
                 ),
               );
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text('Error loading plans: ${error.toString()}'),
+        loading: () => ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          itemCount: 3,
+          itemBuilder: (context, index) => ShimmerCard(
+            height: 100,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        error: (error, stack) => ErrorState(
+          title: 'Error Loading Plans',
+          message: error.toString(),
+          onRetry: () {
+            HapticFeedback.lightImpact();
+            ref.invalidate(plansStreamProvider);
+          },
         ),
       );
     });
@@ -604,46 +677,51 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     final theme = Theme.of(context);
     final repository = ref.read(plannerRepositoryProvider);
 
-    return ListTile(
-      leading: Checkbox(
-        value: task.done,
-        onChanged: (_) {
-          repository.toggleTask(
-            planId: widget.planId,
-            dayIndex: dayIndex,
-            taskIndex: day.tasks.indexOf(task),
-          );
-        },
-      ),
-      title: Text(
-        task.title,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          decoration: task.done ? TextDecoration.lineThrough : null,
-          color: task.done
-              ? theme.colorScheme.onSurfaceVariant
-              : theme.colorScheme.onSurface,
+    void _toggleTask() {
+      HapticFeedback.lightImpact();
+      repository.toggleTask(
+        planId: widget.planId,
+        dayIndex: dayIndex,
+        taskIndex: day.tasks.indexOf(task),
+      );
+    }
+
+    return Semantics(
+      label: task.done
+          ? 'Task "${task.title}" completed'
+          : 'Task "${task.title}", not completed',
+      checked: task.done,
+      child: ListTile(
+        leading: Checkbox(
+          value: task.done,
+          onChanged: (_) => _toggleTask(),
         ),
+        title: Text(
+          task.title,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            decoration: task.done ? TextDecoration.lineThrough : null,
+            color: task.done
+                ? theme.colorScheme.onSurfaceVariant
+                : theme.colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Text('${task.subject} • ${task.estimatedMinutes} min'),
+        trailing: Chip(
+          label: Text(task.type.toUpperCase()),
+          visualDensity: VisualDensity.compact,
+          backgroundColor: task.type == 'break'
+              ? Colors.orange.withValues(alpha: 0.2)
+              : theme.colorScheme.primaryContainer,
+        ),
+        onTap: _toggleTask,
       ),
-      subtitle: Text('${task.subject} • ${task.estimatedMinutes} min'),
-      trailing: Chip(
-        label: Text(task.type.toUpperCase()),
-        visualDensity: VisualDensity.compact,
-        backgroundColor: task.type == 'break'
-            ? Colors.orange.withValues(alpha: 0.2)
-            : theme.colorScheme.primaryContainer,
-      ),
-      onTap: () {
-        repository.toggleTask(
-          planId: widget.planId,
-          dayIndex: dayIndex,
-          taskIndex: day.tasks.indexOf(task),
-        );
-      },
     );
   }
 
   void _markAllDone(StudyPlan plan) async {
     final repository = ref.read(plannerRepositoryProvider);
+
+    HapticFeedback.mediumImpact();
 
     for (int dayIndex = 0; dayIndex < plan.days.length; dayIndex++) {
       for (int taskIndex = 0;
@@ -662,7 +740,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All tasks marked as done!')),
+        SnackBar(
+          content: const Text('All tasks marked as done!'),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+        ),
       );
     }
   }

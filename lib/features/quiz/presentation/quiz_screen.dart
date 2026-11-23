@@ -874,6 +874,7 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
   bool get _isRetry => widget.isRetry;
 
   void _selectAnswer(int index) {
+    HapticFeedback.lightImpact();
     setState(() => _selectedAnswer = index);
   }
 
@@ -998,45 +999,55 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
                 itemCount: question.options.length,
                 itemBuilder: (context, index) {
                   final option = question.options[index];
-                  return GestureDetector(
-                    onTap: () => _selectAnswer(index),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: _selectedAnswer == index
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest
-                                .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
+                  final isSelected = _selectedAnswer == index;
+                  return Semantics(
+                    label:
+                        'Option ${String.fromCharCode(65 + index)}: $option, ${isSelected ? "selected" : "not selected"}',
+                    child: GestureDetector(
+                      onTap: () => _selectAnswer(index),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
                           color: _selectedAnswer == index
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.outlineVariant,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: _selectedAnswer == index
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _selectedAnswer == index
                                 ? Theme.of(context).colorScheme.primary
                                 : Theme.of(context).colorScheme.outlineVariant,
-                            child: _selectedAnswer == index
-                                ? Icon(Icons.check,
-                                    size: 16,
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary)
-                                : null,
                           ),
-                          const Gap(12),
-                          Text(
-                            option,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        ],
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: _selectedAnswer == index
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
+                              child: _selectedAnswer == index
+                                  ? Icon(Icons.check,
+                                      size: 20,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary)
+                                  : null,
+                            ),
+                            const Gap(12),
+                            Expanded(
+                              child: Text(
+                                option,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -1060,6 +1071,13 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
 
     final score = ((correct / quiz.questions.length) * 100).round();
     final theme = Theme.of(context);
+
+    // Show confetti for good scores
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (score >= 70 && mounted) {
+        HapticFeedback.vibrate();
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Result')),
@@ -1088,19 +1106,29 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
               style: theme.textTheme.headlineMedium,
             ),
             const Gap(32),
-            FilledButton(
-              onPressed: () {
-                setState(() {
-                  _currentIndex = 0;
-                  _answers = List.filled(quiz.questions.length, -1);
-                });
-              },
-              child: const Text('Retry Quiz'),
+            Semantics(
+              label: 'Retry quiz with current questions',
+              child: FilledButton(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  setState(() {
+                    _currentIndex = 0;
+                    _answers = List.filled(quiz.questions.length, -1);
+                  });
+                },
+                child: const Text('Retry Quiz'),
+              ),
             ),
             const Gap(12),
-            OutlinedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Back to Quizzes'),
+            Semantics(
+              label: 'Back to quizzes list',
+              child: OutlinedButton(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Back to Quizzes'),
+              ),
             ),
           ],
         ),
