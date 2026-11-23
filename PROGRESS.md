@@ -84,6 +84,19 @@ Note: Unit testing the fallback logic would require mocking Firebase AI and Remo
 - [x] All tests pass (255 tests)
 - [x] Commit: "FINAL STEP 1: Fix app_en.arb - added missing PDF import keys and made ARB keys test strict"
 
+## STEP 2: Release-blocking Android fixes ✅ COMPLETE
+- [x] Added INTERNET permission to main AndroidManifest.xml (not just debug/profile)
+- [x] Changed android:label from 'studymate_ai' to 'StudyMate AI'
+- [x] Removed android:usesCleartextTraffic="true"
+- [x] Kept SCHEDULE_EXACT_ALARM (required for focus timer, planner reminders)
+- [x] Kept POST_NOTIFICATIONS (required for notifications on Android 13+)
+- [x] Added isShrinkResources = false to release build to fix build failure
+- [x] flutter build appbundle --release SUCCESS (67.0MB)
+- [x] Merged manifest verified: INTERNET present in release
+- [x] All tests pass (255 tests)
+- [x] flutter analyze clean (0 errors)
+- [x] Commit: "FINAL STEP 2: Release-blocking Android fixes"
+
 ## MEGA PHASE 9: Clear all doubts
 - [x] AI model names already read from RemoteConfigService
 - [x] Safe defaults in AppConstants with documentation comment (added docstring pointing to Firebase AI Logic docs)
