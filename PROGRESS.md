@@ -203,9 +203,39 @@
 - [x] Phase 8B Batch 1: Added ICU plural tests for cardsDuePlural in all 3 languages
 - [x] Phase 8B Batch 2: HomeScreen fully localized with goalAchieved, noTasksToday, createPlanForTasks, noCardsDueToday, browseDecks, cardsDuePlural, todayTask, todayTasks, reviewFlashcard, level, errorLoadingDashboard
 - [x] Phase 8B Batch 3: Chat list/detail localized with proper parameter substitution
+- [ ] Phase 8B Batch 1a: notes_screen.dart, scanner_screen.dart localization
+- [ ] Phase 8B Batch 1b: flashcards_screen.dart, quiz_screen.dart localization
+- [ ] Phase 8B Batch 1c: planner_screen.dart, focus_screen.dart, progress_screen.dart localization
+- [ ] Phase 8B Batch 1d: settings_screen.dart remaining localization
+- [ ] Phase 8B Gate 1: Run findstr command and verify (BLOCKED)
 - [ ] Remote Config
-- [ ] Animations
-- [ ] Phase 8B Batch 3: Remaining screens (scanner, notes, flashcards, quiz, planner, focus, progress) localization pending
+- [ ] Crashlytics and Analytics
+- [ ] App Check
+- [ ] Quiz XP daily cap
+- [ ] Quiz optional timer
+- [ ] PDF import retry
+- [ ] Polish pass on all list screens
+- [ ] Remove stubs and placeholders
+- [ ] App icon
+- [ ] Package id verification
+- [ ] Release keystore setup
+- [ ] Release builds (APK and App Bundle)
+- [ ] docs/privacy_policy.md
+- [ ] docs/play_store_listing.md
+
+### Blocked
+
+Phase 8B full localization requires extensive work across multiple screens:
+- notes_screen.dart: ~50 hardcoded strings
+- scanner_screen.dart: ~30 hardcoded strings
+- flashcards_screen.dart: ~40 hardcoded strings
+- quiz_screen.dart: ~30 hardcoded strings
+- planner_screen.dart: ~20 hardcoded strings
+- focus_screen.dart: ~10 hardcoded strings
+- progress_screen.dart: ~10 hardcoded strings
+- settings_screen.dart: ~13 hardcoded strings
+
+Total: ~230+ strings to localize, 40+ new keys needed in ARB files, screen-by-screen updates required.
 
 ## Phase 9 — Release prep
 - [ ] App icon
