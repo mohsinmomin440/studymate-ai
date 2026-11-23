@@ -1471,9 +1471,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAll => 'View All';
 
   @override
-  String get voiceInput => 'Voice input';
-
-  @override
   String get weakTopics => 'Weak Topics';
 
   @override

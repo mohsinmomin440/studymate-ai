@@ -2860,12 +2860,6 @@ abstract class AppLocalizations {
   /// **'View All'**
   String get viewAll;
 
-  /// No description provided for @voiceInput.
-  ///
-  /// In en, this message translates to:
-  /// **'Voice input'**
-  String get voiceInput;
-
   /// No description provided for @weakTopics.
   ///
   /// In en, this message translates to:

@@ -1470,9 +1470,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get viewAll => 'सब देखें';
 
   @override
-  String get voiceInput => 'वॉइस इनपुट';
-
-  @override
   String get weakTopics => 'कमज़ोर विषयों';
 
   @override

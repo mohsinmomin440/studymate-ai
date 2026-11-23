@@ -1468,9 +1468,6 @@ class AppLocalizationsGu extends AppLocalizations {
   String get viewAll => 'બધા જ જુઓ';
 
   @override
-  String get voiceInput => 'વૉસ ઇનપુટ';
-
-  @override
   String get weakTopics => 'દુર્બળ વિષયો';
 
   @override

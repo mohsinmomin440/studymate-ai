@@ -97,6 +97,24 @@ Note: Unit testing the fallback logic would require mocking Firebase AI and Remo
 - [x] flutter analyze clean (0 errors)
 - [x] Commit: "FINAL STEP 2: Release-blocking Android fixes"
 
+## STEP 3: Localize lib/features/quiz and lib/features/flashcards ✅ COMPLETE
+- [x] quiz_screen.dart fully localized with context.l10n
+- [x] flashcards_screen.dart fully localized with context.l10n
+- [x] Removed duplicate generateQuizAction key from app_en.arb
+- [x] Removed unused voiceInput key from all ARB files
+- [x] Removed mic IconButton (with TODO) from chat_detail_screen.dart
+- [x] flutter gen-l10n completed
+- [x] flutter analyze clean (0 errors)
+- [x] flutter test pass (255 tests)
+
+## MEGA PHASE 9+10: Polish & Release prep (In Progress)
+- [x] versionName/versionCode in pubspec.yaml
+- [ ] Release config (minify/shrink, ProGuard rules)
+- [ ] Unused permissions in AndroidManifest.xml
+- [ ] docs/privacy_policy.md updated
+- [ ] docs/play_store_listing.md updated
+- [ ] Run flutter build appbundle --release
+
 ## MEGA PHASE 9: Clear all doubts
 - [x] AI model names already read from RemoteConfigService
 - [x] Safe defaults in AppConstants with documentation comment (added docstring pointing to Firebase AI Logic docs)

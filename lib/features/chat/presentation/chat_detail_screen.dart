@@ -414,21 +414,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               textInputAction: TextInputAction.send,
               onChanged: (value) => setState(() {}),
               onSubmitted: (_) => _sendMessage(),
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.mic_rounded,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    onPressed: () {
-                      // TODO: voice input
-                    },
-                    tooltip: context.l10n.voiceInput,
-                  ),
-                ],
-              ),
             ),
           ),
           const Gap(8),
