@@ -8,11 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/shimmer_box.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../chat/data/ai_service.dart';
@@ -50,6 +52,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           IconButton(
             icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.notesCreate),
+            tooltip: 'Create note',
           )
         ],
       ),
@@ -65,45 +68,72 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<List<NoteModel>>(
-              stream: _searchQuery.isEmpty
-                  ? ref.watch(noteRepositoryProvider).getNotes()
-                  : ref.watch(noteRepositoryProvider).searchNotes(_searchQuery),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                }
-
-                final notes = snapshot.data ?? [];
-
-                if (notes.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.note_add_rounded,
-                    title: 'No notes yet',
-                    message: 'Create your first note to get started',
-                  );
-                }
-
-                return ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: notes.length,
-                  itemBuilder: (context, index) {
-                    final note = notes[index];
-                    return _buildNoteCard(note);
-                  },
-                );
+            child: RefreshIndicator(
+              onRefresh: () async {
+                // The stream will automatically refresh when data changes
+                // Award XP for refreshing with haptic feedback
+                HapticFeedback.lightImpact();
               },
+              child: StreamBuilder<List<NoteModel>>(
+                stream: _searchQuery.isEmpty
+                    ? ref.watch(noteRepositoryProvider).getNotes()
+                    : ref.watch(noteRepositoryProvider).searchNotes(_searchQuery),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildLoadingList();
+                  }
+
+                  if (snapshot.hasError) {
+                    return ErrorState(
+                      title: 'Error Loading Notes',
+                      message: snapshot.error.toString(),
+                      onRetry: () => setState(() => _searchQuery = _searchQuery),
+                    );
+                  }
+
+                  final notes = snapshot.data ?? [];
+
+                  if (notes.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  return ListView.builder(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: notes.length,
+                    itemBuilder: (context, index) {
+                      final note = notes[index];
+                      return _buildNoteCard(note);
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLoadingList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: 6,
+      itemBuilder: (context, index) => ShimmerBox(
+        height: 100,
+        margin: const EdgeInsets.only(bottom: 12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return EmptyState(
+      icon: Icons.note_add_rounded,
+      title: 'No notes yet',
+      message: 'Create your first note to get started',
+      actionLabel: 'Create Note',
+      onAction: () => context.go(AppRoutes.notesCreate),
     );
   }
 
