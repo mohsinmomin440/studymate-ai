@@ -1081,22 +1081,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizDifficultyEasy => 'Easy';
 
   @override
-  String get quizDifficultyHard => 'Hard';
-
-  @override
   String get quizDifficultyMedium => 'Medium';
 
   @override
-  String get quizGeneratedSuccess => 'Quiz generated successfully';
+  String get quizDifficultyHard => 'Hard';
 
   @override
-  String get quizNotFound => 'Quiz not found';
+  String get questionsCount => 'Question Count';
+
+  @override
+  String get enableTimer => 'Enable Timer';
+
+  @override
+  String get noTimeLimit => 'No time limit';
+
+  @override
+  String get generateQuiz => 'Generate Quiz';
+
+  @override
+  String get deckCreatedSuccessfully => 'Deck created successfully!';
 
   @override
   String get quizzes => 'Quizzes';
 
   @override
+  String get quizNotFound => 'Quiz not found';
+
+  @override
   String get quizzesTaken => 'Quizzes taken';
+
+  @override
+  String get quizCreatedSuccessfully => 'Quiz created successfully!';
+
+  @override
+  String get quizGeneratedSuccessfully => 'Quiz generated successfully';
+
+  @override
+  String get quizGeneratedSuccess => 'Quiz generated successfully';
+
+  @override
+  String quizGenerationFailed(Object error) {
+    return 'Failed to generate: $error';
+  }
 
   @override
   String get rateApp => 'Rate App';

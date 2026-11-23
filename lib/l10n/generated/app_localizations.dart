@@ -2098,29 +2098,47 @@ abstract class AppLocalizations {
   /// **'Easy'**
   String get quizDifficultyEasy;
 
-  /// No description provided for @quizDifficultyHard.
-  ///
-  /// In en, this message translates to:
-  /// **'Hard'**
-  String get quizDifficultyHard;
-
   /// No description provided for @quizDifficultyMedium.
   ///
   /// In en, this message translates to:
   /// **'Medium'**
   String get quizDifficultyMedium;
 
-  /// No description provided for @quizGeneratedSuccess.
+  /// No description provided for @quizDifficultyHard.
   ///
   /// In en, this message translates to:
-  /// **'Quiz generated successfully'**
-  String get quizGeneratedSuccess;
+  /// **'Hard'**
+  String get quizDifficultyHard;
 
-  /// No description provided for @quizNotFound.
+  /// No description provided for @questionsCount.
   ///
   /// In en, this message translates to:
-  /// **'Quiz not found'**
-  String get quizNotFound;
+  /// **'Question Count'**
+  String get questionsCount;
+
+  /// No description provided for @enableTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Timer'**
+  String get enableTimer;
+
+  /// No description provided for @noTimeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'No time limit'**
+  String get noTimeLimit;
+
+  /// No description provided for @generateQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Quiz'**
+  String get generateQuiz;
+
+  /// No description provided for @deckCreatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Deck created successfully!'**
+  String get deckCreatedSuccessfully;
 
   /// No description provided for @quizzes.
   ///
@@ -2128,11 +2146,41 @@ abstract class AppLocalizations {
   /// **'Quizzes'**
   String get quizzes;
 
+  /// No description provided for @quizNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz not found'**
+  String get quizNotFound;
+
   /// No description provided for @quizzesTaken.
   ///
   /// In en, this message translates to:
   /// **'Quizzes taken'**
   String get quizzesTaken;
+
+  /// No description provided for @quizCreatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz created successfully!'**
+  String get quizCreatedSuccessfully;
+
+  /// No description provided for @quizGeneratedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz generated successfully'**
+  String get quizGeneratedSuccessfully;
+
+  /// No description provided for @quizGeneratedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz generated successfully'**
+  String get quizGeneratedSuccess;
+
+  /// No description provided for @quizGenerationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate: {error}'**
+  String quizGenerationFailed(Object error);
 
   /// No description provided for @rateApp.
   ///

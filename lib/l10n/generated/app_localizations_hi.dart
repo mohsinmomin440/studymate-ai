@@ -637,7 +637,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get generateFlashcardsFromNote => 'फ्लैशकार्ड बनाएं';
 
   @override
-  String get generateQuizAction => 'क्विज़ बनाएं';
+  String get generateQuizAction => 'क्विज़ जनरेट करें';
 
   @override
   String get generateQuizFromNote => 'क्विज़ बनाएं';
@@ -1081,22 +1081,48 @@ class AppLocalizationsHi extends AppLocalizations {
   String get quizDifficultyEasy => 'आसान';
 
   @override
-  String get quizDifficultyHard => 'कठिन';
-
-  @override
   String get quizDifficultyMedium => 'मध्यम';
 
   @override
-  String get quizGeneratedSuccess => 'क्विज़ सफलतापूर्वक बना';
+  String get quizDifficultyHard => 'कठिन';
 
   @override
-  String get quizNotFound => 'क्विज़ नहीं मिला';
+  String get questionsCount => 'क्वेश्चन की गिनती';
+
+  @override
+  String get enableTimer => 'टाइमर सक्षम करें';
+
+  @override
+  String get noTimeLimit => 'टाइमर नहीं';
+
+  @override
+  String get generateQuiz => 'क्विज़ जनरेट करें';
+
+  @override
+  String get deckCreatedSuccessfully => 'डेक सफलतापूर्वक बनाया!';
 
   @override
   String get quizzes => 'क्विज़';
 
   @override
+  String get quizNotFound => 'क्विज़ नहीं मिला';
+
+  @override
   String get quizzesTaken => 'लिए गए क्विज़';
+
+  @override
+  String get quizCreatedSuccessfully => 'क्विज़ सफलतापूर्वक बनाया!';
+
+  @override
+  String get quizGeneratedSuccessfully => 'क्विज़ सफलतापूर्वक उत्पन्न करें';
+
+  @override
+  String get quizGeneratedSuccess => 'क्विज़ सफलतापूर्वक जनरेट हो गया';
+
+  @override
+  String quizGenerationFailed(Object error) {
+    return 'जनरेशन में विफल: $error';
+  }
 
   @override
   String get rateApp => 'ऐप को रेट करें';
