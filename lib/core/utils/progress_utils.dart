@@ -91,3 +91,16 @@ int calculateNewStreak({
   // Reset streak to 1 (today)
   return 1;
 }
+
+/// Generate a consistent dailyStats document ID in yyyy-MM-dd format
+/// Uses device-local date (not server time) to ensure reads/writes use same key
+String dailyStatsKey([DateTime? date]) {
+  final d = date ?? DateTime.now();
+  return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+}
+
+/// Get today-only DateTime (time stripped to midnight)
+DateTime todayOnly([DateTime? date]) {
+  final d = date ?? DateTime.now();
+  return DateTime(d.year, d.month, d.day);
+}

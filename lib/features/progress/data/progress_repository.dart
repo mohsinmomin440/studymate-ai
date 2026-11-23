@@ -158,15 +158,11 @@ class ProgressRepository {
     final user = _auth.currentUser;
     if (user == null) return {};
 
-    final now = DateTime.now();
-    final todayStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
     final doc = await _firestore
         .collection(AppConstants.firestoreUsersCollection)
         .doc(user.uid)
         .collection(AppConstants.firestoreDailyStatsCollection)
-        .doc(todayStr)
+        .doc(dailyStatsKey())
         .get();
 
     if (doc.exists && doc.data() != null) {
@@ -185,14 +181,13 @@ class ProgressRepository {
 
     for (int i = 6; i >= 0; i--) {
       final date = DateTime(now.year, now.month, now.day - i);
-      final dateStr =
-          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey = dailyStatsKey(date);
 
       final doc = await _firestore
           .collection(AppConstants.firestoreUsersCollection)
           .doc(user.uid)
           .collection(AppConstants.firestoreDailyStatsCollection)
-          .doc(dateStr)
+          .doc(dateKey)
           .get();
 
       if (doc.exists && doc.data() != null) {
@@ -243,18 +238,16 @@ class ProgressRepository {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final now = DateTime.now();
-    final dateStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayKey = dailyStatsKey();
 
     final docRef = _firestore
         .collection(AppConstants.firestoreUsersCollection)
         .doc(user.uid)
         .collection(AppConstants.firestoreDailyStatsCollection)
-        .doc(dateStr);
+        .doc(todayKey);
 
     await docRef.set({
-      'date': Timestamp.fromDate(now),
+      'date': Timestamp.fromDate(todayOnly()),
       'studyMinutes': FieldValue.increment(minutes),
       'xpEarned': FieldValue.increment(xp),
       'quizzesTaken': FieldValue.increment(0),
@@ -275,9 +268,7 @@ class ProgressRepository {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final now = DateTime.now();
-    final dateStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayKey = dailyStatsKey();
 
     // Record quiz attempt
     await _firestore
@@ -300,10 +291,10 @@ class ProgressRepository {
         .collection(AppConstants.firestoreUsersCollection)
         .doc(user.uid)
         .collection(AppConstants.firestoreDailyStatsCollection)
-        .doc(dateStr);
+        .doc(todayKey);
 
     await docRef.set({
-      'date': Timestamp.fromDate(now),
+      'date': Timestamp.fromDate(todayOnly()),
       'studyMinutes': FieldValue.increment(0),
       'xpEarned': FieldValue.increment(AppConstants.xpPerQuizCompleted),
       'quizzesTaken': FieldValue.increment(1),
@@ -334,14 +325,13 @@ class ProgressRepository {
     if (user == null) return;
 
     final now = DateTime.now();
-    final dateStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayKey = dailyStatsKey();
 
     final docRef = _firestore
         .collection(AppConstants.firestoreUsersCollection)
         .doc(user.uid)
         .collection(AppConstants.firestoreDailyStatsCollection)
-        .doc(dateStr);
+        .doc(todayKey);
 
     await docRef.set({
       'date': Timestamp.fromDate(now),
@@ -416,16 +406,15 @@ class ProgressRepository {
 
     try {
       final now = DateTime.now();
-      final todayStr =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-      final todayOnly = DateTime(now.year, now.month, now.day);
+      final todayKey = dailyStatsKey();
+      final todayOnlyDate = todayOnly();
 
       final userRef = _firestore
           .collection(AppConstants.firestoreUsersCollection)
           .doc(user.uid);
       final dailyStatsRef = userRef
           .collection(AppConstants.firestoreDailyStatsCollection)
-          .doc(todayStr);
+          .doc(todayKey);
 
       // Run transaction for atomic updates
       await _firestore.runTransaction((transaction) async {
@@ -499,7 +488,7 @@ class ProgressRepository {
           'xp': newXp,
           'level': newLevel,
           'streak': newStreak,
-          'lastStudyDate': Timestamp.fromDate(todayOnly),
+          'lastStudyDate': Timestamp.fromDate(todayOnlyDate),
           ...counterUpdates,
         });
 
@@ -519,7 +508,7 @@ class ProgressRepository {
           transaction.update(dailyStatsRef, statsUpdate);
         } else {
           transaction.set(dailyStatsRef, {
-            'date': Timestamp.fromDate(todayOnly),
+            'date': Timestamp.fromDate(todayOnlyDate),
             'xpEarned': xpToAward,
             'studyMinutes': _minutesForAction(action),
             'quizzesTaken': action == 'quiz' ? 1 : 0,
@@ -556,7 +545,7 @@ class ProgressRepository {
 
     try {
       final now = DateTime.now();
-      final todayOnly = DateTime(now.year, now.month, now.day);
+      final todayOnlyDate = todayOnly();
 
       final userRef = _firestore
           .collection(AppConstants.firestoreUsersCollection)
@@ -588,7 +577,7 @@ class ProgressRepository {
 
         transaction.update(userRef, {
           'streak': newStreak,
-          'lastStudyDate': Timestamp.fromDate(todayOnly),
+          'lastStudyDate': Timestamp.fromDate(todayOnlyDate),
         });
       });
     } catch (e) {
