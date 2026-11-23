@@ -3,15 +3,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
-import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../features/progress/data/progress_repository.dart';
 import '../../../features/planner/data/planner_repository.dart';
 import '../../../features/flashcards/data/flashcard_repository.dart';
 import '../../../core/router/app_router.dart';
 import '../../progress/domain/aggregations.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import '../../../core/utils/extensions.dart';
+
+// Motivational quotes (local list, no Remote Config needed)
+const List<String> _motivationalQuotes = [
+  'The journey of a thousand miles begins with a single step.',
+  'Small progress is still progress. Keep going!',
+  "Your future self will thank you for studying today.",
+  'Consistency beats intensity. One day at a time.',
+  'Every expert was once a beginner. Keep learning.',
+  "The only bad study session is the one you didn't do.",
+  'Knowledge compounds. Invest in yourself daily.',
+  'Difficult roads often lead to beautiful destinations.',
+  "You don't have to be great to start, but you have to start to be great.",
+  'Study while others are sleeping; work while others are loafing.',
+];
+
+// Simple seeded random for quote selection (deterministic per day)
+String _getDailyQuote(DateTime date) {
+  final seed = date.year * 10000 + date.month * 100 + date.day;
+  return _motivationalQuotes[seed % _motivationalQuotes.length];
+}
 
 final homeDashboardProvider = FutureProvider<HomeDashboardData>((ref) async {
   final progressRepo = ref.read(progressRepositoryProvider);
@@ -32,6 +54,7 @@ final homeDashboardProvider = FutureProvider<HomeDashboardData>((ref) async {
   final todayTasks = getTodaysTasks(activePlans);
 
   final greeting = getTimeOfDayGreeting(profile.name);
+  final dailyQuote = _getDailyQuote(DateTime.now());
 
   return HomeDashboardData(
     streak: profile.streak,
@@ -44,6 +67,7 @@ final homeDashboardProvider = FutureProvider<HomeDashboardData>((ref) async {
     cardsDueToday: cardsDue,
     todayTasks: todayTasks,
     greeting: greeting,
+    dailyQuote: dailyQuote,
   );
 });
 
@@ -68,10 +92,11 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(homeDashboardProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('StudyMate'),
+        title: Text(l10n.studyHub),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_rounded),
@@ -80,15 +105,15 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       body: dashboardAsync.when(
-        data: (dashboard) => _buildDashboard(context, ref, dashboard),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => _buildErrorState(context, e.toString()),
+        data: (dashboard) => _buildDashboard(context, ref, dashboard, l10n),
+        loading: () => Center(child: Text(l10n.loadingStats)),
+        error: (e, st) => _buildErrorState(context, e.toString(), l10n),
       ),
     );
   }
 
-  Widget _buildDashboard(
-      BuildContext context, WidgetRef ref, HomeDashboardData dashboard) {
+  Widget _buildDashboard(BuildContext context, WidgetRef ref,
+      HomeDashboardData dashboard, AppLocalizations l10n) {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(homeDashboardProvider);
@@ -100,19 +125,28 @@ class HomeScreen extends ConsumerWidget {
           const Gap(16),
           _buildStreakXPRow(context, dashboard),
           const Gap(24),
-          _buildDailyGoalRing(context, dashboard),
+          _buildDailyGoalRing(context, dashboard, l10n),
           const Gap(24),
-          _buildQuickActions(context),
+          _buildQuickActions(context, l10n),
           const Gap(24),
-          _buildTodayTasks(context, dashboard),
+          _buildContinueStudyingCard(context, dashboard, l10n),
+          const Gap(16),
+          _buildMotivationalQuoteCard(context, dashboard, l10n),
           const Gap(24),
-          _buildDueCardsSection(context, dashboard),
+          _buildTodayTasks(context, dashboard, l10n),
+          const Gap(24),
+          _buildDueCardsSection(context, dashboard, l10n),
         ],
       ),
     );
   }
 
   Widget _buildGreetingCard(BuildContext context, HomeDashboardData dashboard) {
+    final l10n = AppLocalizations.of(context)!;
+    final streakText = dashboard.streak == 1
+        ? '${dashboard.streak} day ${l10n.streak.toLowerCase()}'
+        : '${dashboard.streak} days ${l10n.streak.toLowerCase()}';
+
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,8 +160,8 @@ class HomeScreen extends ConsumerWidget {
           const Gap(8),
           Text(
             dashboard.streak > 0
-                ? '🔥 ${dashboard.streak} day streak — keep it going!'
-                : 'Start your study streak today!',
+                ? '🔥 $streakText — keep it going!'
+                : 'Start your study ${l10n.streak.toLowerCase()} today!',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -138,6 +172,12 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildStreakXPRow(BuildContext context, HomeDashboardData dashboard) {
+    final l10n = AppLocalizations.of(context)!;
+
+    final streakLabel = dashboard.streak == 1
+        ? '${dashboard.streak} day ${l10n.streak.toLowerCase()}'
+        : '${dashboard.streak} days ${l10n.streak.toLowerCase()}';
+
     return Row(
       children: [
         Expanded(
@@ -157,7 +197,7 @@ class HomeScreen extends ConsumerWidget {
                       ),
                 ),
                 Text(
-                  'Day Streak',
+                  streakLabel,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -172,14 +212,14 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               children: [
                 Text(
-                  'Level ${dashboard.level}',
+                  '${l10n.level} ${dashboard.level}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 const Gap(4),
                 Text(
-                  '${dashboard.xp} XP',
+                  '${dashboard.xp} ${l10n.xp}',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w500,
@@ -205,11 +245,12 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDailyGoalRing(
-      BuildContext context, HomeDashboardData dashboard) {
+  Widget _buildDailyGoalRing(BuildContext context, HomeDashboardData dashboard,
+      AppLocalizations l10n) {
     final progress = dashboard.dailyGoalMin > 0
         ? (dashboard.todayStudyMinutes / dashboard.dailyGoalMin).clamp(0.0, 1.0)
         : 0.0;
+    final isGoalAchieved = dashboard.dailyGoalMin > 0 && progress >= 1.0;
 
     return GlassCard(
       child: Column(
@@ -219,13 +260,13 @@ class HomeScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Today\'s Goal',
+                l10n.todaysGoal,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
               ),
               Text(
-                '${dashboard.todayStudyMinutes} / ${dashboard.dailyGoalMin} min',
+                '${dashboard.todayStudyMinutes} / ${dashboard.dailyGoalMin} ${l10n.min}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -266,14 +307,14 @@ class HomeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'XP Earned Today',
+                      l10n.xpEarned,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                     Text(
-                      '+${dashboard.todayXpEarned} XP',
+                      '+${dashboard.todayXpEarned} ${l10n.xp}',
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -281,7 +322,7 @@ class HomeScreen extends ConsumerWidget {
                               ),
                     ),
                     const Gap(8),
-                    if (progress >= 1.0)
+                    if (isGoalAchieved)
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
@@ -291,7 +332,7 @@ class HomeScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          'Goal achieved! 🎉',
+                          l10n.goalAchieved,
                           style:
                               Theme.of(context).textTheme.labelSmall?.copyWith(
                                     color: Theme.of(context)
@@ -311,31 +352,31 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
-    const actions = [
+  Widget _buildQuickActions(BuildContext context, AppLocalizations l10n) {
+    final actions = [
       _QuickAction(
-        label: 'Ask AI',
+        label: l10n.askAI,
         icon: Icons.chat_rounded,
         route: '/chat',
-        color: Color(0xFF6C5CE7),
+        color: const Color(0xFF6C5CE7),
       ),
       _QuickAction(
-        label: 'Scan Doubt',
+        label: l10n.scanDoubt,
         icon: Icons.camera_alt_rounded,
         route: '/scanner',
-        color: Color(0xFF00D4C8),
+        color: const Color(0xFF00D4C8),
       ),
       _QuickAction(
-        label: 'New Note',
+        label: l10n.newNote,
         icon: Icons.note_add_rounded,
         route: '/notes/new',
-        color: Color(0xFF2ED573),
+        color: const Color(0xFF2ED573),
       ),
       _QuickAction(
-        label: 'Quick Quiz',
+        label: l10n.quickQuiz,
         icon: Icons.quiz_rounded,
         route: '/quiz',
-        color: Color(0xFFFFB020),
+        color: const Color(0xFFFFB020),
       ),
     ];
 
@@ -343,7 +384,7 @@ class HomeScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Quick Actions',
+          l10n.quickActions,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -400,7 +441,178 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTodayTasks(BuildContext context, HomeDashboardData dashboard) {
+  Widget _buildContinueStudyingCard(BuildContext context,
+      HomeDashboardData dashboard, AppLocalizations l10n) {
+    // Show continue studying if there are due cards or tasks
+    final hasDueCards = dashboard.cardsDueToday > 0;
+    final hasTasks = dashboard.todayTasks.isNotEmpty;
+
+    if (!hasDueCards && !hasTasks) {
+      return const SizedBox.shrink();
+    }
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                dashboard.cardsDueToday > 0
+                    ? l10n.reviewFlashcards
+                    : l10n.studyHub,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              if (hasDueCards)
+                TextButton(
+                  onPressed: () => context.go(AppRoutes.flashcards),
+                  child: Text(l10n.startReview),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+            ],
+          ),
+          const Gap(12),
+          if (hasDueCards)
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 24,
+                  ),
+                ),
+                const Gap(12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${dashboard.cardsDueToday} cards (${l10n.cardsDueToday.toLowerCase()})',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      Text(
+                        l10n.reviewFlashcard,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6C5CE7).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.task_alt_rounded,
+                    color: Color(0xFF6C5CE7),
+                    size: 24,
+                  ),
+                ),
+                const Gap(12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${dashboard.todayTasks.length} ${dashboard.todayTasks.length == 1 ? 'task' : 'tasks'} today',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      Text(
+                        l10n.createPlanForTasks,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0);
+  }
+
+  Widget _buildMotivationalQuoteCard(BuildContext context,
+      HomeDashboardData dashboard, AppLocalizations l10n) {
+    return GlassCard(
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFB020).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.format_quote_rounded,
+              color: Color(0xFFFFB020),
+              size: 22,
+            ),
+          ),
+          const Gap(12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.dailyStats,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const Gap(4),
+                Text(
+                  '"${dashboard.dailyQuote}"',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 300.ms, delay: 100.ms)
+        .slideY(begin: 0.1, end: 0);
+  }
+
+  Widget _buildTodayTasks(BuildContext context, HomeDashboardData dashboard,
+      AppLocalizations l10n) {
     if (dashboard.todayTasks.isEmpty) {
       return GlassCard(
         child: Column(
@@ -410,23 +622,23 @@ class HomeScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Today\'s Tasks',
+                  l10n.today,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 TextButton(
                   onPressed: () => context.go(AppRoutes.planner),
-                  child: const Text('View All'),
+                  child: Text(l10n.viewAll),
                 ),
               ],
             ),
             const Gap(8),
             EmptyState(
               icon: Icons.task_alt_rounded,
-              title: 'No tasks for today',
-              message: 'Create a study plan to see tasks here',
-              actionLabel: 'Create Plan',
+              title: l10n.noTasksToday,
+              message: l10n.createPlanForTasks,
+              actionLabel: l10n.createPlan,
               onAction: () => context.go(AppRoutes.planner),
             ),
           ],
@@ -442,14 +654,16 @@ class HomeScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Today\'s Tasks',
+                dashboard.todayTasks.length == 1
+                    ? l10n.todayTask
+                    : l10n.todayTasks,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
               ),
               TextButton(
                 onPressed: () => context.go(AppRoutes.planner),
-                child: const Text('View All'),
+                child: Text(l10n.viewAll),
               ),
             ],
           ),
@@ -469,7 +683,7 @@ class HomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 8),
               child: TextButton(
                 onPressed: () => context.go(AppRoutes.planner),
-                child: Text('+${dashboard.todayTasks.length - 5} more tasks'),
+                child: Text('${dashboard.todayTasks.length - 5} ${l10n.more}'),
               ),
             ),
         ],
@@ -477,8 +691,8 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDueCardsSection(
-      BuildContext context, HomeDashboardData dashboard) {
+  Widget _buildDueCardsSection(BuildContext context,
+      HomeDashboardData dashboard, AppLocalizations l10n) {
     if (dashboard.cardsDueToday == 0) {
       return GlassCard(
         child: Column(
@@ -488,23 +702,23 @@ class HomeScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Flashcards Due',
+                  l10n.flashcards,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 TextButton(
                   onPressed: () => context.go(AppRoutes.flashcards),
-                  child: const Text('View All'),
+                  child: Text(l10n.viewAll),
                 ),
               ],
             ),
             const Gap(8),
             EmptyState(
               icon: Icons.menu_book_rounded,
-              title: 'All caught up!',
-              message: 'No cards due for review today',
-              actionLabel: 'Browse Decks',
+              title: l10n.allCaughtUp,
+              message: l10n.noCardsDueToday,
+              actionLabel: l10n.browseDecks,
               onAction: () => context.go(AppRoutes.flashcards),
             ),
           ],
@@ -520,14 +734,14 @@ class HomeScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Flashcards Due',
+                l10n.flashcards,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
               ),
               TextButton(
                 onPressed: () => context.go(AppRoutes.flashcards),
-                child: const Text('View All'),
+                child: Text(l10n.viewAll),
               ),
             ],
           ),
@@ -545,11 +759,11 @@ class HomeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${dashboard.cardsDueToday} cards ready for review',
+                      l10n.cardsDuePlural(dashboard.cardsDueToday),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     Text(
-                      'Spaced repetition will optimize your retention',
+                      l10n.reviewFlashcard,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -561,7 +775,7 @@ class HomeScreen extends ConsumerWidget {
               ElevatedButton.icon(
                 onPressed: () => context.go(AppRoutes.flashcards),
                 icon: const Icon(Icons.play_arrow_rounded, size: 18),
-                label: const Text('Start Review'),
+                label: Text(l10n.startReview),
                 style: ElevatedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -574,7 +788,8 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildErrorState(BuildContext context, String error) {
+  Widget _buildErrorState(
+      BuildContext context, String error, AppLocalizations l10n) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -588,7 +803,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const Gap(16),
             Text(
-              'Failed to load dashboard',
+              l10n.errorLoadingDashboard,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const Gap(8),
@@ -603,7 +818,7 @@ class HomeScreen extends ConsumerWidget {
             ElevatedButton.icon(
               onPressed: () {/* Will need ref to invalidate */},
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
+              label: Text(l10n.tryAgain),
             ),
           ],
         ),

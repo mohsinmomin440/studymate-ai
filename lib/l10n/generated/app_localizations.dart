@@ -892,6 +892,12 @@ abstract class AppLocalizations {
   /// **'Study Hub'**
   String get studyHub;
 
+  /// No description provided for @errorLoadingDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load dashboard'**
+  String get errorLoadingDashboard;
+
   /// No description provided for @dailyStats.
   ///
   /// In en, this message translates to:
@@ -1341,6 +1347,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, one {1 card due} other {# cards due}}'**
   String cardsDuePlural(num count);
+
+  /// No description provided for @todayTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Task'**
+  String get todayTask;
+
+  /// No description provided for @todayTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Tasks'**
+  String get todayTasks;
+
+  /// No description provided for @reviewFlashcard.
+  ///
+  /// In en, this message translates to:
+  /// **'Spaced repetition will optimize your retention'**
+  String get reviewFlashcard;
 
   /// No description provided for @reviewFlashcards.
   ///

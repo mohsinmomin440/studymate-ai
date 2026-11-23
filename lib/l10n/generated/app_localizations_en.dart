@@ -405,6 +405,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studyHub => 'Study Hub';
 
   @override
+  String get errorLoadingDashboard => 'Failed to load dashboard';
+
+  @override
   String get dailyStats => 'Daily Stats';
 
   @override
@@ -644,6 +647,16 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get todayTask => 'Today\'s Task';
+
+  @override
+  String get todayTasks => 'Today\'s Tasks';
+
+  @override
+  String get reviewFlashcard =>
+      'Spaced repetition will optimize your retention';
 
   @override
   String get reviewFlashcards => 'Review Flashcards';

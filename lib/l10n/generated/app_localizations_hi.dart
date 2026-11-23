@@ -405,6 +405,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get studyHub => 'स्टडी हब';
 
   @override
+  String get errorLoadingDashboard => 'डैशबोर्ड लोड करने में विफल';
+
+  @override
   String get dailyStats => 'दैनिक आंकड़े';
 
   @override
@@ -644,6 +647,16 @@ class AppLocalizationsHi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get todayTask => 'आज का कार्य';
+
+  @override
+  String get todayTasks => 'आज के कार्य';
+
+  @override
+  String get reviewFlashcard =>
+      'स्पेस्ड रिपीटिशन आपकी प्रतिभा को बढ़ावा करने के लिए उपयोग करेगा';
 
   @override
   String get reviewFlashcards => 'फ्लैशकार्डों की समीक्षा करें';
