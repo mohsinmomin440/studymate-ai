@@ -589,6 +589,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkEmail => 'Email';
 
   @override
+  String get linkAccountWarning =>
+      'Link an account to save your data permanently and access it on other devices.';
+
+  @override
   String get accountAlreadyLinked => 'Account already linked';
 
   @override
@@ -939,6 +943,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get perDay => 'per day';
+
+  @override
+  String get enterEmail => 'Please enter your email';
+
+  @override
+  String get validEmail => 'Please enter a valid email';
+
+  @override
+  String get enterName => 'Please enter your name';
+
+  @override
+  String get enterPassword => 'Please enter your password';
+
+  @override
+  String get passwordMin6 => 'Password must be at least 6 characters';
+
+  @override
+  String get passwordsMatch => 'Passwords do not match';
+
+  @override
+  String get authFailed => 'Authentication failed';
+
+  @override
+  String get googleSignInFailed => 'Google sign-in failed';
+
+  @override
+  String get guestSignInFailed => 'Guest sign-in failed';
 
   @override
   String get notSet => 'Not set';

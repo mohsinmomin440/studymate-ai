@@ -198,6 +198,8 @@
 - [x] Phase 8B Batch 1: HomeScreen localized with studyHub, quickActions, askAI, scanDoubt, newNote, quickQuiz, studyHub, streak, xp, today's goal, etc.
 - [x] Phase 8B Batch 1: NotFoundScreen localized with error and goHome strings
 - [x] Phase 8B Batch 1: EmptyState, NoInternetState, ErrorState localized
+- [x] Phase 8B Batch 1: Added validation string keys (enterEmail, validEmail, enterPassword, passwordMin6, passwordsMatch, authFailed, googleSignInFailed, guestSignInFailed, enterName, linkAccountWarning)
+- [x] Phase 8B Batch 1: Corrected bad Gujarati/Hindi translations
 - [ ] Remote Config
 - [ ] Animations
 - [ ] Phase 8B Batch 2: Remaining screens (chat, scanner, notes, flashcards, quiz, planner, focus, progress)

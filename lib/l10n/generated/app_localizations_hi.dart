@@ -589,6 +589,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get linkEmail => 'ईमेल';
 
   @override
+  String get linkAccountWarning =>
+      'एक खाता जोड़ें ताकि आपका डेटा स्थायी रूप से सहेजा और अन्य उपकरणों पर पहुँच सकें।';
+
+  @override
   String get accountAlreadyLinked => 'खाता पहले से लिंक है';
 
   @override
@@ -939,6 +943,33 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get perDay => 'प्रतिदिन';
+
+  @override
+  String get enterEmail => 'कृपया अपना ईमेल दर्ज करें';
+
+  @override
+  String get validEmail => 'वैध ईमेल दर्ज करें';
+
+  @override
+  String get enterName => 'कृपया अपना नाम दर्ज करें';
+
+  @override
+  String get enterPassword => 'कृपया पासवर्ड दर्ज करें';
+
+  @override
+  String get passwordMin6 => 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए';
+
+  @override
+  String get passwordsMatch => 'पासवर्ड मेल नहीं खाते';
+
+  @override
+  String get authFailed => 'साइन-इन विफल';
+
+  @override
+  String get googleSignInFailed => 'गूगल साइन-इन विफल हुआ';
+
+  @override
+  String get guestSignInFailed => 'गेस्ट साइन-इन विफल हुआ';
 
   @override
   String get notSet => 'सेट नहीं है';

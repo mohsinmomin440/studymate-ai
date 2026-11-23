@@ -134,20 +134,20 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 const Gap(32),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    prefixIcon: Icon(Icons.person_rounded),
+                  decoration: InputDecoration(
+                    labelText: l10n.name,
+                    prefixIcon: const Icon(Icons.person_rounded),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your name';
+                      return l10n.enterName;
                     }
                     return null;
                   },
                 ),
                 const Gap(24),
                 Text(
-                  'Class / Grade',
+                  l10n.classGrade,
                   style: theme.textTheme.titleMedium,
                 ),
                 const Gap(12),
@@ -163,7 +163,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 ),
                 const Gap(24),
                 Text(
-                  'App Language',
+                  l10n.appLanguage,
                   style: theme.textTheme.titleMedium,
                 ),
                 const Gap(12),
@@ -201,7 +201,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   ),
                   const Gap(16),
                   Text(
-                    'Link an account to save your data permanently and access it on other devices.',
+                    l10n.linkAccountWarning,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -304,10 +304,10 @@ class _EmailLinkDialogState extends State<_EmailLinkDialog> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your email';
+                    return l10n.enterEmail;
                   }
                   if (!value.contains('@')) {
-                    return 'Please enter a valid email';
+                    return l10n.validEmail;
                   }
                   return null;
                 },
@@ -331,10 +331,10 @@ class _EmailLinkDialogState extends State<_EmailLinkDialog> {
                 obscureText: _obscurePassword,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return l10n.enterPassword;
                   }
                   if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
+                    return l10n.passwordMin6;
                   }
                   return null;
                 },

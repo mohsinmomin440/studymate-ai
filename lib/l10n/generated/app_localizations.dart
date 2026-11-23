@@ -1252,6 +1252,12 @@ abstract class AppLocalizations {
   /// **'Email'**
   String get linkEmail;
 
+  /// No description provided for @linkAccountWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Link an account to save your data permanently and access it on other devices.'**
+  String get linkAccountWarning;
+
   /// No description provided for @accountAlreadyLinked.
   ///
   /// In en, this message translates to:
@@ -1911,6 +1917,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a valid email'**
   String get validEmail;
+
+  /// No description provided for @enterName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get enterName;
 
   /// No description provided for @enterPassword.
   ///
