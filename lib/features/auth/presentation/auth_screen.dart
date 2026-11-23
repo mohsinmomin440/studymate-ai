@@ -19,6 +19,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return;
@@ -34,7 +35,9 @@ class _AuthScreenState extends State<AuthScreen> {
       await FirebaseAuth.instance.signInWithCredential(credential);
       if (mounted) context.go(AppRoutes.profileSetup);
     } on FirebaseAuthException catch (e) {
-      _showError(e.message ?? 'Google sign-in failed');
+      if (mounted) {
+        _showError(e.message ?? l10n.googleSignInFailed);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -42,11 +45,14 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _signInAsGuest() async {
     setState(() => _isLoading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       await FirebaseAuth.instance.signInAnonymously();
       if (mounted) context.go(AppRoutes.profileSetup);
     } on FirebaseAuthException catch (e) {
-      _showError(e.message ?? 'Guest sign-in failed');
+      if (mounted) {
+        _showError(e.message ?? l10n.guestSignInFailed);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -214,6 +220,7 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       if (_isSignUp) {
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -231,7 +238,9 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
         context.go(AppRoutes.profileSetup);
       }
     } on FirebaseAuthException catch (e) {
-      _showError(e.message ?? 'Authentication failed');
+      if (mounted) {
+        _showError(e.message ?? l10n.authFailed);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -257,17 +266,17 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
             children: [
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_rounded),
+                decoration: InputDecoration(
+                  labelText: l10n.email,
+                  prefixIcon: const Icon(Icons.email_rounded),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your email';
+                    return l10n.enterEmail;
                   }
                   if (!value.contains('@')) {
-                    return 'Please enter a valid email';
+                    return l10n.validEmail;
                   }
                   return null;
                 },
@@ -291,10 +300,10 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
                 obscureText: _obscurePassword,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return l10n.enterPassword;
                   }
                   if (_isSignUp && value.length < 6) {
-                    return 'Password must be at least 6 characters';
+                    return l10n.passwordMin6;
                   }
                   return null;
                 },
@@ -302,14 +311,14 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
               if (_isSignUp) ...[
                 const Gap(16),
                 TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    prefixIcon: Icon(Icons.lock_outline_rounded),
+                  decoration: InputDecoration(
+                    labelText: l10n.confirmPassword,
+                    prefixIcon: const Icon(Icons.lock_outline_rounded),
                   ),
                   obscureText: _obscurePassword,
                   validator: (value) {
                     if (value != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return l10n.passwordsMatch;
                     }
                     return null;
                   },

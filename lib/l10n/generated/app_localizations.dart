@@ -1900,6 +1900,54 @@ abstract class AppLocalizations {
   /// **'per day'**
   String get perDay;
 
+  /// No description provided for @enterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get enterEmail;
+
+  /// No description provided for @validEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get validEmail;
+
+  /// No description provided for @enterPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get enterPassword;
+
+  /// No description provided for @passwordMin6.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get passwordMin6;
+
+  /// No description provided for @passwordsMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsMatch;
+
+  /// No description provided for @authFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed'**
+  String get authFailed;
+
+  /// No description provided for @googleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed'**
+  String get googleSignInFailed;
+
+  /// No description provided for @guestSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest sign-in failed'**
+  String get guestSignInFailed;
+
   /// No description provided for @notSet.
   ///
   /// In en, this message translates to:
