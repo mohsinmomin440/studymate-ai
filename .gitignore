@@ -55,3 +55,8 @@ key.properties
 
 # Windows artifacts
 nul
+
+# Built binaries
+*.apk
+*.aab
+/release/
