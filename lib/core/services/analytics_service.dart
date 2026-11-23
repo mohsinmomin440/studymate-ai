@@ -26,7 +26,8 @@ class AnalyticsService {
     } catch (e) {
       // Firebase may not be configured in dev/testing
       _isAvailable = false;
-      developer.log('Analytics/Crashlytics init failed: $e', name: 'AnalyticsService');
+      developer.log('Analytics/Crashlytics init failed: $e',
+          name: 'AnalyticsService');
     }
   }
 
@@ -121,7 +122,8 @@ class AnalyticsService {
       developer.log('Error reported: $error',
           stackTrace: stackTrace, name: errorName ?? 'Error');
     } catch (e) {
-      developer.log('Crashlytics recordError failed: $e', name: 'AnalyticsService');
+      developer.log('Crashlytics recordError failed: $e',
+          name: 'AnalyticsService');
     }
   }
 
