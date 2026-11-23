@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/gap.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Splash screen - animated logo transition
 class SplashScreen extends StatefulWidget {
@@ -30,6 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Center(
@@ -48,14 +50,14 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const Gap(32),
             Text(
-              'StudyMate AI',
+              l10n.studyMateLogo,
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const Gap(16),
             Text(
-              'Learn smarter with AI',
+              l10n.learnSmarter,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

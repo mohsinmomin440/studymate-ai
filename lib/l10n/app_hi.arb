@@ -1,7 +1,7 @@
 {
   "@@locale": "hi",
   "appName": "StudyMate AI",
-  "welcomeBack": "वापस स्वागत है!",
+  "welcomeBack": "फिर से स्वागत है!",
   "letsStudy": "आज स्मार्ट तरीके से पढ़ाई करें।",
   "continueStudying": "पढ़ाई जारी रखें",
   "todaysGoal": "आज का लक्ष्य",
@@ -300,7 +300,6 @@
   "generating": "जेनरेट हो रहा है...",
   "greetingMorning": "शुभ प्रभात",
   "deleteChatConfirm": "चैट कन्फर्म डिलीट",
-  "failedToLoadSettings": "सेटिंग्स लोड करने में विफल",
   "noUserToDelete": "कोई उपयोगकर्ता हटाने के लिए नहीं है",
   "reauthAndRetry": "पुनः प्रमाणीकरण और पुनः प्रयास करें",
   "accountLinkedSuccessfully": "खाता सफलतापूर्वक लिंक हो गया",

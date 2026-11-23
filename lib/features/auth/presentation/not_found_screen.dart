@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/gap.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// 404 Not Found screen
 class NotFoundScreen extends StatelessWidget {
@@ -10,6 +11,7 @@ class NotFoundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Center(
@@ -26,14 +28,14 @@ class NotFoundScreen extends StatelessWidget {
               ),
               const Gap(24),
               Text(
-                'Page Not Found',
+                '404 ${l10n.error}',
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const Gap(16),
               Text(
-                'The page you\'re looking for doesn\'t exist or has been moved.',
+                "The page you're looking for doesn't exist or has been moved.",
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -42,7 +44,7 @@ class NotFoundScreen extends StatelessWidget {
               const Gap(32),
               FilledButton(
                 onPressed: () => context.go(AppRoutes.home),
-                child: const Text('Go Home'),
+                child: Text(l10n.goHome),
               ),
             ],
           ),

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/gap.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Auth screen with Google, Email/Password, and Guest sign-in
 class AuthScreen extends StatefulWidget {
@@ -67,6 +68,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -82,7 +84,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const Gap(32),
               Text(
-                'Welcome to StudyMate AI',
+                l10n.welcomeBack,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -90,7 +92,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const Gap(16),
               Text(
-                'Sign in to sync your progress across devices',
+                l10n.letsStudy,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -99,28 +101,28 @@ class _AuthScreenState extends State<AuthScreen> {
               const Gap(48),
               _AuthButton(
                 icon: Icons.g_mobiledata_rounded,
-                label: 'Continue with Google',
+                label: l10n.googleSignIn,
                 onPressed: _isLoading ? null : _signInWithGoogle,
                 isLoading: _isLoading,
               ),
               const Gap(16),
               _AuthButton(
                 icon: Icons.email_rounded,
-                label: 'Continue with Email',
+                label: l10n.signIn,
                 onPressed: _isLoading ? null : _showEmailDialog,
                 isLoading: _isLoading,
               ),
               const Gap(16),
               _AuthButton(
                 icon: Icons.person_outline_rounded,
-                label: 'Continue as Guest',
+                label: l10n.continueAsGuest,
                 onPressed: _isLoading ? null : _signInAsGuest,
                 isLoading: _isLoading,
                 variant: _AuthButtonVariant.secondary,
               ),
               const Gap(32),
               Text(
-                'By continuing, you agree to our Terms of Service and Privacy Policy.',
+                l10n.termsOfService,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -243,8 +245,10 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: Text(_isSignUp ? 'Create Account' : 'Sign In'),
+      title: Text(_isSignUp ? l10n.signUp : l10n.signIn),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -272,7 +276,7 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(
-                  labelText: 'Password',
+                  labelText: l10n.password,
                   prefixIcon: const Icon(Icons.lock_rounded),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -319,9 +323,7 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
                       onPressed: _isLoading
                           ? null
                           : () => setState(() => _isSignUp = !_isSignUp),
-                      child: Text(_isSignUp
-                          ? 'Already have an account? Sign In'
-                          : 'Don\'t have an account? Sign Up'),
+                      child: Text(_isSignUp ? l10n.signIn : l10n.signUp),
                     ),
                   ),
                 ],
@@ -339,7 +341,7 @@ class _EmailSignInDialogState extends State<EmailSignInDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(_isSignUp ? 'Create Account' : 'Sign In'),
+              : Text(_isSignUp ? l10n.signUp : l10n.signIn),
         ),
       ],
     );

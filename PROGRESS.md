@@ -192,9 +192,15 @@
 - [x] Tests pass (192/192)
 - [x] Debug APK builds successfully
 
-- [ ] en/gu/hi localization
+- [x] Phase 8A: en/gu/hi localization (SettingsScreen and HomeScreen now use localized strings)
+- [x] Phase 8B Batch 1: AuthScreen localized with GoogleSignIn, signIn, signUp, continueAsGuest, termsOfService, welcomeBack, letsStudy
+- [x] Phase 8B Batch 1: ProfileSetupScreen uses AppLocalizations with full localization
+- [x] Phase 8B Batch 1: HomeScreen localized with studyHub, quickActions, askAI, scanDoubt, newNote, quickQuiz, studyHub, streak, xp, today's goal, etc.
+- [x] Phase 8B Batch 1: NotFoundScreen localized with error and goHome strings
+- [x] Phase 8B Batch 1: EmptyState, NoInternetState, ErrorState localized
 - [ ] Remote Config
 - [ ] Animations
+- [ ] Phase 8B Batch 2: Remaining screens (chat, scanner, notes, flashcards, quiz, planner, focus, progress)
 
 ## Phase 9 — Release prep
 - [ ] App icon

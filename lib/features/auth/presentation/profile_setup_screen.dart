@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/gap.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Profile setup screen after first sign-in
 class ProfileSetupScreen extends StatefulWidget {
@@ -46,8 +47,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
+
+  final _passwordController = TextEditingController();
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
@@ -72,23 +76,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         },
       }, SetOptions(merge: true));
 
-      if (mounted) {
-        context.go(AppRoutes.home);
-      }
+      if (!mounted) return;
+      context.go(AppRoutes.home);
     } catch (e) {
-      _showError('Failed to save profile: $e');
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.failedToUpdate(e))),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
   Future<void> _linkAccount() async {
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (_) => const _EmailLinkDialog(),
@@ -98,6 +100,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
@@ -116,14 +119,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 ),
                 const Gap(8),
                 Text(
-                  'Set Up Your Profile',
+                  l10n.profileSetup,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Gap(8),
                 Text(
-                  'Help us personalize your experience',
+                  l10n.helpPersonalize,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -177,7 +180,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 ),
                 const Gap(24),
                 Text(
-                  'Daily Study Goal (minutes)',
+                  l10n.dailyStudyGoalMinutes,
                   style: theme.textTheme.titleMedium,
                 ),
                 const Gap(12),
@@ -186,7 +189,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   min: 10,
                   max: 120,
                   divisions: 11,
-                  label: '$_dailyGoal min',
+                  label: '$_dailyGoal ${l10n.min}',
                   onChanged: (v) => setState(() => _dailyGoal = v.round()),
                 ),
                 const Gap(32),
@@ -194,7 +197,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   OutlinedButton.icon(
                     onPressed: _linkAccount,
                     icon: const Icon(Icons.link_rounded),
-                    label: const Text('Link Google / Email Account'),
+                    label: Text(l10n.linkGoogleEmail),
                   ),
                   const Gap(16),
                   Text(
@@ -215,7 +218,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Continue'),
+                        : Text(l10n.save),
                   ),
                 ),
                 const Gap(24),
@@ -250,7 +253,7 @@ class _EmailLinkDialogState extends State<_EmailLinkDialog> {
     super.dispose();
   }
 
-  Future<void> _link() async {
+  Future<void> _link(BuildContext dialogContext) async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -261,92 +264,101 @@ class _EmailLinkDialogState extends State<_EmailLinkDialog> {
         password: _passwordController.text,
       );
       await user.linkWithCredential(credential);
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+        final l10n = AppLocalizations.of(dialogContext)!;
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
+          SnackBar(content: Text(l10n.accountLinkedSuccessfully)),
+        );
+      }
     } on FirebaseAuthException catch (e) {
-      _showError(e.message ?? 'Failed to link account');
+      if (mounted) {
+        final l10n = AppLocalizations.of(dialogContext)!;
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
+          SnackBar(content: Text(e.message ?? l10n.failedToLoadSettings)),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Link Email Account'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_rounded),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-            const Gap(16),
-            TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                prefixIcon: const Icon(Icons.lock_rounded),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_off_rounded
-                        : Icons.visibility_rounded,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+    final l10n = AppLocalizations.of(context)!;
+
+    return Builder(
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.linkEmailAccount),
+        content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: l10n.email,
+                  prefixIcon: const Icon(Icons.email_rounded),
                 ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  if (!value.contains('@')) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
               ),
-              obscureText: _obscurePassword,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                if (value.length < 6) {
-                  return 'Password must be at least 6 characters';
-                }
-                return null;
-              },
-            ),
-          ],
+              const Gap(16),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: l10n.password,
+                  prefixIcon: const Icon(Icons.lock_rounded),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_rounded
+                          : Icons.visibility_rounded,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                obscureText: _obscurePassword,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: _isLoading ? null : () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: _isLoading ? null : () => _link(dialogContext),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(l10n.linkGoogle),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: _isLoading ? null : _link,
-          child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Link'),
-        ),
-      ],
     );
   }
 }

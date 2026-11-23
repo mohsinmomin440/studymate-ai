@@ -1,7 +1,7 @@
 {
   "@@locale": "gu",
   "appName": "StudyMate AI",
-  "welcomeBack": "વ્યક્તિને પાછા આવતા આવીને સ્વાગત છે!",
+  "welcomeBack": "ફરી સ્વાગત છે!",
   "letsStudy": "આજે સ્માર્ટ રીતે અભ્યાસ કરીએ.",
   "continueStudying": "અભ્યાસ ચાલુ રાખો",
   "todaysGoal": "આજનો લક્ષ્ય",
@@ -147,7 +147,7 @@
   "hoursPerDay": "દરેક દિવસના કલાકો",
   "generateStudyPlan": "અભ્યાસ યોજના બનાવો",
   "studyPlanner": "અભ્યાસ યોજના તાલીમ",
-  "noPlansYet": "�અહીં અમેી પ્લાન છે. ઉપરના પહેલા પ્લાન બનાવો!",
+  "noPlansYet": "અહીં કોઈ પ્લાન છે. ઉપરના પહેલા પ્લાન બનાવો!",
   "studyPlanGenerated": "અભ્યાસ યોજના સફળતાપૂર્વક બનાઈ ગઈ!",
   "task": "કાર્ય",
   "today": "આજે",

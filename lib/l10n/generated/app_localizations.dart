@@ -1039,7 +1039,7 @@ abstract class AppLocalizations {
   /// No description provided for @more.
   ///
   /// In en, this message translates to:
-  /// **'more'**
+  /// **'More'**
   String get more;
 
   /// No description provided for @startReview.
@@ -1093,7 +1093,7 @@ abstract class AppLocalizations {
   /// No description provided for @questions.
   ///
   /// In en, this message translates to:
-  /// **'questions'**
+  /// **'Questions'**
   String get questions;
 
   /// No description provided for @question1of.
@@ -1381,7 +1381,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteChatConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Delete Chat'**
+  /// **'This will permanently delete this chat and all messages. Are you sure?'**
   String get deleteChatConfirm;
 
   /// No description provided for @noInternetMessage.

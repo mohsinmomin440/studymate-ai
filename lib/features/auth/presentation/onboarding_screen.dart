@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/gap.dart';
 
@@ -15,24 +16,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int _page = 0;
 
-  static const _pages = [
-    _OnboardingPage(
+  static const List<_OnboardingPageData> _pages = [
+    _OnboardingPageData(
       icon: Icons.psychology_rounded,
-      title: 'AI Tutor',
-      description:
-          'Ask doubts, get step-by-step explanations, and learn at your own pace.',
+      title: 'chatModeExplainSimply',
+      description: 'chatStepByStepDesc',
     ),
-    _OnboardingPage(
+    _OnboardingPageData(
       icon: Icons.camera_alt_rounded,
-      title: 'Snap & Solve',
-      description:
-          'Take a photo of any question and get instant solutions with AI.',
+      title: 'scanDoubt',
+      description: 'cameraDesc',
     ),
-    _OnboardingPage(
+    _OnboardingPageData(
       icon: Icons.flash_on_rounded,
-      title: 'Smart Study Tools',
-      description:
-          'Flashcards, quizzes, study plans, and focus timer — all in one app.',
+      title: 'flashcards',
+      description: 'toolsDesc',
     ),
   ];
 
@@ -42,7 +40,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _next() {
+  void _next(BuildContext context) {
     if (_page < _pages.length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -56,6 +54,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -66,7 +65,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: TextButton(
                 onPressed: () => context.go(AppRoutes.auth),
                 child: Text(
-                  'Skip',
+                  l10n.skip,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -78,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 controller: _controller,
                 itemCount: _pages.length,
                 onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (_, i) => _pages[i],
+                itemBuilder: (_, i) => _pages[i].build(context),
               ),
             ),
             Row(
@@ -105,9 +104,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _next,
-                  child:
-                      Text(_page == _pages.length - 1 ? 'Get Started' : 'Next'),
+                  onPressed: () => _next(context),
+                  child: Text(l10n.next),
                 ),
               ),
             ),
@@ -119,20 +117,46 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-class _OnboardingPage extends StatelessWidget {
+class _OnboardingPageData {
   final IconData icon;
   final String title;
   final String description;
 
-  const _OnboardingPage({
+  const _OnboardingPageData({
     required this.icon,
     required this.title,
     required this.description,
   });
 
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    String getTitle() {
+      switch (title) {
+        case 'chatModeExplainSimply':
+          return l10n.chatModeExplainSimply;
+        case 'scanDoubt':
+          return l10n.scanDoubt;
+        case 'flashcards':
+          return l10n.flashcards;
+        default:
+          return title;
+      }
+    }
+
+    String getDescription() {
+      switch (description) {
+        case 'chatStepByStepDesc':
+          return '${l10n.chatModeExplainSimply}. ${l10n.chatStepByStepDesc}';
+        case 'cameraDesc':
+          return '${l10n.scanDoubt}. ${l10n.cameraDesc}';
+        case 'toolsDesc':
+          return '${l10n.flashcards}. ${l10n.toolsDesc}';
+        default:
+          return description;
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.all(32),
@@ -155,7 +179,7 @@ class _OnboardingPage extends StatelessWidget {
           ),
           const Gap(40),
           Text(
-            title,
+            getTitle(),
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -163,7 +187,7 @@ class _OnboardingPage extends StatelessWidget {
           ),
           const Gap(16),
           Text(
-            description,
+            getDescription(),
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
