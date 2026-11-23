@@ -398,7 +398,8 @@ class ProgressRepository {
   ///
   /// This method is fire-and-forget safe: it never throws to the caller.
   /// Errors are logged but the calling feature continues working.
-  Future<List<Badge>> recordActivity(String action) async {
+  Future<List<Badge>> recordActivity(String action,
+      {bool isRetry = false}) async {
     // Validate user
     final user = _auth.currentUser;
     if (user == null) return [];
@@ -406,6 +407,12 @@ class ProgressRepository {
     // Anti-farming: validate action and get base XP
     final baseXp = xpForAction(action);
     if (baseXp == 0) return [];
+
+    // For quiz retries, don't award XP
+    if (action == 'quiz' && isRetry) {
+      // Still update streak but no XP or badge check for retry
+      return _recordQuizRetry();
+    }
 
     try {
       final now = DateTime.now();
@@ -540,6 +547,56 @@ class ProgressRepository {
           name: 'ProgressRepository', error: e);
       return [];
     }
+  }
+
+  /// Record quiz retry - updates streak but no XP or badge check
+  Future<List<Badge>> _recordQuizRetry() async {
+    final user = _auth.currentUser;
+    if (user == null) return [];
+
+    try {
+      final now = DateTime.now();
+      final todayStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final todayOnly = DateTime(now.year, now.month, now.day);
+
+      final userRef = _firestore
+          .collection(AppConstants.firestoreUsersCollection)
+          .doc(user.uid);
+
+      await _firestore.runTransaction((transaction) async {
+        final userSnap = await transaction.get(userRef);
+        if (!userSnap.exists) return;
+
+        final userData = userSnap.data() as Map<String, dynamic>;
+        final currentStreak = userData['streak'] as int? ?? 0;
+        final lastStudyDateRaw = userData['lastStudyDate'];
+
+        DateTime? lastStudyDate;
+        if (lastStudyDateRaw is Timestamp) {
+          lastStudyDate = lastStudyDateRaw.toDate();
+        } else if (lastStudyDateRaw is DateTime) {
+          lastStudyDate = lastStudyDateRaw;
+        }
+
+        int newStreak = 1;
+        if (lastStudyDate != null) {
+          newStreak = calculateStreak(
+            currentStreak: currentStreak,
+            lastStudyDate: lastStudyDate,
+            today: now,
+          );
+        }
+
+        transaction.update(userRef, {
+          'streak': newStreak,
+          'lastStudyDate': Timestamp.fromDate(todayOnly),
+        });
+      });
+    } catch (e) {
+      developer.log('_recordQuizRetry failed: $e', name: 'ProgressRepository');
+    }
+    return [];
   }
 
   /// Map action to approximate study minutes for dailyStats

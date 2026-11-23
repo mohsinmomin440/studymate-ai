@@ -40,6 +40,94 @@ final unlockedBadgesProvider =
       .toList();
 });
 
+// Quiz score trend data
+class QuizScoreTrend {
+  final List<QuizScorePoint> points;
+  final double averageScore;
+
+  QuizScoreTrend({
+    required this.points,
+    required this.averageScore,
+  });
+
+  factory QuizScoreTrend.empty() {
+    return QuizScoreTrend(points: [], averageScore: 0.0);
+  }
+}
+
+class QuizScorePoint {
+  final DateTime date;
+  final double percentage;
+  final String label; // e.g., "Mon", "Tue"
+
+  QuizScorePoint({
+    required this.date,
+    required this.percentage,
+    required this.label,
+  });
+}
+
+final quizScoreTrendProvider = FutureProvider<QuizScoreTrend>((ref) async {
+  final repo = ref.read(progressRepositoryProvider);
+  final attempts = await repo.getQuizAttempts();
+
+  if (attempts.isEmpty) return QuizScoreTrend.empty();
+
+  // Group attempts by day (last 7 days)
+  final now = DateTime.now();
+  final Map<DateTime, List<QuizAttempt>> attemptsByDay = {};
+
+  for (int i = 6; i >= 0; i--) {
+    final date = DateTime(now.year, now.month, now.day - i);
+    attemptsByDay[date] = [];
+  }
+
+  for (final attempt in attempts) {
+    final attemptDate = DateTime(
+      attempt.createdAt.year,
+      attempt.createdAt.month,
+      attempt.createdAt.day,
+    );
+    if (attemptsByDay.containsKey(attemptDate)) {
+      attemptsByDay[attemptDate]!.add(attempt);
+    }
+  }
+
+  final points = <QuizScorePoint>[];
+  double totalPercentage = 0;
+  int daysWithData = 0;
+
+  for (int i = 6; i >= 0; i--) {
+    final date = DateTime(now.year, now.month, now.day - i);
+    final dayAttempts = attemptsByDay[date] ?? [];
+
+    double percentage = 0;
+    if (dayAttempts.isNotEmpty) {
+      int totalScore = 0;
+      int totalQuestions = 0;
+      for (final a in dayAttempts) {
+        totalScore += a.score;
+        totalQuestions += a.total;
+      }
+      percentage = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
+      totalPercentage += percentage;
+      daysWithData++;
+    }
+
+    final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    points.add(QuizScorePoint(
+      date: date,
+      percentage: percentage,
+      label: weekdays[date.weekday - 1],
+    ));
+  }
+
+  return QuizScoreTrend(
+    points: points,
+    averageScore: daysWithData > 0 ? totalPercentage / daysWithData : 0.0,
+  );
+});
+
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
 
@@ -49,6 +137,8 @@ class ProgressScreen extends ConsumerWidget {
     final subjectStrengthAsync = ref.watch(subjectStrengthProvider);
     final weeklySummaryAsync = ref.watch(weeklySummaryProvider);
     final unlockedBadgesAsync = ref.watch(unlockedBadgesProvider);
+
+    final quizScoreTrendAsync = ref.watch(quizScoreTrendProvider);
 
     return StreamBuilder<UserProgressData>(
       stream: ref.read(progressRepositoryProvider).getUserProgressStream(),
@@ -69,6 +159,8 @@ class ProgressScreen extends ConsumerWidget {
               _buildSubjectStrength(context, subjectStrengthAsync),
               const Gap(24),
               _buildWeeklyStatsSection(context, weeklyStatsAsync),
+              const Gap(24),
+              _buildQuizScoreTrend(context, quizScoreTrendAsync),
               const Gap(24),
               _buildBadgesSection(
                   context, unlockedBadgesAsync, progress.badgesCount),
@@ -331,6 +423,139 @@ class ProgressScreen extends ConsumerWidget {
                     _ColorLegendDot(
                       label: 'XP Earned',
                       color: const Color(0xFF00D4C8),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+          loading: () => GlassCard(
+            child: SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ),
+          error: (e, st) => Center(child: Text('Error: $e')),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuizScoreTrend(
+      BuildContext context, AsyncValue<QuizScoreTrend> quizScoreTrendAsync) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(title: 'Quiz Score Trend'),
+        const Gap(16),
+        quizScoreTrendAsync.when(
+          data: (trend) {
+            if (trend.points.isEmpty ||
+                trend.points.every((p) => p.percentage == 0)) {
+              return EmptyState(
+                icon: Icons.show_chart_rounded,
+                title: 'No quiz scores yet',
+                message: 'Complete quizzes to see your weekly score trend',
+              );
+            }
+            return Column(
+              children: [
+                GlassCard(
+                  child: SizedBox(
+                    height: 200,
+                    child: LineChart(
+                      LineChartData(
+                        gridData: FlGridData(show: false),
+                        titlesData: FlTitlesData(
+                          show: true,
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 28,
+                              getTitlesWidget: (value, meta) {
+                                final index = value.toInt();
+                                if (index < 0 || index >= trend.points.length) {
+                                  return const Text('');
+                                }
+                                return SideTitleWidget(
+                                  axisSide: meta.axisSide,
+                                  child: Text(
+                                    trend.points[index].label,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 32,
+                              interval: 25,
+                              getTitlesWidget: (value, meta) {
+                                return SideTitleWidget(
+                                  axisSide: meta.axisSide,
+                                  child: Text(
+                                    '${value.toInt()}%',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        minX: 0,
+                        maxX: trend.points.length.toDouble() - 1,
+                        minY: 0,
+                        maxY: 100,
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: [
+                              for (int i = 0; i < trend.points.length; i++)
+                                FlSpot(
+                                    i.toDouble(), trend.points[i].percentage),
+                            ],
+                            isCurved: true,
+                            color: const Color(0xFF2ED573),
+                            barWidth: 4,
+                            dotData: FlDotData(show: true),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              color: const Color(0xFF2ED573)
+                                  .withValues(alpha: 0.1),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const Gap(12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _ColorLegendDot(
+                      label: 'Avg: ${trend.averageScore.round()}%',
+                      color: const Color(0xFF2ED573),
                     ),
                   ],
                 ),

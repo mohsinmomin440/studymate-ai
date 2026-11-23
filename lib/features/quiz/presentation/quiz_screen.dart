@@ -656,8 +656,13 @@ class QuizDetailScreen extends ConsumerWidget {
 
 class QuizTakeScreen extends ConsumerStatefulWidget {
   final String quizId;
+  final bool isRetry;
 
-  const QuizTakeScreen({super.key, required this.quizId});
+  const QuizTakeScreen({
+    super.key,
+    required this.quizId,
+    this.isRetry = false,
+  });
 
   @override
   ConsumerState<QuizTakeScreen> createState() => _QuizTakeScreenState();
@@ -682,6 +687,8 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
       _answers = List.filled(quiz.questions.length, -1);
     }
   }
+
+  bool get _isRetry => widget.isRetry;
 
   void _selectAnswer(int index) {
     setState(() => _selectedAnswer = index);
@@ -717,9 +724,10 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
         await ref.read(quizRepositoryProvider).saveAttempt(attempt);
 
     // Award XP for quiz completion (fire-and-forget, never blocks UI)
+    // Pass isRetry flag: retry-wrong-only attempts award no XP
     ref
         .read(progressRepositoryProvider)
-        .recordActivity('quiz')
+        .recordActivity('quiz', isRetry: _isRetry)
         .then((newBadges) {
       if (newBadges.isNotEmpty && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1141,7 +1149,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   '${wrongAnswers.length} wrong questions will appear in the quiz.')),
         );
 
-        GoRouter.of(context).go('${AppRoutes.quizTake}/$newQuizId');
+        GoRouter.of(context)
+            .go('${AppRoutes.quizTake}/$newQuizId?isRetry=true');
       } catch (e) {
         if (!context.mounted) return;
         Navigator.pop(context);

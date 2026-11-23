@@ -16,6 +16,7 @@ class HomeDashboardData {
   final int cardsDueToday;
   final List<PlannedTask> todayTasks;
   final String greeting;
+  final String dailyQuote;
 
   HomeDashboardData({
     required this.streak,
@@ -28,6 +29,7 @@ class HomeDashboardData {
     required this.cardsDueToday,
     required this.todayTasks,
     required this.greeting,
+    required this.dailyQuote,
   });
 
   factory HomeDashboardData.empty() {
@@ -42,6 +44,7 @@ class HomeDashboardData {
       cardsDueToday: 0,
       todayTasks: [],
       greeting: '',
+      dailyQuote: 'Start your study journey today!',
     );
   }
 }
