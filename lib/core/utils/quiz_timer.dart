@@ -2,24 +2,34 @@
 // Used by QuizTakeScreen for timed quizzes
 // Implements deadline-based timing for correct behavior when app goes to background
 
+/// Default clock function for time-based operations
+DateTime _defaultClock() => DateTime.now();
+
 /// Represents the state of a quiz timer using a stored deadline
 class QuizTimer {
   int _totalSeconds;
   final DateTime? _deadline;
   bool _isExpired = false;
+  final DateTime Function() _now;
 
   /// Creates a timer with a total duration and optional pre-set deadline
-  QuizTimer({required int totalSeconds, DateTime? deadline})
-      : _totalSeconds = totalSeconds,
-        _deadline = deadline;
+  /// [_now] is a clock function for testability, defaults to DateTime.now
+  QuizTimer({
+    required int totalSeconds,
+    DateTime? deadline,
+    DateTime Function()? now,
+  })  : _totalSeconds = totalSeconds,
+        _deadline = deadline,
+        _now = now ?? _defaultClock;
 
   /// Get total seconds
   int get totalSeconds => _totalSeconds;
 
   /// Create a timer from quiz duration minutes with current time as start
-  QuizTimer.fromDurationMinutes(int minutes)
+  QuizTimer.fromDurationMinutes(int minutes, {DateTime Function()? clock})
       : _totalSeconds = minutes * 60,
-        _deadline = DateTime.now().add(Duration(seconds: minutes * 60));
+        _deadline = (clock ?? _defaultClock)().add(Duration(seconds: minutes * 60)),
+        _now = clock ?? _defaultClock;
 
   /// Check if timer has a time limit
   bool get hasTimeLimit => _totalSeconds > 0;
@@ -30,7 +40,7 @@ class QuizTimer {
   /// Calculate remaining seconds based on current time and deadline
   int get remainingSeconds {
     if (!hasTimeLimit || _deadline == null) return _totalSeconds;
-    final now = DateTime.now();
+    final now = _now();
     final remaining = _deadline.difference(now).inSeconds;
     return remaining.clamp(0, _totalSeconds);
   }
@@ -81,7 +91,8 @@ class QuizTimer {
 
     // Assume roughly 30 seconds per question as default pace
     // This is informational only - actual answering depends on user
-    final estimatedQuestions = (secondsElapsed / 30).floor().clamp(0, totalQuestions);
+    final estimatedQuestions =
+        (secondsElapsed / 30).floor().clamp(0, totalQuestions);
     return estimatedQuestions;
   }
 }

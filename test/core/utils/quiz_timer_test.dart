@@ -41,29 +41,35 @@ void main() {
     });
 
     test('formattedTime shows correct MM:SS for various durations', () {
-      // Create a timer and manually set deadline to get specific remaining time
-      final now = DateTime.now();
+      // Use a fake clock to make test deterministic
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
+      final clock = () => fixedNow;
       final timer = QuizTimer(
         totalSeconds: 65,
-        deadline: now.add(const Duration(seconds: 65)),
+        deadline: fixedNow.add(const Duration(seconds: 65)),
+        now: clock,
       );
       expect(timer.formattedTime, equals('01:05'));
     });
 
     test('formattedTime shows double digit for seconds under 10', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
+      final clock = () => fixedNow;
       final timer = QuizTimer(
         totalSeconds: 70,
-        deadline: now.add(const Duration(seconds: 70)),
+        deadline: fixedNow.add(const Duration(seconds: 70)),
+        now: clock,
       );
       expect(timer.formattedTime, equals('01:10'));
     });
 
     test('formattedTime shows 00:00 when exhausted', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
+      final clock = () => fixedNow;
       final timer = QuizTimer(
         totalSeconds: 5,
-        deadline: now, // Deadline in the past
+        deadline: fixedNow, // Deadline in the past
+        now: clock,
       );
       expect(timer.formattedTime, equals('00:00'));
     });
@@ -71,19 +77,21 @@ void main() {
 
   group('QuizTimer - isTimeUp', () {
     test('isTimeUp returns false when time remains', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
       final timer = QuizTimer(
         totalSeconds: 60,
-        deadline: now.add(const Duration(seconds: 30)),
+        deadline: fixedNow.add(const Duration(seconds: 30)),
+        now: () => fixedNow,
       );
       expect(timer.isTimeUp(), isFalse);
     });
 
     test('isTimeUp returns true when deadline passed', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
       final timer = QuizTimer(
         totalSeconds: 60,
-        deadline: now.subtract(const Duration(seconds: 5)),
+        deadline: fixedNow.subtract(const Duration(seconds: 5)),
+        now: () => fixedNow,
       );
       expect(timer.isTimeUp(), isTrue);
     });
@@ -102,20 +110,22 @@ void main() {
 
   group('QuizTimer - tick', () {
     test('tick returns false while time remains', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
       final timer = QuizTimer(
         totalSeconds: 60,
-        deadline: now.add(const Duration(seconds: 30)),
+        deadline: fixedNow.add(const Duration(seconds: 30)),
+        now: () => fixedNow,
       );
       expect(timer.tick(), isFalse);
       expect(timer.tick(), isFalse);
     });
 
     test('tick returns true when time expires', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
       final timer = QuizTimer(
         totalSeconds: 5,
-        deadline: now.subtract(const Duration(seconds: 1)),
+        deadline: fixedNow.subtract(const Duration(seconds: 1)),
+        now: () => fixedNow,
       );
       expect(timer.tick(), isTrue); // Already expired
     });
@@ -126,10 +136,11 @@ void main() {
     });
 
     test('tick returns true only once per expiration', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
       final timer = QuizTimer(
         totalSeconds: 5,
-        deadline: now.subtract(const Duration(seconds: 1)),
+        deadline: fixedNow.subtract(const Duration(seconds: 1)),
+        now: () => fixedNow,
       );
       expect(timer.tick(), isTrue);
       expect(timer.tick(), isTrue); // Still returns true after first expiration
@@ -144,11 +155,12 @@ void main() {
     });
 
     test('elapsedSeconds increases as time passes', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
       // Set deadline 15 seconds in the future to verify elapsed is tracked
       final timer = QuizTimer(
         totalSeconds: 60,
-        deadline: now.add(const Duration(seconds: 15)),
+        deadline: fixedNow.add(const Duration(seconds: 15)),
+        now: () => fixedNow,
       );
       // Some time will have elapsed between creation and assertion
       expect(timer.elapsedSeconds, greaterThanOrEqualTo(0));
@@ -157,10 +169,11 @@ void main() {
 
   group('QuizTimer - reset', () {
     test('reset clears expired state', () {
-      final now = DateTime.now();
+      final fixedNow = DateTime(2024, 1, 1, 12, 0, 0);
       final timer = QuizTimer(
         totalSeconds: 5,
-        deadline: now.subtract(const Duration(seconds: 1)),
+        deadline: fixedNow.subtract(const Duration(seconds: 1)),
+        now: () => fixedNow,
       );
       timer.tick(); // expire
       expect(timer.isExpired, isTrue);

@@ -102,14 +102,30 @@ Applied consistent polish to list screens:
 - **quiz_screen.dart**: Added RefreshIndicator, ShimmerBox loading state, EmptyState with action button, ErrorState with Retry
 - Added tooltip and Semantics labels to all icon-only buttons for accessibility
 
+### 8. QuizTimer Test Fix ✅
+Fixed timing-related test flakiness by injecting a clock function:
+- Added `DateTime Function()? now` parameter to QuizTimer constructor
+- Added `_defaultClock()` helper function
+- Updated tests to use fixed `DateTime` instances for deterministic results
+
 ## Raw Output
 
-### flutter test (total)
+### flutter test (3 consecutive runs - all passing)
 ```
-All tests passed!
-Total: 227 passed
+=== Test Run 1 ===
+...
+00:02 +227: All tests passed!
+
+=== Test Run 2 ===
+...
+00:02 +227: All tests passed!
+
+=== Test Run 3 ===
+...
+00:02 +227: All tests passed!
+
+All 3 runs: 227 passed
 ```
-Note: One timing-related test has a pre-existing race condition issue (formattedTime assertion timing) - not caused by these changes.
 
 ### flutter analyze (0 errors)
 ```
@@ -117,7 +133,7 @@ Analyzing lib/features/notes/presentation/notes_screen.dart lib/core/utils/quiz_
 
    info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre.
 
-2 issues found. (ran in 3.1s)
+2 issues found. (ran in 3.5s)
 ```
 (Info-level warnings only - pre-existing deprecation warnings, no errors)
 
@@ -129,12 +145,12 @@ Running Gradle task 'assembleDebug'...
 
 ### git status
 ```
-M .gitignore
-M PROGRESS.md
-M lib/features/notes/presentation/notes_screen.dart
+M lib/core/utils/quiz_timer.dart
+M lib/features/chat/presentation/chat_list_screen.dart
 M lib/features/flashcards/presentation/flashcards_screen.dart
 M lib/features/quiz/presentation/quiz_screen.dart
-?? MASTER_PLAN.md
+M lib/features/notes/presentation/notes_screen.dart
+M test/core/utils/quiz_timer_test.dart
 ```
 
 ### findstr /S /M /C:"RefreshIndicator" lib\features\*.dart
@@ -155,23 +171,6 @@ lib\features\chat\presentation\chat_list_screen.dart
 lib\features\home\presentation\design_preview_screen.dart
 lib\features\flashcards\presentation\flashcards_screen.dart
 lib\features\quiz\presentation\quiz_screen.dart
-```
-
-### findstr /S /M /C:"ErrorState" lib\features\*.dart
-```
-lib\features\notes\presentation\notes_screen.dart
-lib\features\home\presentation\home_screen.dart
-lib\features\chat\presentation\chat_list_screen.dart
-lib\features\progress\presentation\home_screen.dart
-lib\features\flashcards\presentation\flashcards_screen.dart
-lib\features\quiz\presentation\quiz_screen.dart
-```
-
-### findstr /S /M /C:"HapticFeedback" lib\features\*.dart
-```
-lib\features\notes\presentation/notes_screen.dart
-lib\features\chat\presentation/chat_detail_screen.dart
-lib\features\flashcards\presentation/flashcards_screen.dart
 ```
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
