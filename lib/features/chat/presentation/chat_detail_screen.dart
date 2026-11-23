@@ -15,6 +15,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../features/progress/data/progress_repository.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../shared/widgets/ai_message_bubble.dart';
 import '../../../shared/widgets/app_text_field.dart' show AppTextField;
 import '../../../shared/widgets/empty_state.dart';
@@ -190,6 +191,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             ? '${fullResponse.substring(0, 50)}...'
             : fullResponse,
       );
+
+      // Log analytics event for chat
+      ref.read(analyticsServiceProvider).logChatSent(
+            messageCount: 1,
+            subject: _chat?.subject ?? 'General',
+          );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

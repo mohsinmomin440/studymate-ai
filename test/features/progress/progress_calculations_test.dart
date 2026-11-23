@@ -284,11 +284,15 @@ void main() {
   });
 
   group('Anti-farming: daily XP caps', () {
-    test('canAwardXpToday - no cap for quiz', () {
+    test('canAwardXpToday - quiz cap at 125 XP (5 quizzes * 25 XP)', () {
       expect(
           canAwardXpToday(action: 'quiz', currentDailyXpForAction: 0), isTrue);
-      expect(canAwardXpToday(action: 'quiz', currentDailyXpForAction: 1000),
+      expect(canAwardXpToday(action: 'quiz', currentDailyXpForAction: 100),
           isTrue);
+      expect(canAwardXpToday(action: 'quiz', currentDailyXpForAction: 125),
+          isFalse);
+      expect(canAwardXpToday(action: 'quiz', currentDailyXpForAction: 150),
+          isFalse);
     });
 
     test('canAwardXpToday - chat cap at 50 XP (10 chats)', () {
@@ -392,12 +396,6 @@ void main() {
       // When isRetry=true, quiz XP should be 0
       // This is tested at the recordActivity level, but we verify the logic
       expect(xpForAction('quiz'), equals(25)); // Base XP for quiz
-
-      // Anti-farming: quiz has no daily cap, but retry logic bypasses XP
-      expect(
-          canAwardXpToday(action: 'quiz', currentDailyXpForAction: 0), isTrue);
-      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 0),
-          equals(25));
     });
 
     test('normal quiz attempts award XP once per attempt (isRetry = false)',
@@ -409,16 +407,29 @@ void main() {
           equals(25));
     });
 
-    test('multiple normal quiz attempts in same day all award XP', () {
-      // Quiz has no daily cap, so multiple attempts all award XP
+    test('quiz daily cap limits to 5 completions (125 XP)', () {
+      // Quiz has daily cap of 125 XP (5 quizzes * 25 XP)
       expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 0),
           equals(25));
-      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 15),
+      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 25),
+          equals(25));
+      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 50),
+          equals(25));
+      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 75),
           equals(25));
       expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 100),
           equals(25));
-      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 1000),
-          equals(25));
+      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 125),
+          equals(0)); // Cap reached
+    });
+
+    test('xpToAwardToday - quiz partial award near cap', () {
+      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 120),
+          equals(5));
+      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 124),
+          equals(1));
+      expect(xpToAwardToday(action: 'quiz', currentDailyXpForAction: 125),
+          equals(0));
     });
   });
 }

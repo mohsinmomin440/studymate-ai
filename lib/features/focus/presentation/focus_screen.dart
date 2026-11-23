@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../shared/widgets/gap.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
@@ -253,10 +254,18 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
 
     // Set up callback for XP/badge awarding on session complete (fire-and-forget)
     notifier.setOnSessionComplete(() {
+      final completedMinutes = state.totalFocusMinutes;
       ref
           .read(progressRepositoryProvider)
           .recordActivity('focus_minute')
           .then((newBadges) {
+        // Log analytics event for focus session completion
+        ref.read(analyticsServiceProvider).logFocusCompleted(
+              sessionCount: state.sessionCount,
+              totalMinutes: completedMinutes,
+              completedSessions: 1,
+            );
+
         if (newBadges.isNotEmpty && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

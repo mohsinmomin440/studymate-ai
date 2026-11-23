@@ -223,6 +223,10 @@
 - [ ] docs/privacy_policy.md
 - [ ] docs/play_store_listing.md
 
+### Step 0 Complete
+- [x] Git status clean - no modified files
+- Untracked files: MASTER_PLAN.md, REPORT.md, TASKS.md, nul (Windows artifact)
+
 ### Blocked
 
 Phase 8B full localization requires extensive work across multiple screens:

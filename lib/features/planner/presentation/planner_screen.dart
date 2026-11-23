@@ -11,6 +11,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/notification_utils.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -211,6 +212,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       );
 
       if (!mounted) return;
+
+      // Log analytics event for study plan generation
+      ref.read(analyticsServiceProvider).logStudyPlanGenerated(
+            examDate: planDate.toIso8601String().split('.')[0],
+            subjectsCount: selectedSubjectList.length,
+            daysCount: planData.days.length,
+          );
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Study plan generated successfully!')),

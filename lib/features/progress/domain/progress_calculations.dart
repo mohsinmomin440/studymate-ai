@@ -16,7 +16,7 @@ const Map<String, int> dailyXpCaps = {
   'note': 100, // 10 notes * 10 XP
   'flashcard_review': 100, // 50 reviews * 2 XP
   'focus_minute': 120, // 120 minutes * 1 XP
-  // 'quiz' has no daily cap - limited by one XP award per attempt
+  'quiz': 125, // 5 quiz completions * 25 XP per day max
 };
 
 /// Check if action should award XP today based on daily cap

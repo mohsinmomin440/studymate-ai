@@ -13,6 +13,7 @@ import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../chat/data/ai_service.dart';
 import '../data/quiz_repository.dart';
 import '../domain/quiz_models.dart' as quiz_models;
@@ -722,6 +723,15 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
 
     final attemptId =
         await ref.read(quizRepositoryProvider).saveAttempt(attempt);
+
+    // Log analytics event for quiz
+    ref.read(analyticsServiceProvider).logQuizFinished(
+          quizId: widget.quizId,
+          title: _quiz!.title,
+          score: correct,
+          total: _quiz!.questions.length,
+          durationSec: 0,
+        );
 
     // Award XP for quiz completion (fire-and-forget, never blocks UI)
     // Pass isRetry flag: retry-wrong-only attempts award no XP

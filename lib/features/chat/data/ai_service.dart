@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/failures.dart';
 import '../../../core/errors/error_mapper.dart';
+import '../../../core/services/remote_config_service.dart';
 import '../ai_prompts.dart';
 
 /// Provider for AI service
@@ -28,15 +29,31 @@ class AiService {
   late final FirebaseAI _firebaseAI;
   late final GenerativeModel _chatModel;
   late final GenerativeModel _cheapModel;
+  late final RemoteConfigService _remoteConfig;
 
   bool _initialized = false;
 
   /// Initialize the AI service
   Future<void> initialize() async {
     if (_initialized) return;
+
     _firebaseAI = FirebaseAI.googleAI();
+    _remoteConfig = RemoteConfigService();
+
+    // Try to initialize Remote Config, fall back to defaults if it fails
+    try {
+      await _remoteConfig.initialize();
+    } catch (e) {
+      // Remote Config not configured yet, will use defaults from _setDefaults
+    }
+
+    // Use RemoteConfig if available, otherwise fall back to AppConstants defaults
+    // This allows updating model names without app update
+    final chatModelName = _remoteConfig.chatModel;
+    final cheapModelName = _remoteConfig.cheapModel;
+
     _chatModel = _firebaseAI.generativeModel(
-      model: AppConstants.defaultChatModel,
+      model: chatModelName,
       generationConfig: GenerationConfig(
         temperature: AppConstants.temperatureChat,
         maxOutputTokens: AppConstants.maxOutputTokensChat,
@@ -53,7 +70,7 @@ class AiService {
       ],
     );
     _cheapModel = _firebaseAI.generativeModel(
-      model: AppConstants.defaultCheapModel,
+      model: cheapModelName,
       generationConfig: GenerationConfig(
         temperature: AppConstants.temperatureJSON,
         maxOutputTokens: AppConstants.maxOutputTokensJSON,
@@ -85,7 +102,11 @@ class AiService {
       await prefs.setString(PrefKeys.dailyAIUsageDate, today);
     }
 
-    if (count >= AppConstants.dailyAIRequestLimit) {
+    // Use RemoteConfig limit if available, otherwise fall back to AppConstants
+    final limit = _initialized
+        ? _remoteConfig.dailyAIRequestLimit
+        : AppConstants.dailyAIRequestLimit;
+    if (count >= limit) {
       return false;
     }
 

@@ -14,6 +14,7 @@ import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../chat/data/ai_service.dart';
 import '../data/note_repository.dart';
 import '../domain/note_models.dart';
@@ -251,6 +252,12 @@ class _CreateEditNoteScreenState extends ConsumerState<CreateEditNoteScreen> {
         updatedAt: now,
       );
       await ref.read(noteRepositoryProvider).createNote(newNote);
+
+      // Log analytics event for note creation
+      ref.read(analyticsServiceProvider).logNoteCreated(
+            subject: subject,
+            wordCount: body.split(RegExp(r'\s+')).length,
+          );
 
       // Award XP for new note (fire-and-forget, never blocks UI)
       ref

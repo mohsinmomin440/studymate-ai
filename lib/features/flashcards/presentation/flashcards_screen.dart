@@ -12,6 +12,7 @@ import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../chat/data/ai_service.dart';
 import '../data/flashcard_repository.dart';
 import '../domain/flashcard_models.dart';
@@ -1008,6 +1009,13 @@ class _StudyModeScreenState extends ConsumerState<StudyModeScreen> {
           deckId: widget.deckId,
           cardId: card.id,
           rating: rating,
+        );
+
+    // Log analytics event for flashcard review
+    ref.read(analyticsServiceProvider).logFlashcardReviewed(
+          deckId: widget.deckId,
+          cardsReviewed: 1,
+          correct: rating >= 2 ? 1 : 0, // Good or Easy = correct
         );
 
     // Award XP for flashcard review (fire-and-forget, never blocks UI)
