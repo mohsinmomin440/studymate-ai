@@ -52,7 +52,10 @@ android {
         release {
             val releaseKeystore = signingConfigs.findByName("release")
             signingConfig = releaseKeystore ?: signingConfigs.getByName("debug")
-            isMinifyEnabled = true
+            // Disable minification and resource shrinking to avoid native library stripping issues
+            // TODO: Re-enable after verifying ProGuard rules for firebase_ai, Crashlytics, notifications
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

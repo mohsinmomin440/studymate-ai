@@ -1,15 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Required for exact alarm scheduling on Android 12+ -->
+    <!-- Required for network access -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Required for exact alarm scheduling on Android 12+ (focus timer, planner reminders) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <!-- Required for notifications on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:label="studymate_ai"
+        android:label="StudyMate AI"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon"
-        android:usesCleartextTraffic="true">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
